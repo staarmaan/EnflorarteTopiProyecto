@@ -1,0 +1,38 @@
+﻿@model List<Usuario> 
+
+<h1 class="text-Center">Lista de Usuarios</>
+
+	<a class="btn btn-primary mb-1" asp-controller="ControladorUsuarios" asp-action="Create"></a>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Nombre</th>
+			<th>Rol</th>
+			<th>¿Activo?</th>
+		</tr>
+	</thead>
+
+	<tbody class="table-group-divider">
+		@foreach (var usuario in Model)
+			{
+				string activoStr = usuario.Activo ? "Activo" : "Desactivo";
+
+				<tr>
+					<td>@usuario.Id</td>
+					<td>@usuario.Nombre</td>
+					<td>@usuario.Rol</td>
+					<td>@activoStr</td>
+					<td style="white-space:nowrap">
+						<a class="btn btn-primary btn-sm" asp-controller="ControladorUsuarios" asp-action="Edit" asp-route-id="@usuario.Id">
+							Editar
+						</a>
+						<a class="btn btn-primary btn-sm" asp-controller="ControladorUsuarios" asp-action="Delete" asp-route-id="@usuario.Id">
+							Eliminar
+						</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+</table>
