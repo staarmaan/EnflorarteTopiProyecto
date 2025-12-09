@@ -15,6 +15,9 @@ namespace EnflorarteTopiProyecto.Models
         Display permite que se muestren los datos con otro nombre diferente al declarado en el codigo.
         */
 
+        public int Id { get; set; } // Solo utilizado para la edicion de usuarios.
+
+
         [Display(Name = "nombre completo")]
         [Required(ErrorMessage = "El {0} es obligatorio.")]
         [StringLength(200, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
@@ -39,7 +42,5 @@ namespace EnflorarteTopiProyecto.Models
         
 
         public bool Activo { get; set; } = true; // Aqui no hay Required porque por defecto el usuario se crea como activo.
-
-        public int Id { get; set; }
     }
 }

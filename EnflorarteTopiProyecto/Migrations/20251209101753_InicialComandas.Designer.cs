@@ -4,6 +4,7 @@ using EnflorarteTopiProyecto.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EnflorarteTopiProyecto.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209101753_InicialComandas")]
+    partial class InicialComandas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,12 +27,12 @@ namespace EnflorarteTopiProyecto.Migrations
 
             modelBuilder.Entity("EnflorarteTopiProyecto.Models.Comanda", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ComandaId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("comanda_id");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ComandaId"));
 
                     b.Property<decimal>("AnticipoPagoTotal")
                         .HasPrecision(7, 2)
@@ -114,7 +117,7 @@ namespace EnflorarteTopiProyecto.Migrations
                         .HasColumnType("int")
                         .HasColumnName("usuario_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("ComandaId");
 
                     b.HasIndex("RepartidorId");
 

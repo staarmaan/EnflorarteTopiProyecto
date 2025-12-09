@@ -1,0 +1,55 @@
+﻿@model List<Comanda>
+
+<h1 class="text-Center">Lista de Comandas</h1>
+
+<a class="btn btn-primary mb-1" asp-controller="ControladorComandas" asp-action="Crear">Crear comanda</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Teléfono</th>
+            <th>Arreglo</th>
+            <th>Precio</th>
+            <th>Anticipo</th>
+            <th>Envío</th>
+            <th>Tipo</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Estado</th>
+            <th>Liquidado</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody class="table-group-divider">
+        @foreach (var comanda in Model)
+        {
+            var liquidadoStr = comanda.Liquidado ? "Sí" : "No";
+            var fechaStr = comanda.FechaEntrega.ToString("dd/MM/yyyy");
+            var horaStr = comanda.HoraEntrega.Hours.ToString() + ":" + comanda.HoraEntrega.Minutes.ToString();
+            <tr>
+                <td>@comanda.Id</td>
+                <td>@comanda.ClienteNombre</td>
+                <td>@comanda.ClienteTelefono</td>
+                <td>@comanda.NombreArreglo</td>
+                <td>@comanda.PrecioArreglo.ToString("C")</td>
+                <td>@comanda.AnticipoPagoTotal.ToString("C")</td>
+                <td>@comanda.PagoEnvio.ToString("C")</td>
+                <td>@comanda.TipoEntrega</td>
+                <td>@fechaStr</td>
+                <td>@horaStr</td>
+                <td>@comanda.Estado</td>
+                <td>@liquidadoStr</td>
+                <td style="white-space:nowrap">
+                    <a class="btn btn-primary btn-sm" asp-controller="ControladorComandas" asp-action="Editar" asp-route-id="@comanda.Id">
+                        Editar
+                    </a>
+                    <a class="btn btn-primary btn-sm" asp-controller="ControladorComandas" asp-action="Eliminar" asp-route-id="@comanda.Id">
+                        Eliminar
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
