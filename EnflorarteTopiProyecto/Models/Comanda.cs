@@ -50,6 +50,7 @@ GO
 
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EnflorarteTopiProyecto.Models
 {
@@ -70,7 +71,7 @@ namespace EnflorarteTopiProyecto.Models
         entregado // Las comandas que ya fueron entregadas o recogidas tendran este estado. Osea que ya estan echas en su totalidad.
     }
 
-    public enum AnticipoTipo
+    public enum AnticipoTipos
     {
         porcentaje, // Por ejemplo, si se cobro un 50% de anticipo en la temporada alta.
         minimo, // Por ejemplo, si se cobro un monto minimo de anticipo de $200 en temporada baja.
@@ -80,31 +81,36 @@ namespace EnflorarteTopiProyecto.Models
 
     public class Comanda
     {
-        public int ComandaId { get; set; }
+        public int Id { get; set; }
 
         // Datos de usuarios.
         public int UsuarioId { get; set; } // Usuario que creo la comanda.
+        [ForeignKey(nameof(UsuarioId))]
+        public Usuario? UsuarioCreador { get; set; } // navegación al usuario que creó la comanda
         /*
         Creo que, en teoria, cualquier usuario podria ser repartidor. 
         Se le podria advertir al usuario asignando el repartiro de que esta eligiendo a uno que no lo es, pero si se le podria permitir.
         Por ejemplo, la supervisora podria asignarse a si misma como repartidora en una comanda aunque no tenga ese rol.
         */
         public int? RepartidorId { get; set; }
+        [ForeignKey(nameof(RepartidorId))]
+        public Usuario? RepartidorAsignado { get; set; } // navegación al usuario asignado como repartidor
+
 
         // Datos de estados.
-        public EstadoComanda Estado { get; set; }
-        public bool Liquidado { get; set; }
+        public EstadoComanda Estado { get; set; } = EstadoComanda.solicitado; // Por defecto, las comandas estan en solicitud.
+        public bool Liquidado { get; set; } = false; // Por defecto, las comandas no estan liquidadas.
 
         // Datos del cliente y entrega.
-        public string ClienteNombre { get; set; }
-        public string ClienteTelefono { get; set; } // No se si deberia ser obligatorio u opcional.
+        public string ClienteNombre { get; set; } = string.Empty;
+        public string? ClienteTelefono { get; set; } // No se si deberia ser obligatorio u opcional.
+        public TipoEntrega TipoEntrega { get; set; }
         public string? DireccionEntrega { get; set; } // No seria obligatorio si el tipo de entrega es "recoger".
         public DateTime FechaEntrega { get; set; }
-        public TimeSpan? HoraEntrega { get; set; } // No estoy seguro de si deberia ser opcional u obligatorio.
-        public TipoEntrega TipoEntrega { get; set; }
+        public TimeSpan HoraEntrega { get; set; } // No estoy seguro de si deberia ser opcional u obligatorio.
 
         // Datos del arreglo.
-        public string NombreArreglo { get; set; }
+        public string NombreArreglo { get; set; } = string.Empty;
         [Precision(7, 2)] // 7 digitos en total y dos decimales. Entonces, el valor maximo permitido seria 99,999.99
         [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El precio del arreglo debe ser entre 0 y 99,999.99.")]
         public decimal PrecioArreglo { get; set; }
@@ -129,7 +135,8 @@ namespace EnflorarteTopiProyecto.Models
         En vez de eso, puedes conseguir el porcentaje de anticipo si el tipo fue de porcentaje, a partir del AnticipoTotal y el PrecioArreglo.
         Si se eligio el minimo u manual, entonces el AnticipoTotal ya seria el minimo :v
          */
-        public AnticipoTipo? AnticipoTipo { get; set; }
+
+        public AnticipoTipos? AnticipoTipo { get; set; } = AnticipoTipos.manual; // Por defecto, el tipo de anticipo es manual.
         [Precision(7, 2)] // x3
         [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El pago de anticipo debe ser entre 0 y 99,999.99.")]
         public decimal AnticipoPagoTotal { get; set; }

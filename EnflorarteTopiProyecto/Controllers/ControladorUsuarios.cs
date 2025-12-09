@@ -24,7 +24,7 @@ namespace EnflorarteTopiProyecto.Controllers
         public IActionResult Crear() 
         {
             return View();
-        }
+        }   
 
         [HttpPost]
         public IActionResult Crear(UsuarioDto usuarioDto)
