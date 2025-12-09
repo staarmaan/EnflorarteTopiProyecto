@@ -72,7 +72,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 Activo = usuarioAEditar.Activo
             };
 
-            ViewBag.UsuarioId = id;
+            //ViewBag.UsuarioId = id; // Se supone que esto sirve para pasar el id a la vista, pero no funciona.
 
             return View(usuarioDto);
         }
@@ -114,8 +114,9 @@ namespace EnflorarteTopiProyecto.Controllers
             {
                 context.Usuarios.Remove(usuarioAEliminar);
                 context.SaveChanges();
+
                 TempData["Toast.Message"] = "Usuario eliminado.";
-                TempData["Toast.Type"] = "info";
+                TempData["Toast.Type"] = "success";
             }
             else 
             {
