@@ -2,6 +2,8 @@
 using EnflorarteTopiProyecto.Service;
 using Microsoft.AspNetCore.Mvc;
 
+using EnflorarteTopiProyecto.Utils;
+
 namespace EnflorarteTopiProyecto.Controllers
 {
     public class ControladorUsuarios : Controller
@@ -37,7 +39,7 @@ namespace EnflorarteTopiProyecto.Controllers
             {
                 Nombre = usuarioDto.Nombre,
                 Rol = usuarioDto.Rol,
-                Contrasena = usuarioDto.Contrasena,
+                Contrasena = HasheadorContrasenas.HashearContrasena(usuarioDto.Contrasena),
                 Activo = usuarioDto.Activo
             };
 
@@ -94,7 +96,7 @@ namespace EnflorarteTopiProyecto.Controllers
             // Editar usuario
             usuarioAEditar.Nombre = usuarioDto.Nombre;
             usuarioAEditar.Rol = usuarioDto.Rol;
-            usuarioAEditar.Contrasena = usuarioDto.Contrasena;
+            usuarioAEditar.Contrasena = HasheadorContrasenas.HashearContrasena(usuarioDto.Contrasena);
             usuarioAEditar.Activo = usuarioDto.Activo;
 
             context.SaveChanges();
