@@ -11,10 +11,10 @@ namespace EnflorarteTopiProyecto.Models
     }
     public class Usuario
     {
-        public int Id { get; set; }
-        public string Nombre { get; set; }
-        public RolUsuario Rol { get; set; }
-        public string Contrasena { get; set; }
-        public bool Activo { get; set; }
+        public int Id { get; set; } = 0;
+        public string Nombre { get; set; } = string.Empty;
+        public RolUsuario Rol { get; set; } = RolUsuario.supervisor;
+        public string Contrasena { get; set; } = string.Empty;
+        public bool Activo { get; set; } = true;
     }
 }

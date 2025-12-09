@@ -2,7 +2,7 @@
 
 <h1 class="text-Center">Lista de Usuarios</>
 
-	<a class="btn btn-primary mb-1" asp-controller="ControladorUsuarios" asp-action="Create"></a>
+	<a class="btn btn-primary mb-1" asp-controller="ControladorUsuarios" asp-action="Crear"></a>
 
 <table class="table">
 	<thead>
@@ -25,10 +25,10 @@
 					<td>@usuario.Rol</td>
 					<td>@activoStr</td>
 					<td style="white-space:nowrap">
-						<a class="btn btn-primary btn-sm" asp-controller="ControladorUsuarios" asp-action="Edit" asp-route-id="@usuario.Id">
+						<a class="btn btn-primary btn-sm" asp-controller="ControladorUsuarios" asp-action="Editar" asp-route-id="@usuario.Id">
 							Editar
 						</a>
-						<a class="btn btn-primary btn-sm" asp-controller="ControladorUsuarios" asp-action="Delete" asp-route-id="@usuario.Id">
+						<a class="btn btn-primary btn-sm" asp-controller="ControladorUsuarios" asp-action="Borrar" asp-route-id="@usuario.Id">
 							Eliminar
 						</a>
 					</td>
