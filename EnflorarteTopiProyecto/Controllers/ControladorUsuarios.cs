@@ -90,7 +90,7 @@ namespace EnflorarteTopiProyecto.Controllers
 
             if (!ModelState.IsValid)
             {
-                return View();
+                return View(usuarioDto);
             }
 
             // Editar usuario
