@@ -27,7 +27,7 @@
         {
             var liquidadoStr = comanda.Liquidado ? "Sí" : "No";
             var fechaStr = comanda.FechaEntrega.ToString("dd/MM/yyyy");
-            var horaStr = comanda.HoraEntrega.Hours.ToString() + ":" + comanda.HoraEntrega.Minutes.ToString();
+            var horaStr = $"{(((comanda.HoraEntrega.Hours % 12) == 0) ? 12 : (comanda.HoraEntrega.Hours % 12)):00}:{comanda.HoraEntrega.Minutes:00} {(comanda.HoraEntrega.Hours >= 12 ? "PM" : "AM")}";
             <tr>
                 <td>@comanda.Id</td>
                 <td>@comanda.ClienteNombre</td>
