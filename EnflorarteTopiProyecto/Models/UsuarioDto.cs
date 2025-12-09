@@ -34,5 +34,7 @@ namespace EnflorarteTopiProyecto.Models
         
 
         public bool Activo { get; set; } = true; // Aqui no hay Required porque por defecto el usuario se crea como activo.
+
+        public int Id { get; set; }
     }
 }

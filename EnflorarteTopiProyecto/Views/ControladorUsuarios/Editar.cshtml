@@ -1,0 +1,16 @@
+﻿@model UsuarioDto
+
+<h1 class="text-center mb-3">Editar Usuario</h1>
+
+<form asp-action="Editar" asp-controller="ControladorUsuarios" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id"/>
+    @* en partial name, Reutilizamos el formulario de usuario (_FormularioUsuario.cshtml) para la creacion. *@
+    @* en view-data, le indicamos al formulario reutilizado que estamos editando. *@
+    <partial name="~/Views/Shared/_FormularioUsuario.cshtml" 
+    model="Model" 
+    view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", true } }' 
+    />
+    <button type="submit" class="btn btn-primary me-2">Guardar</button>
+    <a class="btn btn-outline-primary" asp-controller="ControladorUsuarios" asp-action="Index" role="button">Cancelar</a>
+</form>

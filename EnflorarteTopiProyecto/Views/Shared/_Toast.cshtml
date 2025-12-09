@@ -1,0 +1,28 @@
+@{
+    var message = TempData["Toast.Message"] as string;
+    var type = TempData["Toast.Type"] as string ?? "info"; // success | info | warning | danger
+    var bgClass = type switch
+    {
+        "success" => "bg-success text-white",
+        "info" => "bg-info text-dark",
+        "warning" => "bg-warning text-dark",
+        "danger" => "bg-danger text-white",
+        _ => "bg-secondary text-white"
+    };
+}
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1060;">
+        <div class="toast align-items-center show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header @bgClass">
+                <strong class="me-auto">Notificación</strong>
+                <small>Ahora</small>
+                <button type="button" class="btn-close btn-close-white ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                @message
+            </div>
+        </div>
+    </div>
+}
