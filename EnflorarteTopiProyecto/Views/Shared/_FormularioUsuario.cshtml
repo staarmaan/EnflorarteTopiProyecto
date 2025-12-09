@@ -1,0 +1,64 @@
+﻿@model UsuarioDto
+@{
+    /* 
+     Variable utilizda en el formulario para ver si estamos editando o creando.
+     Este valor es pasado desde Editar.cshtml y Crear.cshtml respectivamente.
+     Pero si no se pasa nada, se utliza el Model.Id para detectar si es modificacion o no (aunque por alguna razon, siempre lo considera creacion con esta forma de hacerlo, por eso paso un booleano desde las vistas).
+     */
+    var esEdicion = (ViewData["EsEdicion"] as bool?) ?? (Model != null && Model.Id > 0);
+}
+
+@* Este formulario se reutiliza para la creacion y eidicion de usuarios. *@
+
+<div class="card h-100">
+    <div class="card-header">
+        @(esEdicion ? "Actualiza los datos del usuario" : "Ingrese los datos del usuario")
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <label class="col col-form-label">Nombre completo del usuario</label>
+            <div class="col-sm-8">
+                <input class="form-control" asp-for="Nombre" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col-sm-4 col-form-label">Tipo de usuario</label>
+            <div class="col-sm-8">
+                <select class="form-select" asp-for="Rol">
+                    <option value="" selected hidden>Selecciona un tipo</option>
+                    <option value="supervisor">Supervisor</option>
+                    <option value="ventas">Vendedor</option>
+                    <option value="florista">Florista</option>
+                    <option value="repartidor">Repartidor</option>
+                </select>
+                <span asp-validation-for="Rol" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col col-form-label">@(esEdicion ? "Contraseña nueva del usuario" : "Contraseña del usuario")</label>
+            <div class="col-sm-8">
+                <input class="form-control" 
+                type="password" 
+                asp-for="Contrasena" 
+                autocomplete="@(esEdicion ? "current-password" : "new-password")" 
+                />
+                <span asp-validation-for="Contrasena" class="text-danger"></span>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <label class="col col-form-label">@(esEdicion ? "Confirmar contraseña nueva del usuario" : "Confirmar contraseña del usuario")</label>
+            <div class="col-sm-8">
+                <input class="form-control" 
+                type="password" 
+                asp-for="ConfirmarContrasena" 
+                autocomplete="@(esEdicion ? "current-password" : "new-password")" 
+                />
+                <span asp-validation-for="ConfirmarContrasena" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/EnflorarteTopiProyecto.styles.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
 </head>
 <body>
     <header>
@@ -48,6 +49,20 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
+    @* Render de Toast *@
+    <partial name="~/Views/Shared/_Toast.cshtml" />
+
+    <script>
+        // Activar cualquier toast en la página si no se mostró automáticamente
+        document.querySelectorAll('.toast').forEach(t => {
+            try {
+                const toast = new bootstrap.Toast(t, { delay: 3500 });
+                toast.show();
+            } catch (e) { /* bootstrap no cargado */ }
+        });
+    </script>
+
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

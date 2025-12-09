@@ -1,0 +1,15 @@
+﻿@model UsuarioDto
+
+<h1 class="text-center mb=3">Nuevo Usuaio</h1>
+
+<form asp-action="Crear" asp-controller="ControladorUsuarios" method="post">
+    @Html.AntiForgeryToken()
+    @* en partial name, Reutilizamos el formulario de usuario (_FormularioUsuario.cshtml) para la creacion. *@
+    @* en view-data, le indicamos al formulario reutilizado que estamos creando. *@
+    <partial name="~/Views/Shared/_FormularioUsuario.cshtml" 
+    model="Model" 
+    view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", false } }' 
+    />
+    <button type="submit" class="btn btn-primary me-2">Confirmar</button>
+    <a class="btn btn-outline-primary" asp-controller="ControladorUsuarios" asp-action="Index" role="button">Cancelar</a>
+</form>
