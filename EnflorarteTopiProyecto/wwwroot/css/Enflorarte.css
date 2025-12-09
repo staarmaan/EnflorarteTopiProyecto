@@ -1,0 +1,144 @@
+﻿/* wwwroot/css/Enflorarte.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;700&display=swap');
+
+:root {
+    /* --- PALETA DE COLORES ACTUALIZADA (CON ROSAS SUAVES) --- */
+    /* Mantenemos el verde elegante para el contraste (hojas/tallos) */
+    --color-primario: #2E4F39;
+    /* NUEVO: Rosa Suave / Palo de Rosa (Para botones, bordes, detalles) */
+    /* Este tono combina muy bien con verdes oscuros */
+    --color-secundario: #E0A3A8;
+    /* NUEVO: Un rosa muy pálido para fondos (en lugar de beige) */
+    --color-fondo-suave: #FFF0F3;
+    /* Texto */
+    --color-texto-oscuro: #4A3B39; /* Un marrón grisáceo suave */
+    --color-texto-claro: #FFFFFF;
+    /* --- TIPOGRAFÍA --- */
+    --fuente-serif-elegante: 'Cormorant Garamond', serif;
+    --fuente-sans-moderna: 'Montserrat', sans-serif;
+}
+
+/* =========================================
+   ESTILOS BASE
+   ========================================= */
+body {
+    /* Usamos el nuevo fondo rosado muy sutil */
+    background-color: var(--color-fondo-suave);
+    color: var(--color-texto-oscuro);
+    font-family: var(--fuente-sans-moderna);
+}
+
+/* Ajustamos los enlaces para que usen el rosa al pasar el mouse */
+a {
+    color: var(--color-primario);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+    a:hover {
+        color: var(--color-secundario); /* Ahora cambia a rosa */
+    }
+
+/* ... (Mantén el resto de estilos de h1, h2, etc. igual) ... */
+/* =========================================
+   BARRA DE NAVEGACIÓN PERSONALIZADA
+   ========================================= */
+.navbar-enflorarte {
+    background-color: #ffffff !important;
+    /* La línea inferior ahora será rosa */
+    border-bottom: 3px solid var(--color-secundario) !important;
+}
+
+.navbar-enflorarte.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1020; /* Asegura que esté por encima de todo */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Sombra suave para separarla del fondo al bajar */
+}
+
+.navbar-enflorarte .nav-link.active {
+    color: var(--color-primario) !important; /* Texto verde fuerte */
+    font-weight: 700 !important; /* Texto en negrita */
+    border-bottom: 2px solid var(--color-primario); /* Subrayado verde */
+    background-color: var(--color-fondo-suave); /* Un fondo sutil rosado */
+    border-radius: 5px; /* Bordes redondeados */
+}
+
+.navbar-collapse {
+    justify-content: center; /* Esto ayuda a centrar los elementos flexibles */
+}
+
+/* Estilo para el texto "Enflorarte" al lado del logo */
+.brand-text {
+    font-family: var(--fuente-serif-elegante);
+    color: var(--color-primario);
+    font-size: 1.8rem; /* Más grande */
+    font-weight: 700;
+    letter-spacing: 1px; /* Espaciado entre letras más elegante */
+}
+
+/* Enlaces del menú de navegación */
+.navbar-enflorarte .nav-link {
+    color: var(--color-texto-oscuro) !important;
+    font-family: var(--fuente-sans-moderna);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+    .navbar-enflorarte .nav-link:hover,
+    .navbar-enflorarte .nav-link.active {
+        color: var(--color-primario) !important;
+        /* Opcional: un subrayado sutil al pasar el mouse */
+        /* border-bottom: 1px solid var(--color-secundario); */
+    }
+
+
+/* =========================================
+   BOTONES Y COMPONENTES
+   ========================================= */
+
+/* Redefinir el botón primario de Bootstrap (btn-primary) */
+.btn-primary {
+    background-color: var(--color-primario);
+    border-color: var(--color-primario);
+    color: var(--color-texto-claro);
+    font-family: var(--fuente-sans-moderna);
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border-radius: 0; /* Botones cuadrados son más elegantes, o usa 4px para sutil */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background-color: var(--color-secundario);
+        border-color: var(--color-secundario);
+        color: var(--color-primario); /* Texto oscuro sobre fondo claro al pasar el mouse */
+    }
+
+/* Un estilo de botón "outline" secundario */
+.btn-outline-secondary-flower {
+    color: var(--color-primario);
+    border: 2px solid var(--color-primario);
+    font-family: var(--fuente-sans-moderna);
+    font-weight: 600;
+    border-radius: 0;
+    text-transform: uppercase;
+}
+
+    .btn-outline-secondary-flower:hover {
+        background-color: var(--color-primario);
+        color: var(--color-texto-claro);
+    }
+
+/* Estilo para el footer */
+footer.border-top {
+    border-top-color: var(--color-secundario) !important;
+    background-color: #fff;
+}
