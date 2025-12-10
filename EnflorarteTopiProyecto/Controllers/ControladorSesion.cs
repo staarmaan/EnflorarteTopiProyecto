@@ -1,6 +1,9 @@
 using EnflorarteTopiProyecto.Service;
 using EnflorarteTopiProyecto.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
@@ -25,7 +28,7 @@ namespace EnflorarteTopiProyecto.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Ingresar(int usuarioId, string contrasenaIngresada)
+        public async Task<IActionResult> Ingresar(int usuarioId, string contrasenaIngresada)
         {
             var usuario = _context.Usuarios.Find(usuarioId);
             if (usuario == null)
@@ -57,8 +60,35 @@ namespace EnflorarteTopiProyecto.Controllers
                 return RedirectToAction("Index");
             }
 
+            // Crear identidad con claims y firmar cookie
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Nombre),
+                new Claim(ClaimTypes.Role, usuario.Rol.ToString()),
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+            });
+
             TempData["Toast.Message"] = "Bienvenido, " + usuario.Nombre + ".";
             TempData["Toast.Type"] = "success";
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Salir()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            TempData["Toast.Message"] = "Sesión cerrada.";
+            TempData["Toast.Type"] = "info";
             return RedirectToAction("Index", "Home");
         }
     }

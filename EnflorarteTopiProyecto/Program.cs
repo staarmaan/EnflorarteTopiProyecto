@@ -1,5 +1,6 @@
 using EnflorarteTopiProyecto.Service;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,24 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString);
 });
 //builder.Services.AddScoped<IPasswordService, PasswordService>();
+
+// Autenticación por cookies y autorización por roles
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/ControladorSesion/Index";
+        options.LogoutPath = "/ControladorSesion/Salir";
+        options.AccessDeniedPath = "/AccesoDenegado";
+        options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("EsSupervisor", p => p.RequireRole("supervisor"));
+    options.AddPolicy("EsVentas", p => p.RequireRole("ventas", "supervisor"));
+    options.AddPolicy("EsFlorista", p => p.RequireRole("florista", "supervisor"));
+    options.AddPolicy("EsRepartidor", p => p.RequireRole("repartidor", "supervisor"));
+});
 
 var app = builder.Build();
 
@@ -25,6 +44,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
