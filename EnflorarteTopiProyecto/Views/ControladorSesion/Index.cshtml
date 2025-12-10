@@ -1,0 +1,30 @@
+@model IEnumerable<EnflorarteTopiProyecto.Models.Usuario>
+@{
+    ViewData["Title"] = "Inicio de sesión";
+    ViewData["OcultarNav"] = true;
+}
+
+<h2>Inicio de sesión</h2>
+<p>Temporal: lista de usuarios existentes.</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nombre</th>
+            <th>Rol</th>
+            <th>Activo</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var u in Model)
+    {
+        <tr>
+            <td>@u.Id</td>
+            <td>@u.Nombre</td>
+            <td>@u.Rol</td>
+            <td>@(u.Activo ? "Sí" : "No")</td>
+        </tr>
+    }
+    </tbody>
+</table>
