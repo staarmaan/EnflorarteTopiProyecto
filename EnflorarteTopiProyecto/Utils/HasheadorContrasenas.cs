@@ -14,6 +14,7 @@ namespace EnflorarteTopiProyecto.Utils
             return hasher.HashPassword(null, contrasenaSinHashear);
         }
 
+        // Recordar que contrasenaIngresada no está hasheada, es la que el usuario ingresa en algun campo de texto.
         public static bool VerificarContrasena(string contrasenaHasheada, string contrasenaIngresada)
         {
             var hasher = new PasswordHasher<string>();

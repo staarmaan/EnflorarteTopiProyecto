@@ -1,5 +1,8 @@
 ﻿@{
-    // No necesitamos un modelo complejo por ahora, ya que el JS rellenará los datos
+    /* 
+    No necesitamos un modelo complejo por ahora, ya que el JS rellenará los datos
+    Este es el panelito que sale cuando le das click a un usuario en el Index.cshtml de Views/ControladorSesion.
+    */
 }
 
 <div class="text-center mb-4">
@@ -16,13 +19,14 @@
     </h4>
 </div>
 
-<form method="post" action="#">
+<form asp-action="Ingresar" asp-controller="ControladorSesion" method="post">
+    @Html.AntiForgeryToken()
     <input type="hidden" id="inputUsuarioId" name="UsuarioId" />
 
     <div class="mb-4 text-start">
         <label class="form-label text-muted small text-uppercase fw-bold">Contraseña</label>
         <div class="input-group">
-            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span> <input type="password" class="form-control border-start-0 ps-0" name="Password" placeholder="••••••••" required />
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span> <input type="password" class="form-control border-start-0 ps-0" name="contrasenaIngresada" placeholder="••••••••" required />
         </div>
     </div>
 
