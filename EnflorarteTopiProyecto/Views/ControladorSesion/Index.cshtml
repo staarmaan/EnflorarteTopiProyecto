@@ -1,54 +1,71 @@
 @model IEnumerable<EnflorarteTopiProyecto.Models.Usuario>
 @{
     ViewData["Title"] = "Bienvenido";
-    ViewData["OcultarNav"] = true; // Esto activa el ocultamiento del menú
+    ViewData["OcultarNav"] = true;
 }
 
 <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 py-5">
 
-    <div class="text-center mb-5">
+    <div class="text-center mb-4">
         <img src="~/images/image_b087d3.png"
              alt="Logo Enflorarte"
              class="img-fluid mb-3"
-             style="max-height: 200px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));">
+             style="max-height: 180px; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));">
 
-        <p class="lead text-muted">Selecciona tu usuario para comenzar el día.</p>
+        <h2 class="h4 text-muted fw-light">Bienvenido de nuevo</h2>
     </div>
 
-    <div class="card card-enflorarte shadow-lg border-0" style="width: 100%; max-width: 500px;">
-        <div class="card-header text-center py-3 bg-white border-bottom-0">
-            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 2px;">Usuarios Disponibles</span>
+    <div class="card card-enflorarte shadow-lg border-0 w-100" style="max-width: 450px; overflow: hidden;">
+
+        <div class="card-header bg-white border-bottom p-3">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted ps-3">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text"
+                       id="inputBuscador"
+                       class="form-control bg-light border-start-0"
+                       placeholder="Buscar tu nombre..."
+                       onkeyup="filtrarUsuarios()"
+                       style="box-shadow: none;">
+            </div>
         </div>
 
-        <div class="list-group list-group-flush">
+        <div class="list-group list-group-flush" id="listaUsuarios" style="max-height: 400px; overflow-y: auto;">
             @foreach (var u in Model)
             {
                 if (u.Activo)
                 {
+                    // Agregamos un atributo 'data-nombre' para buscar más fácil con JS
                     <button type="button"
-                            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4 border-bottom-0"
+                            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4 border-bottom-0 usuario-item"
+                            data-nombre="@u.Nombre.ToLower()"
                             onclick="abrirLogin('@u.Id', '@u.Nombre')"
-                            style="transition: background 0.3s;">
+                            style="transition: background 0.2s;">
 
                         <div class="d-flex align-items-center">
                             <div class="rounded-circle me-3 d-flex align-items-center justify-content-center text-white fw-bold shadow-sm"
-                                 style="width: 45px; height: 45px; background-color: var(--color-secundario); font-size: 1.2rem;">
+                                 style="width: 42px; height: 42px; background-color: var(--color-secundario); font-size: 1.1rem;">
                                 @u.Nombre.Substring(0, 1).ToUpper()
                             </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="color: var(--color-texto-oscuro);">@u.Nombre</h6>
-                                <small class="text-muted text-capitalize">@u.Rol</small>
+                            <div class="text-start">
+                                <h6 class="mb-0 fw-bold text-dark">@u.Nombre</h6>
+                                <small class="text-muted text-capitalize" style="font-size: 0.8rem;">@u.Rol</small>
                             </div>
                         </div>
 
-                        <span class="text-muted"><i class="bi bi-chevron-right"></i></span>
+                        <i class="bi bi-chevron-right text-muted opacity-50"></i>
                     </button>
                 }
             }
+
+            <div id="mensajeNoResultados" class="text-center py-4 text-muted d-none">
+                <small>No se encontraron usuarios con ese nombre.</small>
+            </div>
         </div>
 
-        <div class="card-footer text-center bg-light py-3 border-top-0">
-            <small class="text-muted">¿No encuentras tu usuario? Contacta al supervisor.</small>
+        <div class="card-footer text-center bg-light py-2">
+            <small class="text-muted" style="font-size: 0.75rem;">Enflorarte Sistema v1.0</small>
         </div>
     </div>
 </div>
@@ -56,10 +73,10 @@
 <div class="modal fade" id="modalLogin" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 shadow" style="border-radius: 15px; overflow: hidden;">
-            <div class="modal-header border-0 pb-0">
+            <div class="modal-header border-0 pb-0 justify-content-end">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body px-4 pb-4">
+            <div class="modal-body px-4 pb-4 pt-0">
                 <partial name="~/Views/Shared/_FormularioSesion.cshtml" />
             </div>
         </div>
@@ -68,11 +85,53 @@
 
 @section Scripts {
     <script>
+        // 1. Script de Filtrado (El buscador)
+        function filtrarUsuarios() {
+            // Obtener texto del buscador en minúsculas
+            var input = document.getElementById("inputBuscador");
+            var filtro = input.value.toLowerCase();
+
+            // Obtener la lista y los items
+            var lista = document.getElementById("listaUsuarios");
+            var usuarios = lista.getElementsByClassName("usuario-item");
+            var hayResultados = false;
+
+            // Recorrer todos los usuarios y ocultar los que no coincidan
+            for (var i = 0; i < usuarios.length; i++) {
+                // Usamos el atributo data-nombre que pusimos en el HTML
+                var nombre = usuarios[i].getAttribute("data-nombre");
+
+                if (nombre.indexOf(filtro) > -1) {
+                    usuarios[i].classList.remove("d-none"); // Mostrar
+                    usuarios[i].classList.add("d-flex");    // Mantener display flex
+                    hayResultados = true;
+                } else {
+                    usuarios[i].classList.add("d-none");    // Ocultar
+                    usuarios[i].classList.remove("d-flex");
+                }
+            }
+
+            // Mostrar/Ocultar mensaje de vacío
+            var mensaje = document.getElementById("mensajeNoResultados");
+            if (hayResultados) {
+                mensaje.classList.add("d-none");
+            } else {
+                mensaje.classList.remove("d-none");
+            }
+        }
+
+        // 2. Script para abrir el Modal (Igual que antes)
         function abrirLogin(id, nombre) {
             document.getElementById('lblNombreUsuario').textContent = nombre;
             document.getElementById('inputUsuarioId').value = id;
             var myModal = new bootstrap.Modal(document.getElementById('modalLogin'));
             myModal.show();
+
+            // Opcional: Dar foco al campo de contraseña automáticamente
+            var modalEl = document.getElementById('modalLogin')
+            modalEl.addEventListener('shown.bs.modal', function () {
+                document.querySelector('input[name="Password"]').focus();
+            })
         }
     </script>
 }
