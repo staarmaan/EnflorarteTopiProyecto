@@ -84,6 +84,7 @@ namespace EnflorarteTopiProyecto.Controllers
             TempData["Toast.Type"] = "success";
 
             return RedirectToAction("Index");
+
         }
 
         public IActionResult Editar(int id)
