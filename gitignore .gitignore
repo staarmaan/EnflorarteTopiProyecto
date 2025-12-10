@@ -1,0 +1,8 @@
+# Binarios y objetos
+bin/
+obj/
+# Archivos generados
+wwwroot/uploads/
+# Config local (si procede)
+*.user
+*.swp
