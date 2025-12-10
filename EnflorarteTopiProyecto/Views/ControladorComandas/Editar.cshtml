@@ -1,8 +1,8 @@
 ﻿@model ComandaDto
 
-<h1 class="text-center mb=3">Nueva Comanda</h1>
+<h1 class="text-center mb=3">Editar Comanda</h1>
 
-<form asp-action="Editar" asp-controller="ControladorComandas" method="post">
+<form asp-action="Editar" asp-controller="ControladorComandas" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     @* en partial name, Reutilizamos el formulario de comanda (_FormularioComanda.cshtml) para la creacion. *@
     @* en view-data, le indicamos al formulario reutilizado que estamos creando. *@
@@ -12,3 +12,7 @@
     <button type="submit" class="btn btn-primary me-2">Guardar</button>
     <a class="btn btn-outline-primary" asp-controller="ControladorComandas" asp-action="Index" role="button">Cancelar</a>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

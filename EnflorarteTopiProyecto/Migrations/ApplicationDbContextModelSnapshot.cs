@@ -49,7 +49,6 @@ namespace EnflorarteTopiProyecto.Migrations
                         .HasColumnName("cliente_nombre");
 
                     b.Property<string>("ClienteTelefono")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)")
                         .HasColumnName("cliente_telefono");
@@ -75,7 +74,7 @@ namespace EnflorarteTopiProyecto.Migrations
                         .HasColumnType("nvarchar(300)")
                         .HasColumnName("foto_arreglo_ruta");
 
-                    b.Property<TimeSpan?>("HoraEntrega")
+                    b.Property<TimeSpan>("HoraEntrega")
                         .HasColumnType("time")
                         .HasColumnName("hora_entrega");
 
@@ -169,20 +168,20 @@ namespace EnflorarteTopiProyecto.Migrations
 
             modelBuilder.Entity("EnflorarteTopiProyecto.Models.Comanda", b =>
                 {
-                    b.HasOne("EnflorarteTopiProyecto.Models.Usuario", "Repartidor")
+                    b.HasOne("EnflorarteTopiProyecto.Models.Usuario", "RepartidorAsignado")
                         .WithMany()
                         .HasForeignKey("RepartidorId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("EnflorarteTopiProyecto.Models.Usuario", "Usuario")
+                    b.HasOne("EnflorarteTopiProyecto.Models.Usuario", "UsuarioCreador")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Repartidor");
+                    b.Navigation("RepartidorAsignado");
 
-                    b.Navigation("Usuario");
+                    b.Navigation("UsuarioCreador");
                 });
 #pragma warning restore 612, 618
         }
