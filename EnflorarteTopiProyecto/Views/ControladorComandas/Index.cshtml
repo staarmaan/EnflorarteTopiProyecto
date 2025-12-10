@@ -1,6 +1,7 @@
 ﻿@model List<Comanda>
 @{
     ViewData["Title"] = "Gestión de Comandas";
+    var esSupervisor = User?.Identity?.IsAuthenticated == true && User.IsInRole("Supervisor");
 }
 
 <div class="container py-5">
@@ -29,7 +30,7 @@
                             <th>Hora</th>
                             <th>Estado</th>
                             <th>Liquidado</th>
-                            <th class="text-end pe-4">Acciones</th>
+                            @if (esSupervisor){ <th class="text-end pe-4">Acciones</th> }
                         </tr>
                     </thead>
                     <tbody class="table-group-divider">
@@ -62,16 +63,19 @@
                                     <span class="@(comanda.Liquidado ? "text-success fw-bold" : "text-muted")">@liquidadoStr</span>
                                 </td>
 
-                                <td class="text-end pe-4" style="white-space:nowrap">
-                                    <button onclick="cargarModal('@Url.Action("Editar", "ControladorComandas", new { id = comanda.Id })', 'Editar Comanda')"
-                                            class="btn btn-outline-primary btn-sm me-1">
-                                        Editar
-                                    </button>
+                                @if (esSupervisor)
+                                {
+                                    <td class="text-end pe-4" style="white-space:nowrap">
+                                        <button onclick="cargarModal('@Url.Action("Editar", "ControladorComandas", new { id = comanda.Id })', 'Editar Comanda')"
+                                        class="btn btn-outline-primary btn-sm me-1">
+                                            Editar
+                                        </button>
 
-                                    <a class="btn btn-outline-danger btn-sm" asp-controller="ControladorComandas" asp-action="Eliminar" asp-route-id="@comanda.Id">
-                                        Eliminar
-                                    </a>
-                                </td>
+                                        <a class="btn btn-outline-danger btn-sm" asp-controller="ControladorComandas" asp-action="Eliminar" asp-route-id="@comanda.Id">
+                                            Eliminar
+                                        </a>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
