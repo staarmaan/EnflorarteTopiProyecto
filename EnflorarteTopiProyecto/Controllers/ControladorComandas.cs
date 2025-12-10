@@ -1,6 +1,7 @@
 ﻿using EnflorarteTopiProyecto.Models;
 using EnflorarteTopiProyecto.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
@@ -21,14 +22,18 @@ namespace EnflorarteTopiProyecto.Controllers
 
         public IActionResult Crear()
         {
+            CargarListasViewBag(); // JENNY: Cargar las listas para los usuarios y rep
             return View();
         }
 
         [HttpPost]
         public IActionResult Crear(ComandaDto comandaDto)
         {
+            ValidarReglasNegocio(comandaDto); //JENNY: Validación personalizada de Lógica de Negocio
+
             if (!ModelState.IsValid)
             {
+                CargarListasViewBag(); //JENNY: Si hay error, recargamos las listas 
                 return View(comandaDto);
             }
 
@@ -54,6 +59,8 @@ namespace EnflorarteTopiProyecto.Controllers
                     return View(comandaDto);
                 }
             }
+
+            ProcesarAnticipoParaGuardar(comandaDto); //JENNY: Si es porcentaje, calcula el dinero $ antes de guardar en la BD.
 
             // Crear nueva comanda si es valida.
             var comandaNueva = new Comanda
@@ -96,6 +103,8 @@ namespace EnflorarteTopiProyecto.Controllers
                 return RedirectToAction("Index");
             }
 
+            CargarListasViewBag();//JENNY: cargamos listas aqui tambien
+
             var comandaDto = new ComandaDto
             {
                 Id = id,
@@ -118,6 +127,8 @@ namespace EnflorarteTopiProyecto.Controllers
                 AnticipoTipo = comandaAEditar.AnticipoTipo,
                 AnticipoPagoTotal = comandaAEditar.AnticipoPagoTotal
             };
+
+            ProcesarAnticipoParaVista(comandaDto); //JENNY: convierte el dinero a porcentaje para mostrarlo en la vista
 
             return View(comandaDto);
         }
@@ -161,6 +172,8 @@ namespace EnflorarteTopiProyecto.Controllers
                 }
             }
 
+                ProcesarAnticipoParaGuardar(comandaDto); //JENNY: Si cambiaron el anticipo a porcentaje, recalculamos el dinero $ antes de actualizar la BD.
+
             // Actualizar los campos de la comanda existente.
             comandaExistente.UsuarioId = comandaDto.UsuarioId;
             comandaExistente.RepartidorId = comandaDto.RepartidorId;
@@ -203,6 +216,67 @@ namespace EnflorarteTopiProyecto.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        public void CargarListasViewBag() //JENNY: Metodo para cargar laslistas
+        {
+            ViewBag.ListaUsuarios = new SelectList(context.Usuarios, "Id", "Nombre"); //Para el usuario creador
+
+            // Trae al usuario si su rol es repartidor o si es Supervisor"
+            var repartidores = context.Usuarios
+                .Where(u => u.Rol == RolUsuario.repartidor || u.Rol == RolUsuario.supervisor)
+                .ToList();
+
+            ViewBag.ListaRepartidores = new SelectList(repartidores, "Id", "Nombre"); //Para los repartidores (rep y sup)
+        }
+
+        private void ValidarReglasNegocio(ComandaDto dto) //JENNY: Validaciones
+        {
+            // Dirección obligatoria si es Envío
+            if (dto.TipoEntrega == TipoEntrega.envio && string.IsNullOrWhiteSpace(dto.DireccionEntrega))
+            {
+                ModelState.AddModelError("DireccionEntrega", "La dirección es obligatoria para envíos a domicilio.");
+            }
+
+            // Validación de Anticipos
+            if (dto.AnticipoTipo.HasValue)
+            {
+                if (dto.AnticipoTipo.Value == AnticipoTipos.porcentaje)
+                {
+                    if (dto.AnticipoPagoTotal <= 0 || dto.AnticipoPagoTotal > 100)
+                    {
+                        ModelState.AddModelError("AnticipoPagoTotal", "El porcentaje debe estar entre 1% y 100%.");
+                    }
+                }
+                else if (dto.AnticipoTipo.Value == AnticipoTipos.minimo)
+                {
+                    if (dto.AnticipoPagoTotal <= 0)
+                    {
+                        ModelState.AddModelError("AnticipoPagoTotal", "El monto del anticipo debe ser mayor a 0.");
+                    }
+                }
+            }
+        }
+
+        // Función A: Convierte Porcentaje a dinero para la Base de Datos (Ej. el usuario pone 50% de anticipo (precio:400) pero en la BD se guarda 200)
+        private void ProcesarAnticipoParaGuardar(ComandaDto dto)
+        {
+            if (dto.AnticipoTipo == AnticipoTipos.porcentaje && dto.PrecioArreglo > 0)
+            {
+                // (Precio * Porcentaje) / 100
+                dto.AnticipoPagoTotal = (dto.PrecioArreglo * dto.AnticipoPagoTotal) / 100;
+            }
+        }
+
+        // Función B: Convierte dinero a porcentaje para la Vista (Editar) (Para que cuando entre a editar aparezca el 50% en vez de 200)
+        private void ProcesarAnticipoParaVista(ComandaDto dto)
+        {
+            if (dto.AnticipoTipo == AnticipoTipos.porcentaje && dto.PrecioArreglo > 0)
+            {
+                // (Anticipo / Precio) * 100
+                decimal porcentaje = (dto.AnticipoPagoTotal / dto.PrecioArreglo) * 100;
+                dto.AnticipoPagoTotal = Math.Round(porcentaje, 2); // Redondeamos para que se vea bien
+            }
         }
     }
 }
