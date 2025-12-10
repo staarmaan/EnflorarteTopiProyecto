@@ -84,12 +84,13 @@ namespace EnflorarteTopiProyecto.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Salir()
+        public async Task<IActionResult> CerrarSesion()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             TempData["Toast.Message"] = "Sesión cerrada.";
             TempData["Toast.Type"] = "info";
-            return RedirectToAction("Index", "Home");
+            Console.WriteLine("Sesión cerrada. aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+            return RedirectToAction("Index");
         }
     }
 }

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
-    public class AccesoDenegadoController : Controller
+    public class ControladorAccesoDenegado : Controller
     {
         [HttpGet]
         public IActionResult Index()

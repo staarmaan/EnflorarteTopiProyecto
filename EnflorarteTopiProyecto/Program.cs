@@ -22,7 +22,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
     {
         options.LoginPath = "/ControladorSesion/Index";
-        options.LogoutPath = "/ControladorSesion/Salir";
+        options.LogoutPath = "/ControladorSesion/CerrarSesion";
         options.AccessDeniedPath = "/AccesoDenegado";
         options.SlidingExpiration = true;
     });

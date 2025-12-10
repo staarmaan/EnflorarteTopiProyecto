@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
+    [Authorize]
     public class ControladorComandas : Controller
     {
         const int MAX_IMAGEN_BYTES = 20 * 1024 * 1024; // Tamaño máximo de imagen permitida.
