@@ -1,6 +1,7 @@
 ﻿using EnflorarteTopiProyecto.Models;
 using EnflorarteTopiProyecto.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
@@ -73,6 +74,7 @@ namespace EnflorarteTopiProyecto.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Crear(ComandaDto comandaDto)
         {
             if (!ModelState.IsValid)
@@ -145,6 +147,7 @@ namespace EnflorarteTopiProyecto.Controllers
 
         }
 
+        [Authorize(Roles = "supervisor")]
         public IActionResult Editar(int id)
         {
             var comandaAEditar = context.Comandas.Find(id);
@@ -178,6 +181,8 @@ namespace EnflorarteTopiProyecto.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "supervisor")]
         public IActionResult Editar(int id, ComandaDto comandaDto)
         {
             var comandaExistente = context.Comandas.Find(id);
@@ -263,6 +268,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "supervisor")]
         public IActionResult Eliminar(int id)
         {
             var comandaAEliminar = context.Comandas.Find(id);

@@ -49,7 +49,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 contrasenaValida = false;
             }
 
-            //contrasenaValida = true; // PARA TESTEAR SIN IMPORTAR LA CONTRASEÑA
+            //contrasenaValida = true; // PARA TESTEAR SIN IMPORTAR LA CONTRASEÑA!!
 
             if (!contrasenaValida)
             {
