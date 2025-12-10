@@ -107,12 +107,25 @@
             $.get(url, function(data) { $("#contenidoModal").html(data); });
         }
 
-        $(document).on('submit', '#contenidoModal form', function(e) {
+                $(document).on('submit', '#contenidoModal form', function(e) {
             e.preventDefault();
-            var form = $(this);
-            $.post(form.attr('action'), form.serialize(), function(response) {
-                if (response.indexOf('<!DOCTYPE html>') > -1) { location.reload(); }
-                else { $("#contenidoModal").html(response); }
+
+            // Usar FormData es OBLIGATORIO para enviar archivos por AJAX
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.indexOf('<!DOCTYPE html>') > -1) {
+                        location.reload();
+                    } else {
+                        $("#contenidoModal").html(response);
+                    }
+                }
             });
         });
     </script>
