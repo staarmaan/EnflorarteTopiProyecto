@@ -29,7 +29,10 @@
             string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
         }
     }
-	@if (!ocultarNav){
+
+    @* Verificamos si la vista pidió ocultar la navegación *@
+    @if (ViewData["OcultarNav"] == null || (bool)ViewData["OcultarNav"] == false)
+    {
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 navbar-enflorarte sticky-top">
             <div class="container">
