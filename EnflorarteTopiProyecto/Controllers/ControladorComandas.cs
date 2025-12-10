@@ -55,6 +55,42 @@ namespace EnflorarteTopiProyecto.Controllers
                 }
             }
 
+            // Manejo de archivo de imagen si fue subido
+            if (comandaDto.FotoArregloArchivo != null && comandaDto.FotoArregloArchivo.Length > 0)
+            {
+                var permitted = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+                if (!permitted.Contains(comandaDto.FotoArregloArchivo.ContentType))
+                {
+                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), "Solo se permiten imágenes (jpg, png, webp, gif).");
+                    return View(comandaDto);
+                }
+
+                const long maxBytes = 5 * 1024 * 1024; // 5MB
+                if (comandaDto.FotoArregloArchivo.Length > maxBytes)
+                {
+                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), "La imagen supera el tamaño permitido (5 MB).");
+                    return View(comandaDto);
+                }
+
+                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsRoot))
+                {
+                    Directory.CreateDirectory(uploadsRoot);
+                }
+
+                var ext = Path.GetExtension(comandaDto.FotoArregloArchivo.FileName);
+                var fileName = $"{Guid.NewGuid():N}{ext}";
+                var filePath = Path.Combine(uploadsRoot, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    comandaDto.FotoArregloArchivo.CopyTo(stream);
+                }
+
+                // Establecer la ruta pública
+                comandaDto.FotoArregloRuta = $"/uploads/{fileName}";
+            }
+
             // Crear nueva comanda si es valida.
             var comandaNueva = new Comanda
             {
@@ -158,6 +194,54 @@ namespace EnflorarteTopiProyecto.Controllers
                     TempData["Toast.Message"] = "Repartidor especificado no existe.";
                     TempData["Toast.Type"] = "warning";
                     return View(comandaDto);
+                }
+            }
+
+            // Manejo de imagen en edición
+            // Si se sube una nueva imagen, reemplazar. Si no, conservar la existente a menos que se solicite eliminar.
+            if (comandaDto.FotoArregloArchivo != null && comandaDto.FotoArregloArchivo.Length > 0)
+            {
+                var permitted = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+                if (!permitted.Contains(comandaDto.FotoArregloArchivo.ContentType))
+                {
+                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), "Solo se permiten imágenes (jpg, png, webp, gif).");
+                    return View(comandaDto);
+                }
+
+                const long maxBytes = 5 * 1024 * 1024; // 5MB
+                if (comandaDto.FotoArregloArchivo.Length > maxBytes)
+                {
+                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), "La imagen supera el tamaño permitido (5 MB).");
+                    return View(comandaDto);
+                }
+
+                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsRoot))
+                {
+                    Directory.CreateDirectory(uploadsRoot);
+                }
+
+                var ext = Path.GetExtension(comandaDto.FotoArregloArchivo.FileName);
+                var fileName = $"{Guid.NewGuid():N}{ext}";
+                var filePath = Path.Combine(uploadsRoot, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    comandaDto.FotoArregloArchivo.CopyTo(stream);
+                }
+
+                comandaDto.FotoArregloRuta = $"/uploads/{fileName}";
+            }
+            else
+            {
+                // No se subió nueva imagen: conservar la existente salvo que se haya marcado eliminar
+                if (comandaDto.EliminarFoto)
+                {
+                    comandaDto.FotoArregloRuta = null;
+                }
+                else
+                {
+                    comandaDto.FotoArregloRuta = comandaExistente.FotoArregloRuta;
                 }
             }
 

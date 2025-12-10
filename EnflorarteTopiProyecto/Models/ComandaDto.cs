@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace EnflorarteTopiProyecto.Models
 {
@@ -76,6 +77,14 @@ namespace EnflorarteTopiProyecto.Models
         [Display(Name = "ruta de foto del arreglo")]
         [StringLength(300, ErrorMessage = "La {0} no debe exceder {1} carácteres.")]
         public string? FotoArregloRuta { get; set; }
+
+        // Archivo de imagen subido desde el formulario
+        [Display(Name = "foto del arreglo (archivo)")]
+        public IFormFile? FotoArregloArchivo { get; set; }
+
+        // Edición: marcar para eliminar la foto existente
+        [Display(Name = "eliminar foto existente")]
+        public bool EliminarFoto { get; set; }
 
         // Anticipo
         [Display(Name = "tipo de anticipo")]

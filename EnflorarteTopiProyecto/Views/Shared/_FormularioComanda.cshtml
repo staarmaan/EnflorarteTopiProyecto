@@ -52,7 +52,7 @@
                     <option value="" selected hidden>Selecciona un tipo</option>
                     <option value="envio">Envío</option>
                     <option value="recoger">Recoger</option>
-                    <option value="otro">Otro</option>
+                    <!-- <option value="otro">Otro</option> -->
                 </select>
                 <span asp-validation-for="TipoEntrega" class="text-danger"></span>
             </div>
@@ -74,6 +74,16 @@
             </div>
         </div>
 
+        @* Seleccionar hora con un panelito *@
+        <div class="row mb-3">
+            <label class="col-sm-4 col-form-label">Hora de entrega</label>
+            <div class="col-sm-8">
+                <input class="form-control" asp-for="HoraEntrega" type="time" />
+                <span asp-validation-for="HoraEntrega" class="text-danger"></span>
+            </div>
+        </div>
+
+        @* Ingresar la hora manalmente (comentado, porque me parece mas intuitivo la forma anterior, aunque no funcione bien con mi navegador, que es Opera)
         <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Hora de entrega</label>
             <div class="col-sm-8">
@@ -147,6 +157,7 @@
                 </script>
             </div>
         </div>
+        *@
 
         <!-- Arreglo -->
         <div class="row mb-3">
@@ -173,11 +184,88 @@
             </div>
         </div>
 
+        
+
+        <!-- Carga de imagen del arreglo -->
         <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Ruta de la foto del arreglo</label>
+            <label class="col-sm-4 col-form-label">Foto del arreglo (archivo)</label>
             <div class="col-sm-8">
-                <input class="form-control" asp-for="FotoArregloRuta" />
-                <span asp-validation-for="FotoArregloRuta" class="text-danger"></span>
+                <input id="fotoArregloInput" class="form-control" asp-for="FotoArregloArchivo" type="file" accept="image/*" />
+                <span asp-validation-for="FotoArregloArchivo" class="text-danger"></span>
+
+                <!-- Contenedor de vista previa: se muestra si hay ruta existente o si se selecciona un archivo -->
+                <div id="fotoArregloPreviewContainer" class="mt-2" style="display:@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "none" : "block");">
+                    <img id="fotoArregloPreview" src="@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "" : Model.FotoArregloRuta)" alt="Foto arreglo" class="img-thumbnail" style="max-height: 200px;" />
+                </div>
+
+                <!-- Control para marcar eliminación de foto existente o seleccionada (creación y edición) -->
+                <input type="hidden" asp-for="EliminarFoto" />
+                <button type="button" id="btnEliminarFoto" class="btn btn-outline-danger btn-sm mt-2">Eliminar imagen</button>
+
+                <script>
+                    (function () {
+                        var input = document.getElementById('fotoArregloInput');
+                        var previewImg = document.getElementById('fotoArregloPreview');
+                        var previewContainer = document.getElementById('fotoArregloPreviewContainer');
+                        var btnEliminar = document.getElementById('btnEliminarFoto');
+                        var eliminarFotoField = document.getElementById('EliminarFoto');
+
+                        function clearPreview() {
+                            if (previewImg) {
+                                previewImg.src = '';
+                            }
+                            if (previewContainer) {
+                                previewContainer.style.display = 'none';
+                            }
+                        }
+
+                        function showPreview(url) {
+                            if (!previewImg || !previewContainer) return;
+                            previewImg.src = url;
+                            previewContainer.style.display = 'block';
+                        }
+
+                        input.addEventListener('change', function (e) {
+                            var file = e.target.files && e.target.files[0];
+                            if (!file) {
+                                // Si no hay archivo, intenta mantener la ruta existente (edición),
+                                // o esconder en creación
+                                var existingSrc = previewImg && previewImg.getAttribute('src');
+                                if (existingSrc) {
+                                    previewContainer.style.display = 'block';
+                                } else {
+                                    clearPreview();
+                                }
+                                return;
+                            }
+
+                            if (!file.type || file.type.indexOf('image/') !== 0) {
+                                // No es imagen: limpiar
+                                clearPreview();
+                                return;
+                            }
+
+                            // Crear objeto URL temporal para vista previa
+                            var url = URL.createObjectURL(file);
+                            showPreview(url);
+
+                            // Liberar el objeto URL cuando ya no se necesite (por cambio o submit)
+                            input.addEventListener('blur', function () {
+                                try { URL.revokeObjectURL(url); } catch (_) { /* noop */ }
+                            }, { once: true });
+                        });
+
+                        if (btnEliminar) {
+                            btnEliminar.addEventListener('click', function () {
+                                // Marcar campo para eliminar en el modelo y limpiar vista previa
+                                if (eliminarFotoField) eliminarFotoField.value = 'true';
+                                clearPreview();
+                                // También limpiar cualquier archivo seleccionado
+                                if (input) input.value = '';
+                            });
+                        }
+                    })();
+                </script>
             </div>
         </div>
 
