@@ -32,6 +32,29 @@
             </div>
         </div>
 
+        <div class="row mb-3">
+            <label class="col-sm-4 col-form-label">Estado de la comanda</label>
+            <div class="col-sm-8">
+                <select class="form-select" asp-for="Estado">
+                    <option value="solicitado">Solicitado</option>
+                    <option value="cancelado">Cancelado</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_proceso">En proceso</option>
+                    <option value="listo">Listo</option>
+                    <option value="entregado">Entregado</option>
+                </select>
+                <span asp-validation-for="Estado" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label class="col-sm-4 col-form-label">Liquidado</label>
+            <div class="col-sm-8 d-flex align-items-center">
+                <input class="form-check-input me-2" type="checkbox" asp-for="Liquidado" />
+                <span asp-validation-for="Liquidado" class="text-danger"></span>
+            </div>
+        </div>
+
         <hr class="text-muted opacity-25">
 
         <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Cliente y Entrega</h6>

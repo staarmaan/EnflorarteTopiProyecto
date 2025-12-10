@@ -1,7 +1,7 @@
 ﻿@model List<Comanda>
 @{
     ViewData["Title"] = "Gestión de Comandas";
-    var esSupervisor = User?.Identity?.IsAuthenticated == true && User.IsInRole("Supervisor");
+    var esSupervisor = User?.Identity?.IsAuthenticated == true && (User.IsInRole("supervisor") || User.IsInRole("ventas"));
 }
 
 <div class="container py-5">

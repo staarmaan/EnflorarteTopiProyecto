@@ -132,6 +132,8 @@ namespace EnflorarteTopiProyecto.Controllers
             {
                 UsuarioId = comandaDto.UsuarioId,
                 RepartidorId = comandaDto.RepartidorId,
+                Estado = comandaDto.Estado,
+                Liquidado = comandaDto.Liquidado,
                 ClienteNombre = comandaDto.ClienteNombre,
                 ClienteTelefono = comandaDto.ClienteTelefono,
                 TipoEntrega = comandaDto.TipoEntrega,
@@ -174,6 +176,8 @@ namespace EnflorarteTopiProyecto.Controllers
                 Id = id,
                 UsuarioId = comandaAEditar.UsuarioId,
                 RepartidorId = comandaAEditar.RepartidorId,
+                Estado = comandaAEditar.Estado,
+                Liquidado = comandaAEditar.Liquidado,
                 ClienteNombre = comandaAEditar.ClienteNombre,
                 ClienteTelefono = comandaAEditar.ClienteTelefono,
                 TipoEntrega = comandaAEditar.TipoEntrega,
@@ -262,6 +266,8 @@ namespace EnflorarteTopiProyecto.Controllers
             // Actualizar los campos de la comanda existente.
             comandaExistente.UsuarioId = comandaDto.UsuarioId;
             comandaExistente.RepartidorId = comandaDto.RepartidorId;
+            comandaExistente.Estado = comandaDto.Estado;
+            comandaExistente.Liquidado = comandaDto.Liquidado;
             comandaExistente.ClienteNombre = comandaDto.ClienteNombre;
             comandaExistente.ClienteTelefono = comandaDto.ClienteTelefono;
             comandaExistente.TipoEntrega = comandaDto.TipoEntrega;
