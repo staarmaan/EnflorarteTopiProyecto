@@ -77,9 +77,20 @@
             </div>
         </div>
 
-        <div class="row mb-4">
+        @* Seleccionar hora con un panelito *@
+        <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Hora de entrega</label>
             <div class="col-sm-8">
+                <input class="form-control" asp-for="HoraEntrega" type="time" />
+                <span asp-validation-for="HoraEntrega" class="text-danger"></span>
+            </div>
+        </div>
+
+        @* Ingresar la hora manalmente (comentado, porque me parece mas intuitivo la forma anterior, aunque no funcione bien con mi navegador, que es Opera)
+        <div class="row mb-3">
+            <label class="col-sm-4 col-form-label">Hora de entrega</label>
+            <div class="col-sm-8">
+                <!-- Controles personalizados para permitir AM/PM -->
                 <div class="input-group">
                     <input id="horaEntregaHora" class="form-control" type="number" min="1" max="12" placeholder="hh" />
                     <span class="input-group-text">:</span>
@@ -89,18 +100,20 @@
                         <option value="PM">PM</option>
                     </select>
                 </div>
-
+                <!-- Campo oculto enlazado al modelo en formato 24h HH:mm -->
                 <input id="horaEntregaHidden" class="form-control" asp-for="HoraEntrega" type="hidden" />
                 <span asp-validation-for="HoraEntrega" class="text-danger"></span>
-
                 <script>
                     (function () {
                         function pad(n) { return n.toString().padStart(2, '0'); }
                         function to24h(hour12, meridian) {
                             var h = parseInt(hour12, 10);
                             if (isNaN(h)) return null;
-                            if (meridian === 'AM') { return h === 12 ? 0 : h; }
-                            else { return h === 12 ? 12 : h + 12; }
+                            if (meridian === 'AM') {
+                                return h === 12 ? 0 : h;
+                            } else {
+                                return h === 12 ? 12 : h + 12;
+                            }
                         }
 
                         var hInput = document.getElementById('horaEntregaHora');
@@ -114,19 +127,19 @@
                             var mer = meridianSel.value;
                             var h24 = to24h(hour12, mer);
                             var m = parseInt(minute, 10);
-                            if (h24 == null || isNaN(m)) return;
+                            if (h24 == null || isNaN(m)) return; // espera valores válidos
                             hidden.value = pad(h24) + ':' + pad(m);
                         }
 
-                        if(hInput && mInput && meridianSel){
-                            hInput.addEventListener('input', updateHidden);
-                            mInput.addEventListener('input', updateHidden);
-                            meridianSel.addEventListener('change', updateHidden);
-                        }
+                        hInput.addEventListener('input', updateHidden);
+                        mInput.addEventListener('input', updateHidden);
+                        meridianSel.addEventListener('change', updateHidden);
 
+                        // Inicializa controles desde el valor actual del modelo si existe
                         try {
-                            if (hidden && hidden.value) {
+                            if (hidden.value) {
                                 var raw = hidden.value.trim();
+                                // acepta HH:mm o HH:mm:ss
                                 var parts = raw.split(':');
                                 if (parts.length >= 2) {
                                     var h = parseInt(parts[0], 10);
@@ -134,18 +147,20 @@
                                     if (!isNaN(h) && !isNaN(mm)) {
                                         var mer = h >= 12 ? 'PM' : 'AM';
                                         var hour12 = (h % 12) === 0 ? 12 : (h % 12);
-                                        if(hInput) hInput.value = pad(hour12);
-                                        if(mInput) mInput.value = pad(mm);
-                                        if(meridianSel) meridianSel.value = mer;
+                                        hInput.value = pad(hour12);
+                                        mInput.value = pad(mm);
+                                        meridianSel.value = mer;
                                     }
                                 }
                             }
+                            // Asegura que el campo oculto esté sincronizado al cargar
                             updateHidden();
                         } catch (e) { /* noop */ }
                     })();
                 </script>
             </div>
         </div>
+        *@
 
         <hr class="text-muted opacity-25">
 
