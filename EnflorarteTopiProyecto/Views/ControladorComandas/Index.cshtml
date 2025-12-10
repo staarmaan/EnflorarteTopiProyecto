@@ -1,55 +1,119 @@
 ﻿@model List<Comanda>
+@{
+    ViewData["Title"] = "Gestión de Comandas";
+}
 
-<h1 class="text-Center">Lista de Comandas</h1>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-6 m-0">Lista de Comandas</h1>
+        <a href="javascript:void(0);" onclick="cargarModal('@Url.Action("Crear", "ControladorComandas")', 'Nueva Comanda')" class="btn btn-primary">
+            + Nueva Comanda
+        </a>
+    </div>
 
-<a class="btn btn-primary mb-1" asp-controller="ControladorComandas" asp-action="Crear">Crear comanda</a>
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-enflorarte table-hover mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Cliente</th>
+                            <th>Teléfono</th>
+                            <th>Arreglo</th>
+                            <th>Precio</th>
+                            <th>Anticipo</th>
+                            <th>Envío</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                            <th>Liquidado</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        @foreach (var comanda in Model)
+                        {
+                            // TU LÓGICA ORIGINAL
+                            var liquidadoStr = comanda.Liquidado ? "Sí" : "No";
+                            var fechaStr = comanda.FechaEntrega.ToString("dd/MM/yyyy");
+                            var horaStr = $"{(((comanda.HoraEntrega.Hours % 12) == 0) ? 12 : (comanda.HoraEntrega.Hours % 12)):00}:{comanda.HoraEntrega.Minutes:00} {(comanda.HoraEntrega.Hours >= 12 ? "PM" : "AM")}";
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Cliente</th>
-            <th>Teléfono</th>
-            <th>Arreglo</th>
-            <th>Precio</th>
-            <th>Anticipo</th>
-            <th>Envío</th>
-            <th>Tipo</th>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Estado</th>
-            <th>Liquidado</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody class="table-group-divider">
-        @foreach (var comanda in Model)
-        {
-            var liquidadoStr = comanda.Liquidado ? "Sí" : "No";
-            var fechaStr = comanda.FechaEntrega.ToString("dd/MM/yyyy");
-            var horaStr = $"{(((comanda.HoraEntrega.Hours % 12) == 0) ? 12 : (comanda.HoraEntrega.Hours % 12)):00}:{comanda.HoraEntrega.Minutes:00} {(comanda.HoraEntrega.Hours >= 12 ? "PM" : "AM")}";
-            <tr>
-                <td>@comanda.Id</td>
-                <td>@comanda.ClienteNombre</td>
-                <td>@comanda.ClienteTelefono</td>
-                <td>@comanda.NombreArreglo</td>
-                <td>@comanda.PrecioArreglo.ToString("C")</td>
-                <td>@comanda.AnticipoPagoTotal.ToString("C")</td>
-                <td>@comanda.PagoEnvio.ToString("C")</td>
-                <td>@comanda.TipoEntrega</td>
-                <td>@fechaStr</td>
-                <td>@horaStr</td>
-                <td>@comanda.Estado</td>
-                <td>@liquidadoStr</td>
-                <td style="white-space:nowrap">
-                    <a class="btn btn-primary btn-sm" asp-controller="ControladorComandas" asp-action="Editar" asp-route-id="@comanda.Id">
-                        Editar
-                    </a>
-                    <a class="btn btn-primary btn-sm" asp-controller="ControladorComandas" asp-action="Eliminar" asp-route-id="@comanda.Id">
-                        Eliminar
-                    </a>
-                </td>
-            </tr>
+                            // Lógica visual extra para estados (opcional, puedes quitar las clases badge si prefieres texto plano)
+                            string badgeClass = comanda.Estado.ToString() == "entregado" ? "bg-success" : "bg-secondary";
+
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">@comanda.Id</td>
+                                <td class="fw-bold">@comanda.ClienteNombre</td>
+                                <td>@comanda.ClienteTelefono</td>
+                                <td>@comanda.NombreArreglo</td>
+                                <td>@comanda.PrecioArreglo.ToString("C")</td>
+                                <td>@comanda.AnticipoPagoTotal.ToString("C")</td>
+                                <td>@comanda.PagoEnvio.ToString("C")</td>
+                                <td class="text-capitalize">@comanda.TipoEntrega</td>
+                                <td>@fechaStr</td>
+                                <td>@horaStr</td>
+                                <td>
+                                    <span class="badge @badgeClass rounded-pill fw-normal text-capitalize">@comanda.Estado</span>
+                                </td>
+
+                                <td>
+                                    <span class="@(comanda.Liquidado ? "text-success fw-bold" : "text-muted")">@liquidadoStr</span>
+                                </td>
+
+                                <td class="text-end pe-4" style="white-space:nowrap">
+                                    <button onclick="cargarModal('@Url.Action("Editar", "ControladorComandas", new { id = comanda.Id })', 'Editar Comanda')"
+                                            class="btn btn-outline-primary btn-sm me-1">
+                                        Editar
+                                    </button>
+
+                                    <a class="btn btn-outline-danger btn-sm" asp-controller="ControladorComandas" asp-action="Eliminar" asp-route-id="@comanda.Id">
+                                        Eliminar
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalUniversal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border: none; border-radius: 10px; overflow: hidden;">
+            <div class="modal-header" style="background-color: var(--color-primario); color: white;">
+                <h5 class="modal-title" id="modalTitulo" style="font-family: var(--fuente-serif-elegante);">Título</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="contenidoModal">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function cargarModal(url, titulo) {
+            $("#modalTitulo").text(titulo);
+            $("#contenidoModal").html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
+            var myModal = new bootstrap.Modal(document.getElementById('modalUniversal'));
+            myModal.show();
+            $.get(url, function(data) { $("#contenidoModal").html(data); });
         }
-    </tbody>
-</table>
+
+        $(document).on('submit', '#contenidoModal form', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.post(form.attr('action'), form.serialize(), function(response) {
+                if (response.indexOf('<!DOCTYPE html>') > -1) { location.reload(); }
+                else { $("#contenidoModal").html(response); }
+            });
+        });
+    </script>
+}

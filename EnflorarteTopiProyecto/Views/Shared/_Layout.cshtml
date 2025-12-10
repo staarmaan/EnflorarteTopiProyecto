@@ -13,40 +13,65 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/EnflorarteTopiProyecto.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Enflorarte.css" />
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    @if (!ocultarNav)
+    @{
+        string IsActive(string controller, string action)
         {
-            <header>
-                <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-                    <div class="container">
-                        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Enflorarte Floreria</a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                            <ul class="navbar-nav flex-grow-1">
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="ControladorUsuarios" asp-action="Index">Usuarios</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="ControladorComandas" asp-action="Index">Comandas</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </nav>
-            </header>
+            var routeData = ViewContext.RouteData.Values;
+            var currentController = routeData["controller"] as string;
+            var currentAction = routeData["action"] as string;
+
+            // Si el controlador y la acción coinciden, devuelve "active", si no, devuelve vacío
+            return (string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
         }
-        <div class="container">
+    }
+
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 navbar-enflorarte sticky-top">
+            <div class="container">
+
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/image_b087d3.jpg" alt="Logo Enflorarte" height="50" class="me-2 d-inline-block align-text-top">
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-center">
+
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+
+                        <li class="nav-item">
+                            <a class="nav-link @IsActive("Home", "Index")" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link @IsActive("ControladorUsuarios", "Index")" asp-area="" asp-controller="ControladorUsuarios" asp-action="Index">Usuarios</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link @IsActive("ControladorComandas", "index") text-dark" asp-area="" asp-controller="ControladorComandas" asp-action="Index">Comandas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+
+                    </ul>
+
+                    <div class="d-none d-sm-block" style="width: 150px;">
+                    </div>
+
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
@@ -54,7 +79,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - EnflorarteTopiProyecto - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2016 - En Flor Arte - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
