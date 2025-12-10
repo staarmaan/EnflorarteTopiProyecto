@@ -44,5 +44,14 @@
                    placeholder="******" />
             <span asp-validation-for="ConfirmarContrasena" class="text-danger small"></span>
         </div>
+
+        <div class="mb-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" asp-for="Activo" />
+                <label class="form-check-label text-muted small text-uppercase fw-bold" asp-for="Activo">
+                    @(esEdicion ? "Usuario Activo" : "Crear como Usuario Activo")
+                </label>
+            </div>
+        </div>
     </div>
 </div>
