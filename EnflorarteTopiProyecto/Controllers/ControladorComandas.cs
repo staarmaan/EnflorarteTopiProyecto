@@ -148,7 +148,7 @@ namespace EnflorarteTopiProyecto.Controllers
 
         }
 
-        [Authorize(Roles = "supervisor")]
+        [Authorize(Roles = "ventas")]
         public IActionResult Editar(int id)
         {
             var comandaAEditar = context.Comandas.Find(id);
@@ -183,7 +183,7 @@ namespace EnflorarteTopiProyecto.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "supervisor")]
+        [Authorize(Roles = "ventas")]
         public IActionResult Editar(int id, ComandaDto comandaDto)
         {
             var comandaExistente = context.Comandas.Find(id);

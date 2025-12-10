@@ -23,7 +23,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/ControladorSesion/Index";
         options.LogoutPath = "/ControladorSesion/CerrarSesion";
-        options.AccessDeniedPath = "/AccesoDenegado";
+        options.AccessDeniedPath = "/ControladorAccesoDenegado/Index";
         options.SlidingExpiration = true;
     });
 

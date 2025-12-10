@@ -7,7 +7,7 @@ namespace EnflorarteTopiProyecto.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return View();
+            return View("~/Views/AccesoDenegado/Index.cshtml");
         }
     }
 }
