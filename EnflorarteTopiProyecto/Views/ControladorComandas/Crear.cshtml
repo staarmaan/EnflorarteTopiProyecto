@@ -1,18 +1,16 @@
 ﻿@model ComandaDto
-
-<h1 class="text-center mb=3">Nueva Comanda</h1>
-
-<form asp-action="Crear" asp-controller="ControladorComandas" method="post" enctype="multipart/form-data">
-    @Html.AntiForgeryToken()
-    @* en partial name, Reutilizamos el formulario de comanda (_FormularioComanda.cshtml) para la creacion. *@
-    @* en view-data, le indicamos al formulario reutilizado que estamos creando. *@
-    <partial name="~/Views/Shared/_FormularioComanda.cshtml"
-             model="Model"
-             view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", false } }' />
-    <button type="submit" class="btn btn-primary me-2">Confirmar</button>
-    <a class="btn btn-outline-primary" asp-controller="ControladorComandas" asp-action="Index" role="button">Cancelar</a>
-</form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+@{
+    Layout = null;
 }
+
+<div class="p-2">
+    <form asp-action="Crear" asp-controller="ControladorComandas" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <partial name="~/Views/Shared/_FormularioComanda.cshtml" model="Model" view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", false } }' />
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary px-4">Crear Pedido</button>
+        </div>
+    </form>
+</div>

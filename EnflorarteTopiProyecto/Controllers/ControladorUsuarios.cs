@@ -1,11 +1,12 @@
 ﻿using EnflorarteTopiProyecto.Models;
 using EnflorarteTopiProyecto.Service;
-using Microsoft.AspNetCore.Mvc;
-
 using EnflorarteTopiProyecto.Utils;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
+    [Authorize(Roles = "supervisor")] // Solo los supervisores pueden manejar usuarios.
     public class ControladorUsuarios : Controller
     {
         private readonly ApplicationDbContext context;
