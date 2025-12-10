@@ -6,11 +6,59 @@ namespace EnflorarteTopiProyecto.Controllers
 {
     public class ControladorComandas : Controller
     {
+        const int MAX_IMAGEN_BYTES = 20 * 1024 * 1024; // Tamaño máximo de imagen permitida.
+
         private readonly ApplicationDbContext context;
 
         public ControladorComandas(ApplicationDbContext context)
         {
             this.context = context;
+        }
+
+        private (bool ok, string? rutaPublica, string? error) ProcesarImagen(IFormFile archivo, int maxBytes)
+        {
+            if (archivo == null || archivo.Length <= 0)
+            {
+                return (false, null, "No se proporcionó archivo.");
+            }
+
+            var permittedContentTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+            var permittedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+            var ext = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+            var contentTypeOk = archivo.ContentType != null && permittedContentTypes.Contains(archivo.ContentType);
+            var extensionOk = permittedExtensions.Contains(ext);
+
+            if (!contentTypeOk && !extensionOk)
+            {
+                return (false, null, "Solo se permiten imágenes (jpg, jpeg, png, webp, gif).");
+            }
+
+            if (archivo.Length > maxBytes)
+            {
+                return (false, null, "La imagen supera el tamaño permitido (20 MB).");
+            }
+
+            var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadsRoot))
+            {
+                Directory.CreateDirectory(uploadsRoot);
+            }
+
+            var fileName = $"{Guid.NewGuid():N}{ext}";
+            var filePath = Path.Combine(uploadsRoot, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                archivo.CopyTo(stream);
+            }
+
+            var rutaPublica = $"/uploads/{fileName}";
+            return (true, rutaPublica, null);
+        }
+
+        private bool ComprobarImagenSubida(ComandaDto comandaDto)
+        {
+            return (comandaDto.FotoArregloArchivo != null && comandaDto.FotoArregloArchivo.Length > 0);
         }
 
         public IActionResult Index()
@@ -55,60 +103,34 @@ namespace EnflorarteTopiProyecto.Controllers
                 }
             }
 
-            // Manejo de archivo de imagen si fue subido
-            if (comandaDto.FotoArregloArchivo != null && comandaDto.FotoArregloArchivo.Length > 0)
+            if (ComprobarImagenSubida(comandaDto))
             {
-                var permitted = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
-                if (!permitted.Contains(comandaDto.FotoArregloArchivo.ContentType))
+                var res = ProcesarImagen(comandaDto.FotoArregloArchivo, MAX_IMAGEN_BYTES);
+                if (!res.ok)
                 {
-                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), "Solo se permiten imágenes (jpg, png, webp, gif).");
+                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), res.error!);
+                    TempData["Toast.Message"] = res.error!;
+                    TempData["Toast.Type"] = "warning";
                     return View(comandaDto);
                 }
 
-                const long maxBytes = 5 * 1024 * 1024; // 5MB
-                if (comandaDto.FotoArregloArchivo.Length > maxBytes)
-                {
-                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), "La imagen supera el tamaño permitido (5 MB).");
-                    return View(comandaDto);
-                }
-
-                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsRoot))
-                {
-                    Directory.CreateDirectory(uploadsRoot);
-                }
-
-                var ext = Path.GetExtension(comandaDto.FotoArregloArchivo.FileName);
-                var fileName = $"{Guid.NewGuid():N}{ext}";
-                var filePath = Path.Combine(uploadsRoot, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    comandaDto.FotoArregloArchivo.CopyTo(stream);
-                }
-
-                // Establecer la ruta pública
-                comandaDto.FotoArregloRuta = $"/uploads/{fileName}";
+                comandaDto.FotoArregloRuta = res.rutaPublica;
             }
 
-            // Crear nueva comanda si es valida.
             var comandaNueva = new Comanda
             {
-                UsuarioId = comandaDto.UsuarioId, // Todavia no se valida que exista el usuario con este id.
+                UsuarioId = comandaDto.UsuarioId,
                 RepartidorId = comandaDto.RepartidorId,
-                
                 ClienteNombre = comandaDto.ClienteNombre,
                 ClienteTelefono = comandaDto.ClienteTelefono,
                 TipoEntrega = comandaDto.TipoEntrega,
                 DireccionEntrega = comandaDto.DireccionEntrega,
                 FechaEntrega = comandaDto.FechaEntrega,
                 HoraEntrega = comandaDto.HoraEntrega,
-
                 NombreArreglo = comandaDto.NombreArreglo,
                 PrecioArreglo = comandaDto.PrecioArreglo,
                 PagoEnvio = comandaDto.PagoEnvio,
                 FotoArregloRuta = comandaDto.FotoArregloRuta,
-
                 AnticipoTipo = comandaDto.AnticipoTipo,
                 AnticipoPagoTotal = comandaDto.AnticipoPagoTotal
             };
@@ -135,22 +157,18 @@ namespace EnflorarteTopiProyecto.Controllers
             var comandaDto = new ComandaDto
             {
                 Id = id,
-
                 UsuarioId = comandaAEditar.UsuarioId,
                 RepartidorId = comandaAEditar.RepartidorId,
-
                 ClienteNombre = comandaAEditar.ClienteNombre,
                 ClienteTelefono = comandaAEditar.ClienteTelefono,
                 TipoEntrega = comandaAEditar.TipoEntrega,
                 DireccionEntrega = comandaAEditar.DireccionEntrega,
                 FechaEntrega = comandaAEditar.FechaEntrega,
                 HoraEntrega = comandaAEditar.HoraEntrega,
-
                 NombreArreglo = comandaAEditar.NombreArreglo,
                 PrecioArreglo = comandaAEditar.PrecioArreglo,
                 PagoEnvio = comandaAEditar.PagoEnvio,
                 FotoArregloRuta = comandaAEditar.FotoArregloRuta,
-
                 AnticipoTipo = comandaAEditar.AnticipoTipo,
                 AnticipoPagoTotal = comandaAEditar.AnticipoPagoTotal
             };
@@ -197,45 +215,20 @@ namespace EnflorarteTopiProyecto.Controllers
                 }
             }
 
-            // Manejo de imagen en edición
-            // Si se sube una nueva imagen, reemplazar. Si no, conservar la existente a menos que se solicite eliminar.
-            if (comandaDto.FotoArregloArchivo != null && comandaDto.FotoArregloArchivo.Length > 0)
+            if (ComprobarImagenSubida(comandaDto))
             {
-                var permitted = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
-                if (!permitted.Contains(comandaDto.FotoArregloArchivo.ContentType))
+                var res = ProcesarImagen(comandaDto.FotoArregloArchivo, MAX_IMAGEN_BYTES);
+                if (!res.ok)
                 {
-                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), "Solo se permiten imágenes (jpg, png, webp, gif).");
+                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), res.error!);
                     return View(comandaDto);
                 }
 
-                const long maxBytes = 5 * 1024 * 1024; // 5MB
-                if (comandaDto.FotoArregloArchivo.Length > maxBytes)
-                {
-                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), "La imagen supera el tamaño permitido (5 MB).");
-                    return View(comandaDto);
-                }
-
-                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsRoot))
-                {
-                    Directory.CreateDirectory(uploadsRoot);
-                }
-
-                var ext = Path.GetExtension(comandaDto.FotoArregloArchivo.FileName);
-                var fileName = $"{Guid.NewGuid():N}{ext}";
-                var filePath = Path.Combine(uploadsRoot, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    comandaDto.FotoArregloArchivo.CopyTo(stream);
-                }
-
-                comandaDto.FotoArregloRuta = $"/uploads/{fileName}";
+                comandaDto.FotoArregloRuta = res.rutaPublica;
             }
             else
             {
-                // No se subió nueva imagen: conservar la existente salvo que se haya marcado eliminar
-                if (comandaDto.EliminarFoto)
+                if (comandaDto.EliminarFoto == true)
                 {
                     comandaDto.FotoArregloRuta = null;
                 }

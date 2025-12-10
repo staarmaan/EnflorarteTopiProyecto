@@ -3,6 +3,8 @@
     var esEdicion = (ViewData["EsEdicion"] as bool?) ?? (Model != null && Model.Id > 0);
 }
 
+@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
 @* Este formulario se reutiliza para la creacion y eidicion de comandas. *@
 
 

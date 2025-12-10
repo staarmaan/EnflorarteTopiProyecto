@@ -82,9 +82,9 @@ namespace EnflorarteTopiProyecto.Models
         [Display(Name = "foto del arreglo (archivo)")]
         public IFormFile? FotoArregloArchivo { get; set; }
 
-        // Edición: marcar para eliminar la foto existente
+        // true para eliminar la foto existente
         [Display(Name = "eliminar foto existente")]
-        public bool EliminarFoto { get; set; }
+        public bool? EliminarFoto { get; set; } = false;
 
         // Anticipo
         [Display(Name = "tipo de anticipo")]
