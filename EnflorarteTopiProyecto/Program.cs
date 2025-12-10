@@ -31,7 +31,8 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Home}/{action=Index}/{id?}") // Te lleva a la página principal Home
+    //pattern: "{controller=ControladorSesion}/{action=Index}/{id?}") // Te lleva a la página de inicio de sesión
     .WithStaticAssets();
 
 
