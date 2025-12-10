@@ -55,7 +55,7 @@
                     <option value="" selected hidden>Selecciona un tipo</option>
                     <option value="envio">Envío</option>
                     <option value="recoger">Recoger</option>
-                    <!-- <option value="otro">Otro</option> -->
+                    <option value="otro">Otro</option>
                 </select>
                 <span asp-validation-for="TipoEntrega" class="text-danger"></span>
             </div>
@@ -99,11 +99,8 @@
                         function to24h(hour12, meridian) {
                             var h = parseInt(hour12, 10);
                             if (isNaN(h)) return null;
-                            if (meridian === 'AM') {
-                                return h === 12 ? 0 : h;
-                            } else {
-                                return h === 12 ? 12 : h + 12;
-                            }
+                            if (meridian === 'AM') { return h === 12 ? 0 : h; }
+                            else { return h === 12 ? 12 : h + 12; }
                         }
 
                         var hInput = document.getElementById('horaEntregaHora');
@@ -121,12 +118,14 @@
                             hidden.value = pad(h24) + ':' + pad(m);
                         }
 
-                        hInput.addEventListener('input', updateHidden);
-                        mInput.addEventListener('input', updateHidden);
-                        meridianSel.addEventListener('change', updateHidden);
+                        if(hInput && mInput && meridianSel){
+                            hInput.addEventListener('input', updateHidden);
+                            mInput.addEventListener('input', updateHidden);
+                            meridianSel.addEventListener('change', updateHidden);
+                        }
 
                         try {
-                            if (hidden.value) {
+                            if (hidden && hidden.value) {
                                 var raw = hidden.value.trim();
                                 var parts = raw.split(':');
                                 if (parts.length >= 2) {
@@ -135,9 +134,9 @@
                                     if (!isNaN(h) && !isNaN(mm)) {
                                         var mer = h >= 12 ? 'PM' : 'AM';
                                         var hour12 = (h % 12) === 0 ? 12 : (h % 12);
-                                        hInput.value = pad(hour12);
-                                        mInput.value = pad(mm);
-                                        meridianSel.value = mer;
+                                        if(hInput) hInput.value = pad(hour12);
+                                        if(mInput) mInput.value = pad(mm);
+                                        if(meridianSel) meridianSel.value = mer;
                                     }
                                 }
                             }
@@ -147,7 +146,6 @@
                 </script>
             </div>
         </div>
-        *@
 
         <hr class="text-muted opacity-25">
 
@@ -184,19 +182,21 @@
         </div>
 
         <div class="row mb-4">
-            <label class="col-sm-4 col-form-label">Ruta de la foto</label>
+            <label class="col-sm-4 col-form-label">Foto del arreglo</label>
             <div class="col-sm-8">
                 <input id="fotoArregloInput" class="form-control" asp-for="FotoArregloArchivo" type="file" accept="image/*" />
                 <span asp-validation-for="FotoArregloArchivo" class="text-danger"></span>
 
-                <!-- Contenedor de vista previa: se muestra si hay ruta existente o si se selecciona un archivo -->
-                <div id="fotoArregloPreviewContainer" class="mt-2" style="display:@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "none" : "block");">
-                    <img id="fotoArregloPreview" src="@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "" : Model.FotoArregloRuta)" alt="Foto arreglo" class="img-thumbnail" style="max-height: 200px;" />
-                </div>
+                <div id="fotoArregloPreviewContainer" class="mt-3 text-center p-2 border rounded bg-light" style="display:@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "none" : "block");">
+                    <img id="fotoArregloPreview" src="@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "" : Model.FotoArregloRuta)" alt="Vista previa" class="img-fluid rounded shadow-sm" style="max-height: 200px;" />
 
-                <!-- Control para marcar eliminación de foto existente o seleccionada (creación y edición) -->
-                <input type="hidden" asp-for="EliminarFoto" />
-                <button type="button" id="btnEliminarFoto" class="btn btn-outline-danger btn-sm mt-2">Eliminar imagen</button>
+                    <div class="mt-2">
+                        <input type="hidden" asp-for="EliminarFoto" />
+                        <button type="button" id="btnEliminarFoto" class="btn btn-outline-danger btn-sm">
+                            Eliminar imagen
+                        </button>
+                    </div>
+                </div>
 
                 <script>
                     (function () {
@@ -207,12 +207,8 @@
                         var eliminarFotoField = document.getElementById('EliminarFoto');
 
                         function clearPreview() {
-                            if (previewImg) {
-                                previewImg.src = '';
-                            }
-                            if (previewContainer) {
-                                previewContainer.style.display = 'none';
-                            }
+                            if (previewImg) previewImg.src = '';
+                            if (previewContainer) previewContainer.style.display = 'none';
                         }
 
                         function showPreview(url) {
@@ -221,42 +217,28 @@
                             previewContainer.style.display = 'block';
                         }
 
-                        input.addEventListener('change', function (e) {
-                            var file = e.target.files && e.target.files[0];
-                            if (!file) {
-                                // Si no hay archivo, intenta mantener la ruta existente (edición),
-                                // o esconder en creación
-                                var existingSrc = previewImg && previewImg.getAttribute('src');
-                                if (existingSrc) {
-                                    previewContainer.style.display = 'block';
-                                } else {
-                                    clearPreview();
+                        if (input) {
+                            input.addEventListener('change', function (e) {
+                                var file = e.target.files && e.target.files[0];
+                                if (!file) return;
+
+                                if (file.type && file.type.indexOf('image/') === 0) {
+                                    var url = URL.createObjectURL(file);
+                                    showPreview(url);
+
+                                    input.addEventListener('blur', function () {
+                                        try { URL.revokeObjectURL(url); } catch (_) { }
+                                    }, { once: true });
+
+                                    if(eliminarFotoField) eliminarFotoField.value = 'false';
                                 }
-                                return;
-                            }
-
-                            if (!file.type || file.type.indexOf('image/') !== 0) {
-                                // No es imagen: limpiar
-                                clearPreview();
-                                return;
-                            }
-
-                            // Crear objeto URL temporal para vista previa
-                            var url = URL.createObjectURL(file);
-                            showPreview(url);
-
-                            // Liberar el objeto URL cuando ya no se necesite (por cambio o submit)
-                            input.addEventListener('blur', function () {
-                                try { URL.revokeObjectURL(url); } catch (_) { /* noop */ }
-                            }, { once: true });
-                        });
+                            });
+                        }
 
                         if (btnEliminar) {
                             btnEliminar.addEventListener('click', function () {
-                                // Marcar campo para eliminar en el modelo y limpiar vista previa
                                 if (eliminarFotoField) eliminarFotoField.value = 'true';
                                 clearPreview();
-                                // También limpiar cualquier archivo seleccionado
                                 if (input) input.value = '';
                             });
                         }
@@ -294,4 +276,4 @@
         </div>
 
     </div>
-</div> 
+</div>
