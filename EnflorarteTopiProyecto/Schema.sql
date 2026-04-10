@@ -1,10 +1,4 @@
-﻿IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = "EnflorarteBD")
-BEGIN
-    CREATE DATABASE EnflorarteBD;
-END
-GO
-
-USE EnflorarteBD;
+﻿USE EnflorarteTopiProyectoDb;
 GO
 
 -- Usuarios
