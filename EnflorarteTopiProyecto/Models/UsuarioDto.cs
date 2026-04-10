@@ -31,15 +31,18 @@ namespace EnflorarteTopiProyecto.Models
 
 
         [Display(Name = "contraseña")]
-        [Required(ErrorMessage = "La {0} es obligatoria.")]
         [StringLength(50, MinimumLength = 6, ErrorMessage = "La {0} debe tener entre {2} y {1} carácteres.")]
         public string Contrasena { get; set; } = string.Empty;
-        
+
         [Display(Name = "confirmar contraseña")]
-        [Required(ErrorMessage = "Es obligatorio confirmar la contraseña.")]
         [Compare("Contrasena", ErrorMessage = "Las contraseñas no coinciden.")]
         public string ConfirmarContrasena { get; set; } = string.Empty;
-        
+
+        [Display(Name = "cambiar contraseña")]
+        public bool CambiarContrasena { get; set; } = false;
+
+        [Display(Name = "contraseña del supervisor")]
+        public string ContrasenaSupervisor { get; set; } = string.Empty;
 
         public bool Activo { get; set; } = true; // Aqui no hay Required porque por defecto el usuario se crea como activo.
     }

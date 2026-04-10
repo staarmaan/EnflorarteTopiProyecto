@@ -95,6 +95,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 ModelState.AddModelError(nameof(comandaDto.UsuarioId), "El usuario especificado no existe.");
                 TempData["Toast.Message"] = "Usuario especificado no existe.";
                 TempData["Toast.Type"] = "warning";
+                CargarListasViewBag();
                 return View(comandaDto);
             }
 
@@ -107,6 +108,7 @@ namespace EnflorarteTopiProyecto.Controllers
                     ModelState.AddModelError(nameof(comandaDto.RepartidorId), "El repartidor especificado no existe.");
                     TempData["Toast.Message"] = "Repartidor especificado no existe.";
                     TempData["Toast.Type"] = "warning";
+                    CargarListasViewBag();
                     return View(comandaDto);
                 }
             }
@@ -119,6 +121,7 @@ namespace EnflorarteTopiProyecto.Controllers
                     ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), res.error!);
                     TempData["Toast.Message"] = res.error!;
                     TempData["Toast.Type"] = "warning";
+                    CargarListasViewBag();
                     return View(comandaDto);
                 }
 
@@ -212,6 +215,7 @@ namespace EnflorarteTopiProyecto.Controllers
 
             if (!ModelState.IsValid)
             {
+                CargarListasViewBag();
                 return View(comandaDto);
             }
 
@@ -222,6 +226,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 ModelState.AddModelError(nameof(comandaDto.UsuarioId), "El usuario especificado no existe.");
                 TempData["Toast.Message"] = "Usuario especificado no existe.";
                 TempData["Toast.Type"] = "warning";
+                CargarListasViewBag();
                 return View(comandaDto);
             }
 
@@ -234,6 +239,7 @@ namespace EnflorarteTopiProyecto.Controllers
                     ModelState.AddModelError(nameof(comandaDto.RepartidorId), "El repartidor especificado no existe.");
                     TempData["Toast.Message"] = "Repartidor especificado no existe.";
                     TempData["Toast.Type"] = "warning";
+                    CargarListasViewBag();
                     return View(comandaDto);
                 }
             }
@@ -244,6 +250,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 if (!res.ok)
                 {
                     ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), res.error!);
+                    CargarListasViewBag();
                     return View(comandaDto);
                 }
 

@@ -35,17 +35,15 @@
                                 <td class="fw-bold">@usuario.Nombre</td>
                                 <td class="text-capitalize">@usuario.Rol</td>
                                 <td><span class="badge @badgeClass rounded-pill fw-normal">@activoStr</span></td>
-                                <td class="text-end pe-4">
+                                <td class="text-end pe-4" style="white-space:nowrap">
                                     <button onclick="cargarModal('@Url.Action("Editar", "ControladorUsuarios", new { id = usuario.Id })', 'Editar Usuario')"
                                             class="btn btn-outline-primary btn-sm me-1">
                                         Editar
                                     </button>
 
-                                    @*
-                                    <a class="btn btn-outline-danger btn-sm" asp-controller="ControladorUsuarios" asp-action="Eliminar" asp-route-id="@usuario.Id">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmarEliminarUsuario(@usuario.Id, '@usuario.Nombre')">
                                         Eliminar
-                                    </a>
-                                    *@
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -55,6 +53,12 @@
         </div>
     </div>
 </div>
+
+<form id="formEliminarUsuario" asp-controller="ControladorUsuarios" asp-action="Eliminar" method="post" class="d-none">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="eliminarUsuarioId" name="id" />
+    <input type="hidden" id="eliminarContrasenaSupervisor" name="contrasenaSupervisor" />
+</form>
 
 <div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -92,6 +96,27 @@
             $.get(url, function(data) {
                 $("#contenidoModal").html(data);
             });
+        }
+
+        function confirmarEliminarUsuario(id, nombre) {
+            if (!confirm('¿Seguro que deseas eliminar al usuario "' + nombre + '"?')) {
+                return;
+            }
+
+            var contrasena = prompt('Ingresa tu contraseña de supervisor para confirmar la eliminación:');
+            if (contrasena === null) {
+                return;
+            }
+
+            contrasena = contrasena.trim();
+            if (contrasena.length === 0) {
+                alert('La contraseña es obligatoria para eliminar.');
+                return;
+            }
+
+            $('#eliminarUsuarioId').val(id);
+            $('#eliminarContrasenaSupervisor').val(contrasena);
+            $('#formEliminarUsuario').trigger('submit');
         }
 
         // Manejo inteligente del envío del formulario (AJAX)

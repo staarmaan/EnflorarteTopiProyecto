@@ -62,15 +62,15 @@ CREATE TABLE dbo.comanda (
 GO
 -- enums de la comanda.
 ALTER TABLE dbo.comanda
-    ADD CONSTRAINT chk_comanda_tipo_entrega CHECK (tipo_entrega IN (N'envio', N'recoger'));
+    ADD CONSTRAINT chk_comanda_tipo_entrega CHECK (tipo_entrega IN (N'envio', N'recoger', N'otro'));
 GO
 
 ALTER TABLE dbo.comanda
-    ADD CONSTRAINT chk_comanda_estado CHECK (estado IN (N'pendiente', N'en_proceso', N'listo', N'entregado'));
+    ADD CONSTRAINT chk_comanda_estado CHECK (estado IN (N'solicitado', N'cancelado', N'pendiente', N'en_proceso', N'listo', N'entregado'));
 GO
 
 ALTER TABLE dbo.comanda
-    ADD CONSTRAINT chk_comanda_anticipo_tipo CHECK (anticipo_tipo IN (N'porcentaje', N'minimo', N'manual'));
+    ADD CONSTRAINT chk_comanda_anticipo_tipo CHECK (anticipo_tipo IN (N'porcentaje', N'minimo', N'manual') OR anticipo_tipo IS NULL);
 GO
 
 

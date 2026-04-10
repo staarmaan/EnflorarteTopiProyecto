@@ -9,49 +9,143 @@
     </div>
     <div class="card-body p-4">
 
-        <div class="mb-4">
-            <label class="form-label text-muted small text-uppercase fw-bold">Nombre completo</label>
-            <input class="form-control form-control-lg" asp-for="Nombre" placeholder="Ej. Juan Pérez" />
-            <span asp-validation-for="Nombre" class="text-danger small"></span>
-        </div>
+        @if (esEdicion)
+        {
+            <ul class="nav nav-tabs mb-4" id="tabsUsuarioEditar" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-datos" data-bs-toggle="tab" data-bs-target="#panel-datos" type="button" role="tab">Datos del usuario</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-seguridad" data-bs-toggle="tab" data-bs-target="#panel-seguridad" type="button" role="tab">Seguridad</button>
+                </li>
+            </ul>
 
-        <div class="mb-4">
-            <label class="form-label text-muted small text-uppercase fw-bold">Rol asignado</label>
-            <select class="form-select form-select-lg" asp-for="Rol">
-                <option value="" selected hidden>Selecciona un rol...</option>
-                <option value="supervisor">Supervisor</option>
-                <option value="ventas">Vendedor</option>
-                <option value="florista">Florista</option>
-                <option value="repartidor">Repartidor</option>
-            </select>
-            <span asp-validation-for="Rol" class="text-danger small"></span>
-        </div>
+            <div class="tab-content" id="tabsUsuarioEditarContenido">
+                <div class="tab-pane fade show active" id="panel-datos" role="tabpanel" aria-labelledby="tab-datos">
+                    <div class="mb-4">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Nombre completo</label>
+                        <input class="form-control form-control-lg" asp-for="Nombre" placeholder="Ej. Juan Pérez" />
+                        <span asp-validation-for="Nombre" class="text-danger small"></span>
+                    </div>
 
-        <div class="mb-4">
-            <label class="form-label text-muted small text-uppercase fw-bold">
-                @(esEdicion ? "Nueva Contraseña" : "Contraseña")
-            </label>
-            <input class="form-control" type="password" asp-for="Contrasena"
-                   autocomplete="@(esEdicion ? "current-password" : "new-password")"
-                   placeholder="******" />
-            <span asp-validation-for="Contrasena" class="text-danger small"></span>
-        </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Rol asignado</label>
+                        <select class="form-select form-select-lg" asp-for="Rol">
+                            <option value="" selected hidden>Selecciona un rol...</option>
+                            <option value="supervisor">Supervisor</option>
+                            <option value="ventas">Vendedor</option>
+                            <option value="florista">Florista</option>
+                            <option value="repartidor">Repartidor</option>
+                        </select>
+                        <span asp-validation-for="Rol" class="text-danger small"></span>
+                    </div>
 
-        <div class="mb-3">
-            <label class="form-label text-muted small text-uppercase fw-bold">Confirmar Contraseña</label>
-            <input class="form-control" type="password" asp-for="ConfirmarContrasena"
-                   autocomplete="@(esEdicion ? "current-password" : "new-password")"
-                   placeholder="******" />
-            <span asp-validation-for="ConfirmarContrasena" class="text-danger small"></span>
-        </div>
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" asp-for="Activo" />
+                            <label class="form-check-label text-muted small text-uppercase fw-bold" asp-for="Activo">
+                                Usuario Activo
+                            </label>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="mb-4">
-            <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" asp-for="Activo" />
-                <label class="form-check-label text-muted small text-uppercase fw-bold" asp-for="Activo">
-                    @(esEdicion ? "Usuario Activo" : "Crear como Usuario Activo")
-                </label>
+                <div class="tab-pane fade" id="panel-seguridad" role="tabpanel" aria-labelledby="tab-seguridad">
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" asp-for="CambiarContrasena" id="chkCambiarContrasena" />
+                            <label class="form-check-label text-muted small text-uppercase fw-bold" asp-for="CambiarContrasena">Cambiar contraseña del usuario</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Nueva Contraseña</label>
+                        <input class="form-control" type="password" asp-for="Contrasena" autocomplete="new-password" placeholder="******" id="inputNuevaContrasena" />
+                        <span asp-validation-for="Contrasena" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted small text-uppercase fw-bold">Confirmar Contraseña</label>
+                        <input class="form-control" type="password" asp-for="ConfirmarContrasena" autocomplete="new-password" placeholder="******" id="inputConfirmarContrasena" />
+                        <span asp-validation-for="ConfirmarContrasena" class="text-danger small"></span>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <hr class="text-muted opacity-25">
+
+            <div class="mb-3">
+                <label class="form-label text-muted small text-uppercase fw-bold">Contraseña del supervisor (confirmación)</label>
+                <input class="form-control" type="password" asp-for="ContrasenaSupervisor" autocomplete="current-password" placeholder="Ingresa tu contraseña" />
+                <span asp-validation-for="ContrasenaSupervisor" class="text-danger small"></span>
+            </div>
+
+            <script>
+                (function () {
+                    var chk = document.getElementById('chkCambiarContrasena');
+                    var pwd = document.getElementById('inputNuevaContrasena');
+                    var pwd2 = document.getElementById('inputConfirmarContrasena');
+
+                    function syncEstadoContrasena() {
+                        var enabled = chk && chk.checked;
+                        if (pwd) {
+                            pwd.disabled = !enabled;
+                            if (!enabled) pwd.value = '';
+                        }
+                        if (pwd2) {
+                            pwd2.disabled = !enabled;
+                            if (!enabled) pwd2.value = '';
+                        }
+                    }
+
+                    if (chk) {
+                        chk.addEventListener('change', syncEstadoContrasena);
+                    }
+
+                    syncEstadoContrasena();
+                })();
+            </script>
+        }
+        else
+        {
+            <div class="mb-4">
+                <label class="form-label text-muted small text-uppercase fw-bold">Nombre completo</label>
+                <input class="form-control form-control-lg" asp-for="Nombre" placeholder="Ej. Juan Pérez" />
+                <span asp-validation-for="Nombre" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-muted small text-uppercase fw-bold">Rol asignado</label>
+                <select class="form-select form-select-lg" asp-for="Rol">
+                    <option value="" selected hidden>Selecciona un rol...</option>
+                    <option value="supervisor">Supervisor</option>
+                    <option value="ventas">Vendedor</option>
+                    <option value="florista">Florista</option>
+                    <option value="repartidor">Repartidor</option>
+                </select>
+                <span asp-validation-for="Rol" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-muted small text-uppercase fw-bold">Contraseña</label>
+                <input class="form-control" type="password" asp-for="Contrasena" autocomplete="new-password" placeholder="******" />
+                <span asp-validation-for="Contrasena" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-muted small text-uppercase fw-bold">Confirmar Contraseña</label>
+                <input class="form-control" type="password" asp-for="ConfirmarContrasena" autocomplete="new-password" placeholder="******" />
+                <span asp-validation-for="ConfirmarContrasena" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" asp-for="Activo" />
+                    <label class="form-check-label text-muted small text-uppercase fw-bold" asp-for="Activo">
+                        Crear como Usuario Activo
+                    </label>
+                </div>
+            </div>
+        }
     </div>
 </div>
