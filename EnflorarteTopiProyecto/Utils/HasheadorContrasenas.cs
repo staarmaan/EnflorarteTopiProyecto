@@ -19,7 +19,8 @@ namespace EnflorarteTopiProyecto.Utils
         {
             var hasher = new PasswordHasher<string>();
             var resultado = hasher.VerifyHashedPassword(null, contrasenaHasheada, contrasenaIngresada);
-            return resultado == PasswordVerificationResult.Success;
+            return resultado == PasswordVerificationResult.Success
+                || resultado == PasswordVerificationResult.SuccessRehashNeeded;
         }
     }
 }

@@ -49,6 +49,15 @@ namespace EnflorarteTopiProyecto.Controllers
                 contrasenaValida = false;
             }
 
+            // Compatibilidad temporal con registros viejos en texto plano.
+            // Si coincide, se migra inmediatamente a hash.
+            if (!contrasenaValida && usuario.Contrasena == contrasenaIngresada)
+            {
+                usuario.Contrasena = HasheadorContrasenas.HashearContrasena(contrasenaIngresada);
+                _context.SaveChanges();
+                contrasenaValida = true;
+            }
+
             //contrasenaValida = true; // PARA TESTEAR SIN IMPORTAR LA CONTRASEÑA!!
 
             if (!contrasenaValida)

@@ -22,6 +22,8 @@ GO
 CREATE TABLE dbo.comanda (
     comanda_id INT IDENTITY(1,1) PRIMARY KEY,
 
+    usuario_id INT NOT NULL, -- usuario creador de la comanda.
+
     cliente_nombre NVARCHAR(100) NOT NULL,
     cliente_telefono NVARCHAR(20) NULL,
     direccion_entrega NVARCHAR(255) NULL,
@@ -33,7 +35,7 @@ CREATE TABLE dbo.comanda (
     nombre_arreglo NVARCHAR(150) NOT NULL,
     precio_arreglo DECIMAL(10,2) NOT NULL,
 
-    foto_arreglo NVARCHAR(300) NULL,
+    foto_arreglo_ruta NVARCHAR(300) NULL,
 
     estado NVARCHAR(20) NOT NULL DEFAULT (N'pendiente'), -- pendiente, en_proceso, listo y entregado.
     liquidado BIT NOT NULL DEFAULT(0),
@@ -46,6 +48,11 @@ CREATE TABLE dbo.comanda (
 
 
     repartidor_id INT NULL, -- usuario asignado, que tiene rol de repartidor.
+
+    CONSTRAINT fk_comanda_usuario FOREIGN KEY (usuario_id)
+        REFERENCES dbo.usuario(usuario_id)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
 
     CONSTRAINT fk_comanda_repartidor FOREIGN KEY (repartidor_id)
         REFERENCES dbo.usuario(usuario_id)
@@ -63,7 +70,7 @@ ALTER TABLE dbo.comanda
 GO
 
 ALTER TABLE dbo.comanda
-    ADD CONSTRAINT chk_comanda_anticipo_tipo CHECK (estado IN (N'porcentaje', N'minimo', N'manual'));
+    ADD CONSTRAINT chk_comanda_anticipo_tipo CHECK (anticipo_tipo IN (N'porcentaje', N'minimo', N'manual'));
 GO
 
 
