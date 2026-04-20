@@ -12,7 +12,7 @@ CREATE TABLE dbo.usuario (
 GO
 -- enums del usuario.
 ALTER TABLE dbo.usuario
-    ADD CONSTRAINT chk_usuario_rol CHECK (rol IN (N'supervisor', N'vendedor', N'florista', N'repartidor'));
+    ADD CONSTRAINT chk_usuario_rol CHECK (rol IN (N'supervisor', N'ventas', N'florista', N'repartidor'));
 GO
 
 

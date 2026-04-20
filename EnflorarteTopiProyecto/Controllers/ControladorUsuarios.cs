@@ -4,6 +4,7 @@ using EnflorarteTopiProyecto.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
@@ -126,6 +127,11 @@ namespace EnflorarteTopiProyecto.Controllers
                     ModelState.AddModelError(nameof(usuarioDto.ConfirmarContrasena), "Debes confirmar la nueva contraseña.");
                 }
             }
+            else
+            {
+                ModelState.Remove(nameof(usuarioDto.Contrasena));
+                ModelState.Remove(nameof(usuarioDto.ConfirmarContrasena));
+            }
 
             if (!ModelState.IsValid)
             {
@@ -162,19 +168,75 @@ namespace EnflorarteTopiProyecto.Controllers
             }
 
             var usuarioAEliminar = context.Usuarios.Find(id);
-            if (usuarioAEliminar != null)
-            {
-                context.Usuarios.Remove(usuarioAEliminar);
-                context.SaveChanges();
-
-                TempData["Toast.Message"] = "Usuario eliminado.";
-                TempData["Toast.Type"] = "success";
-            }
-            else
+            if (usuarioAEliminar == null)
             {
                 TempData["Toast.Message"] = "Usuario no encontrado.";
                 TempData["Toast.Type"] = "warning";
+                return RedirectToAction("Index");
             }
+
+            var respaldo = new UsuarioEliminadoDto
+            {
+                Nombre = usuarioAEliminar.Nombre,
+                Rol = usuarioAEliminar.Rol,
+                Contrasena = usuarioAEliminar.Contrasena,
+                Activo = usuarioAEliminar.Activo
+            };
+
+            context.Usuarios.Remove(usuarioAEliminar);
+            context.SaveChanges();
+
+            TempData["Usuarios.UltimoEliminado"] = JsonSerializer.Serialize(respaldo);
+            TempData["Toast.Message"] = $"Usuario '{respaldo.Nombre}' eliminado.";
+            TempData["Toast.Type"] = "warning";
+            TempData["Toast.UndoAction"] = Url.Action("DeshacerEliminacion", "ControladorUsuarios");
+            TempData["Toast.UndoText"] = "Deshacer";
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeshacerEliminacion()
+        {
+            var payload = TempData["Usuarios.UltimoEliminado"] as string;
+            if (string.IsNullOrWhiteSpace(payload))
+            {
+                TempData["Toast.Message"] = "Ya no hay una eliminación reciente para deshacer.";
+                TempData["Toast.Type"] = "info";
+                return RedirectToAction("Index");
+            }
+
+            UsuarioEliminadoDto? respaldo;
+            try
+            {
+                respaldo = JsonSerializer.Deserialize<UsuarioEliminadoDto>(payload);
+            }
+            catch
+            {
+                respaldo = null;
+            }
+
+            if (respaldo == null)
+            {
+                TempData["Toast.Message"] = "No se pudo deshacer la eliminación.";
+                TempData["Toast.Type"] = "warning";
+                return RedirectToAction("Index");
+            }
+
+            var usuarioRestaurado = new Usuario
+            {
+                Nombre = respaldo.Nombre,
+                Rol = respaldo.Rol,
+                Contrasena = respaldo.Contrasena,
+                Activo = respaldo.Activo
+            };
+
+            context.Usuarios.Add(usuarioRestaurado);
+            context.SaveChanges();
+
+            TempData["Toast.Message"] = $"Se restauró el usuario '{usuarioRestaurado.Nombre}'.";
+            TempData["Toast.Type"] = "success";
 
             return RedirectToAction("Index");
         }
@@ -211,6 +273,14 @@ namespace EnflorarteTopiProyecto.Controllers
             }
 
             return valida;
+        }
+
+        private class UsuarioEliminadoDto
+        {
+            public string Nombre { get; set; } = string.Empty;
+            public RolUsuario Rol { get; set; }
+            public string Contrasena { get; set; } = string.Empty;
+            public bool Activo { get; set; }
         }
     }
 }

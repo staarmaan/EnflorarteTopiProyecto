@@ -11,6 +11,64 @@
         </a>
     </div>
 
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body py-3 px-3 px-md-4" style="background: var(--color-fondo-suave); border-radius: 10px;">
+            <div class="row g-2 g-md-3 align-items-end">
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label for="inputBuscarTabla" class="form-label text-muted small text-uppercase fw-bold mb-1">Buscar</label>
+                    <input type="text" name="username" autocomplete="username" class="campo-antiautofill" tabindex="-1" aria-hidden="true" />
+                    <input type="password" name="password" autocomplete="current-password" class="campo-antiautofill" tabindex="-1" aria-hidden="true" />
+                    <input id="inputBuscarTabla"
+                           name="filtroTabla"
+                           type="search"
+                           class="form-control form-control-sm"
+                           placeholder="Nombre o rol..."
+                           autocomplete="new-password"
+                           autocapitalize="off"
+                           autocorrect="off"
+                           spellcheck="false"
+                           data-lpignore="true"
+                           data-1p-ignore="true"
+                           data-bwignore="true"
+                           data-form-type="other"
+                           readonly
+                           tabindex="0" />
+                </div>
+                <div class="col-6 col-md-3 col-lg-3">
+                    <label for="selectOrdenNombre" class="form-label text-muted small text-uppercase fw-bold mb-1">Nombre</label>
+                    <select id="selectOrdenNombre" class="form-select form-select-sm">
+                        <option value="none" selected>Sin orden</option>
+                        <option value="asc">A-Z</option>
+                        <option value="desc">Z-A</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-3">
+                    <label for="selectFiltroRol" class="form-label text-muted small text-uppercase fw-bold mb-1">Rol</label>
+                    <select id="selectFiltroRol" class="form-select form-select-sm text-capitalize">
+                        <option value="all" selected>Todos</option>
+                        <option value="supervisor">Supervisor</option>
+                        <option value="ventas">Vendedor</option>
+                        <option value="florista">Florista</option>
+                        <option value="repartidor">Repartidor</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label text-muted small text-uppercase fw-bold mb-1 d-block text-center">Activo</label>
+                    <div class="filtro-activos-wrap d-flex align-items-center justify-content-center">
+                        <div class="form-check form-switch d-flex align-items-center justify-content-center m-0">
+                            <input class="form-check-input switch-activos" type="checkbox" id="switchSoloActivos" aria-label="Mostrar solo empleados activos">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-1 d-flex align-items-end">
+                    <button type="button" id="btnLimpiarFiltros" class="btn btn-outline-secondary btn-sm px-2 btn-limpiar-filtros">
+                        Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -24,13 +82,17 @@
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="table-group-divider">
+                    <tbody class="table-group-divider" id="tbodyUsuarios">
                         @foreach (var usuario in Model)
                         {
                             string badgeClass = usuario.Activo ? "bg-success" : "bg-secondary";
                             string activoStr = usuario.Activo ? "Activo" : "Inactivo";
 
-                            <tr>
+                            <tr class="fila-usuario"
+                                data-id="@usuario.Id"
+                                data-nombre="@usuario.Nombre.ToLowerInvariant()"
+                                data-rol="@usuario.Rol.ToString().ToLowerInvariant()"
+                                data-activo="@usuario.Activo.ToString().ToLowerInvariant()">
                                 <td class="ps-4 fw-bold text-muted">#@usuario.Id</td>
                                 <td class="fw-bold">@usuario.Nombre</td>
                                 <td class="text-capitalize">@usuario.Rol</td>
@@ -41,7 +103,9 @@
                                         Editar
                                     </button>
 
-                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmarEliminarUsuario(@usuario.Id, '@usuario.Nombre')">
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="abrirDialogoEliminarUsuario(@usuario.Id, '@usuario.Nombre')">
                                         Eliminar
                                     </button>
                                 </td>
@@ -59,6 +123,30 @@
     <input type="hidden" id="eliminarUsuarioId" name="id" />
     <input type="hidden" id="eliminarContrasenaSupervisor" name="contrasenaSupervisor" />
 </form>
+
+<div class="modal fade" id="modalConfirmarEliminarUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <div class="modal-header" style="background-color: var(--color-primario); color: white;">
+                <h5 class="modal-title" style="font-family: var(--fuente-serif-elegante);">Confirmar eliminación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-3" id="txtEliminarUsuario"></p>
+
+                <div class="mb-2">
+                    <label class="form-label text-muted small text-uppercase fw-bold">Contraseña del supervisor</label>
+                    <input type="password" class="form-control" id="inputContrasenaEliminar" placeholder="Ingresa tu contraseña" autocomplete="current-password" />
+                    <small class="text-danger d-none" id="errorContrasenaEliminar">La contraseña es obligatoria.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarEliminarUsuario">Eliminar usuario</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -79,62 +167,171 @@
 </div>
 
 @section Scripts {
+    <style>
+        .filtro-activos-wrap {
+            min-height: 31px;
+            padding: .2rem .4rem;
+            border: 1px solid var(--color-secundario);
+            border-radius: .5rem;
+            background-color: #fff;
+        }
+
+        .switch-activos {
+            width: 2.2rem;
+            height: 1.1rem;
+            cursor: pointer;
+        }
+
+        .switch-activos:checked {
+            background-color: var(--color-primario);
+            border-color: var(--color-primario);
+        }
+
+        .switch-activos:focus {
+            box-shadow: 0 0 0 0.2rem rgba(46, 79, 57, 0.25);
+            border-color: var(--color-primario);
+        }
+
+        .btn-limpiar-filtros {
+            height: 31px;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .campo-antiautofill {
+            position: absolute !important;
+            left: -9999px !important;
+            top: auto !important;
+            width: 1px !important;
+            height: 1px !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
+
     <script>
-        // Función para abrir el modal y cargar contenido
+        let usuarioAEliminarId = 0;
+
+        function abrirDialogoEliminarUsuario(id, nombre) {
+            usuarioAEliminarId = id;
+            $('#txtEliminarUsuario').text('¿Seguro que deseas eliminar al usuario "' + nombre + '"? Esta acción se puede deshacer por un momento desde la notificación.');
+            $('#inputContrasenaEliminar').val('');
+            $('#errorContrasenaEliminar').addClass('d-none');
+
+            var modal = new bootstrap.Modal(document.getElementById('modalConfirmarEliminarUsuario'));
+            modal.show();
+        }
+
+        $('#btnConfirmarEliminarUsuario').on('click', function () {
+            var contrasena = ($('#inputContrasenaEliminar').val() || '').trim();
+            if (!contrasena) {
+                $('#errorContrasenaEliminar').removeClass('d-none');
+                return;
+            }
+
+            $('#errorContrasenaEliminar').addClass('d-none');
+            $('#eliminarUsuarioId').val(usuarioAEliminarId);
+            $('#eliminarContrasenaSupervisor').val(contrasena);
+            $('#formEliminarUsuario').trigger('submit');
+        });
+
         function cargarModal(url, titulo) {
-            // 1. Cambiar el título
             $("#modalTitulo").text(titulo);
-
-            // 2. Mostrar spinner de carga mientras esperamos
             $("#contenidoModal").html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
-
-            // 3. Abrir el modal
             var myModal = new bootstrap.Modal(document.getElementById('modalUsuario'));
             myModal.show();
-
-            // 4. Petición AJAX para traer el formulario (Crear o Editar)
             $.get(url, function(data) {
                 $("#contenidoModal").html(data);
             });
         }
 
-        function confirmarEliminarUsuario(id, nombre) {
-            if (!confirm('¿Seguro que deseas eliminar al usuario "' + nombre + '"?')) {
-                return;
-            }
-
-            var contrasena = prompt('Ingresa tu contraseña de supervisor para confirmar la eliminación:');
-            if (contrasena === null) {
-                return;
-            }
-
-            contrasena = contrasena.trim();
-            if (contrasena.length === 0) {
-                alert('La contraseña es obligatoria para eliminar.');
-                return;
-            }
-
-            $('#eliminarUsuarioId').val(id);
-            $('#eliminarContrasenaSupervisor').val(contrasena);
-            $('#formEliminarUsuario').trigger('submit');
-        }
-
-        // Manejo inteligente del envío del formulario (AJAX)
-        // Esto evita que si hay un error de validación, se recargue la página en blanco
         $(document).on('submit', '#contenidoModal form', function(e) {
-            e.preventDefault(); // Evitamos el submit normal
+            e.preventDefault();
             var form = $(this);
 
             $.post(form.attr('action'), form.serialize(), function(response) {
-                // Truco: Si la respuesta contiene "<!DOCTYPE html>", significa que el servidor
-                // redireccionó al Index (éxito), así que recargamos la página.
-                // Si no, es que devolvió el formulario con errores de validación.
                 if (response.indexOf('<!DOCTYPE html>') > -1) {
                     location.reload();
                 } else {
-                    $("#contenidoModal").html(response); // Mostramos los errores en el modal
+                    $("#contenidoModal").html(response);
                 }
             });
         });
+
+        function aplicarFiltroYOrdenUsuarios() {
+            var termino = ($('#inputBuscarTabla').val() || '').toString().trim().toLowerCase();
+            var soloActivos = $('#switchSoloActivos').is(':checked');
+            var ordenNombre = $('#selectOrdenNombre').val();
+            var filtroRol = ($('#selectFiltroRol').val() || 'all').toString().toLowerCase();
+
+            var $tbody = $('#tbodyUsuarios');
+            var $filas = $tbody.find('tr.fila-usuario');
+
+            $filas.each(function () {
+                var $fila = $(this);
+                var nombre = ($fila.data('nombre') || '').toString();
+                var rol = ($fila.data('rol') || '').toString();
+                var activo = ($fila.data('activo') || '').toString() === 'true';
+
+                var coincideBusqueda = !termino || nombre.includes(termino) || rol.includes(termino);
+                var coincideActivo = !soloActivos || activo;
+                var coincideRol = filtroRol === 'all' || rol === filtroRol;
+
+                if (coincideBusqueda && coincideActivo && coincideRol) {
+                    $fila.show();
+                } else {
+                    $fila.hide();
+                }
+            });
+
+            var filasVisibles = $filas.filter(function () { return $(this).css('display') !== 'none'; }).get();
+            var todasLasFilas = $filas.get();
+
+            todasLasFilas.sort(function (a, b) {
+                var aNombre = ($(a).data('nombre') || '').toString();
+                var bNombre = ($(b).data('nombre') || '').toString();
+                var aId = parseInt($(a).data('id')) || 0;
+                var bId = parseInt($(b).data('id')) || 0;
+
+                if (ordenNombre && ordenNombre !== 'none') {
+                    var cmpNombre = aNombre.localeCompare(bNombre, 'es', { sensitivity: 'base' });
+                    if (cmpNombre !== 0) {
+                        return ordenNombre === 'asc' ? cmpNombre : -cmpNombre;
+                    }
+                }
+
+                // Estado original: orden por ID descendente (últimos agregados primero)
+                return bId - aId;
+            });
+
+            todasLasFilas.forEach(function (fila) {
+                $tbody.append(fila);
+            });
+
+            $('#filaSinResultados').remove();
+            if (filasVisibles.length === 0) {
+                $tbody.append('<tr id="filaSinResultados"><td colspan="5" class="text-center text-muted py-4">No se encontraron usuarios con los filtros seleccionados.</td></tr>');
+            }
+        }
+
+        $('#inputBuscarTabla').on('input', aplicarFiltroYOrdenUsuarios);
+        $('#inputBuscarTabla').on('focus', function () {
+            var input = this;
+            setTimeout(function () {
+                $(input).removeAttr('readonly');
+            }, 80);
+        });
+        $('#switchSoloActivos').on('change', aplicarFiltroYOrdenUsuarios);
+        $('#selectOrdenNombre, #selectFiltroRol').on('change', aplicarFiltroYOrdenUsuarios);
+
+        $('#btnLimpiarFiltros').on('click', function () {
+            $('#inputBuscarTabla').val('');
+            $('#selectOrdenNombre').val('none');
+            $('#selectFiltroRol').val('all');
+            $('#switchSoloActivos').prop('checked', false);
+            aplicarFiltroYOrdenUsuarios();
+        });
+
+        aplicarFiltroYOrdenUsuarios();
     </script>
 }
