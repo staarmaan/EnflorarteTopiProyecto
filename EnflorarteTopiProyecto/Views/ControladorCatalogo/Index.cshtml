@@ -1,0 +1,207 @@
+@model List<Flor>
+@{
+    ViewData["Title"] = "Catálogo";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-6 m-0">Catálogo</h1>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="tabsCatalogo" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-flores" data-bs-toggle="tab" data-bs-target="#panel-flores" type="button" role="tab">Flores</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-arreglos" data-bs-toggle="tab" data-bs-target="#panel-arreglos" type="button" role="tab">Arreglos</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="contenidoTabsCatalogo">
+        <div class="tab-pane fade show active" id="panel-flores" role="tabpanel" aria-labelledby="tab-flores">
+            <div class="row g-2 g-md-3 align-items-end mb-3">
+                <div class="col-12 col-md-5 col-lg-4">
+                    <label for="inputBuscarFlores" class="form-label text-muted small text-uppercase fw-bold mb-1">Buscar</label>
+                    <input id="inputBuscarFlores"
+                           type="search"
+                           class="form-control form-control-sm"
+                           placeholder="Nombre o descripción..."
+                           autocomplete="off"
+                           autocapitalize="off"
+                           autocorrect="off"
+                           spellcheck="false" />
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="selectOrdenFlores" class="form-label text-muted small text-uppercase fw-bold mb-1">Nombre</label>
+                    <select id="selectOrdenFlores" class="form-select form-select-sm">
+                        <option value="none" selected>Sin orden</option>
+                        <option value="asc">A-Z</option>
+                        <option value="desc">Z-A</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-2 d-flex align-items-end">
+                    <button type="button" id="btnLimpiarFiltrosFlores" class="btn btn-outline-secondary btn-sm px-2 btn-limpiar-filtros">
+                        Limpiar
+                    </button>
+                </div>
+                <div class="col-12 col-md-2 col-lg-4 d-flex justify-content-md-end align-items-end">
+                    <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearFlor", "ControladorCatalogo")', 'Registrar Flor')">+ Agregar Flor</button>
+                </div>
+            </div>
+
+            <div class="row g-3" id="contenedorFlores">
+                @if (Model.Count == 0)
+                {
+                    <div class="col-12">
+                        <div class="alert alert-light border text-muted mb-0">Aún no hay flores registradas.</div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var flor in Model)
+                    {
+                        <div class="col-12 col-md-6 col-lg-4 tarjeta-flor"
+                             data-id="@flor.Id"
+                             data-nombre="@flor.Nombre.ToLowerInvariant()"
+                             data-descripcion="@((flor.Descripcion ?? string.Empty).ToLowerInvariant())">
+                            <div class="card shadow-sm border-0 h-100">
+                                @if (!string.IsNullOrWhiteSpace(flor.FotoRuta))
+                                {
+                                    <img src="@flor.FotoRuta" class="card-img-top" alt="@flor.Nombre" style="height: 220px; object-fit: cover;" />
+                                }
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">@flor.Nombre</h5>
+                                    <p class="card-text text-muted mb-0">@flor.Descripcion</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="panel-arreglos" role="tabpanel" aria-labelledby="tab-arreglos">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-muted">Próximamente podrás registrar y visualizar arreglos aquí.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCatalogo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border: none; border-radius: 10px; overflow: hidden;">
+            <div class="modal-header" style="background-color: var(--color-primario); color: white;">
+                <h5 class="modal-title" id="modalCatalogoTitulo" style="font-family: var(--fuente-serif-elegante);">Título</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalCatalogoContenido">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .btn-limpiar-filtros {
+            height: 31px;
+            white-space: nowrap;
+            width: 100%;
+        }
+    </style>
+
+    <script>
+        function cargarModalCatalogo(url, titulo) {
+            $('#modalCatalogoTitulo').text(titulo);
+            $('#modalCatalogoContenido').html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
+            var modal = new bootstrap.Modal(document.getElementById('modalCatalogo'));
+            modal.show();
+            $.get(url, function (data) {
+                $('#modalCatalogoContenido').html(data);
+            });
+        }
+
+        $(document).on('submit', '#modalCatalogoContenido form', function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.indexOf('<!DOCTYPE html>') > -1) {
+                        location.reload();
+                    } else {
+                        $('#modalCatalogoContenido').html(response);
+                    }
+                }
+            });
+        });
+
+        function aplicarFiltroYOrdenFlores() {
+            var termino = ($('#inputBuscarFlores').val() || '').toString().trim().toLowerCase();
+            var ordenNombre = $('#selectOrdenFlores').val();
+
+            var $contenedor = $('#contenedorFlores');
+            var $tarjetas = $contenedor.find('.tarjeta-flor');
+
+            $tarjetas.each(function () {
+                var $tarjeta = $(this);
+                var nombre = ($tarjeta.data('nombre') || '').toString();
+                var descripcion = ($tarjeta.data('descripcion') || '').toString();
+
+                var coincideBusqueda = !termino || nombre.includes(termino) || descripcion.includes(termino);
+
+                if (coincideBusqueda) {
+                    $tarjeta.show();
+                } else {
+                    $tarjeta.hide();
+                }
+            });
+
+            var todasLasTarjetas = $tarjetas.get();
+            todasLasTarjetas.sort(function (a, b) {
+                var aNombre = ($(a).data('nombre') || '').toString();
+                var bNombre = ($(b).data('nombre') || '').toString();
+                var aId = parseInt($(a).data('id')) || 0;
+                var bId = parseInt($(b).data('id')) || 0;
+
+                if (ordenNombre && ordenNombre !== 'none') {
+                    var cmpNombre = aNombre.localeCompare(bNombre, 'es', { sensitivity: 'base' });
+                    if (cmpNombre !== 0) {
+                        return ordenNombre === 'asc' ? cmpNombre : -cmpNombre;
+                    }
+                }
+
+                return bId - aId;
+            });
+
+            todasLasTarjetas.forEach(function (tarjeta) {
+                $contenedor.append(tarjeta);
+            });
+
+            $('#filaSinResultadosFlores').remove();
+            var visibles = $tarjetas.filter(function () { return $(this).css('display') !== 'none'; }).length;
+            if (visibles === 0 && $tarjetas.length > 0) {
+                $contenedor.append('<div class="col-12" id="filaSinResultadosFlores"><div class="alert alert-light border text-muted mb-0">No se encontraron flores con los filtros seleccionados.</div></div>');
+            }
+        }
+
+        $('#inputBuscarFlores').on('input', aplicarFiltroYOrdenFlores);
+        $('#selectOrdenFlores').on('change', aplicarFiltroYOrdenFlores);
+
+        $('#btnLimpiarFiltrosFlores').on('click', function () {
+            $('#inputBuscarFlores').val('');
+            $('#selectOrdenFlores').val('none');
+            aplicarFiltroYOrdenFlores();
+        });
+
+        aplicarFiltroYOrdenFlores();
+    </script>
+}

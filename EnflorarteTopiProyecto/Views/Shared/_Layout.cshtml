@@ -1,6 +1,7 @@
 ﻿<!-- Este es, por asi decirlo, la pagina principal del sistema. Lo mas importante aqui es la barra de navegacion que siempre esta arriba. -->
 @{
     var ocultarNav = (ViewData["OcultarNav"] as bool?) == true;
+    var esSupervisor = User?.Identity?.IsAuthenticated == true && User.IsInRole("supervisor");
 }
 
 <!DOCTYPE html>
@@ -9,6 +10,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Enflorarte Floreria</title>
+    <link rel="icon" type="image/png" href="~/images/image_b087d3.png" />
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -54,12 +56,18 @@
                             <a class="nav-link @IsActive("Home", "Index")" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link @IsActive("ControladorUsuarios", "Index")" asp-area="" asp-controller="ControladorUsuarios" asp-action="Index">Usuarios</a>
-                        </li>
+                        @if (esSupervisor)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @IsActive("ControladorUsuarios", "Index")" asp-area="" asp-controller="ControladorUsuarios" asp-action="Index">Usuarios</a>
+                            </li>
+                        }
 
                         <li class="nav-item">
                             <a class="nav-link @IsActive("ControladorComandas", "Index")" asp-area="" asp-controller="ControladorComandas" asp-action="Index">Comandas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @IsActive("ControladorCatalogo", "Index")" asp-area="" asp-controller="ControladorCatalogo" asp-action="Index">Catálogo</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>

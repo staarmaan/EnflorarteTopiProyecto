@@ -1,10 +1,4 @@
-﻿IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = "EnflorarteBD")
-BEGIN
-    CREATE DATABASE EnflorarteBD;
-END
-GO
-
-USE EnflorarteBD;
+﻿USE EnflorarteTopiProyectoDb;
 GO
 
 -- Usuarios
@@ -18,15 +12,25 @@ CREATE TABLE dbo.usuario (
 GO
 -- enums del usuario.
 ALTER TABLE dbo.usuario
-    ADD CONSTRAINT chk_usuario_rol CHECK (rol IN (N'supervisor', N'vendedor', N'florista', N'repartidor'));
+    ADD CONSTRAINT chk_usuario_rol CHECK (rol IN (N'supervisor', N'ventas', N'florista', N'repartidor'));
 GO
 
+-- Flores (catálogo)
+CREATE TABLE dbo.flor (
+    flor_id INT IDENTITY(1,1) PRIMARY KEY,
+    nombre NVARCHAR(100) NOT NULL,
+    foto_ruta NVARCHAR(300) NULL,
+    descripcion NVARCHAR(500) NULL
+);
+GO
 
 
 
 -- Comandas
 CREATE TABLE dbo.comanda (
     comanda_id INT IDENTITY(1,1) PRIMARY KEY,
+
+    usuario_id INT NOT NULL, -- usuario creador de la comanda.
 
     cliente_nombre NVARCHAR(100) NOT NULL,
     cliente_telefono NVARCHAR(20) NULL,
@@ -39,7 +43,7 @@ CREATE TABLE dbo.comanda (
     nombre_arreglo NVARCHAR(150) NOT NULL,
     precio_arreglo DECIMAL(10,2) NOT NULL,
 
-    foto_arreglo NVARCHAR(300) NULL,
+    foto_arreglo_ruta NVARCHAR(300) NULL,
 
     estado NVARCHAR(20) NOT NULL DEFAULT (N'pendiente'), -- pendiente, en_proceso, listo y entregado.
     liquidado BIT NOT NULL DEFAULT(0),
@@ -53,6 +57,11 @@ CREATE TABLE dbo.comanda (
 
     repartidor_id INT NULL, -- usuario asignado, que tiene rol de repartidor.
 
+    CONSTRAINT fk_comanda_usuario FOREIGN KEY (usuario_id)
+        REFERENCES dbo.usuario(usuario_id)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+
     CONSTRAINT fk_comanda_repartidor FOREIGN KEY (repartidor_id)
         REFERENCES dbo.usuario(usuario_id)
         ON DELETE NO ACTION
@@ -61,15 +70,15 @@ CREATE TABLE dbo.comanda (
 GO
 -- enums de la comanda.
 ALTER TABLE dbo.comanda
-    ADD CONSTRAINT chk_comanda_tipo_entrega CHECK (tipo_entrega IN (N'envio', N'recoger'));
+    ADD CONSTRAINT chk_comanda_tipo_entrega CHECK (tipo_entrega IN (N'envio', N'recoger', N'otro'));
 GO
 
 ALTER TABLE dbo.comanda
-    ADD CONSTRAINT chk_comanda_estado CHECK (estado IN (N'pendiente', N'en_proceso', N'listo', N'entregado'));
+    ADD CONSTRAINT chk_comanda_estado CHECK (estado IN (N'solicitado', N'cancelado', N'pendiente', N'en_proceso', N'listo', N'entregado'));
 GO
 
 ALTER TABLE dbo.comanda
-    ADD CONSTRAINT chk_comanda_anticipo_tipo CHECK (estado IN (N'porcentaje', N'minimo', N'manual'));
+    ADD CONSTRAINT chk_comanda_anticipo_tipo CHECK (anticipo_tipo IN (N'porcentaje', N'minimo', N'manual') OR anticipo_tipo IS NULL);
 GO
 
 
