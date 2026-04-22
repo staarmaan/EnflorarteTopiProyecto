@@ -1,0 +1,100 @@
+@model ArregloDto
+@{
+    Layout = null;
+}
+
+<div class="p-2">
+    <form asp-action="CrearArreglo" asp-controller="ControladorCatalogo" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="card card-enflorarte h-100 shadow-sm">
+            <div class="card-header text-center py-3">
+                Registrar Arreglo
+            </div>
+            <div class="card-body p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Nombre" class="form-label text-muted small text-uppercase fw-bold"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="FotoArchivo" class="form-label text-muted small text-uppercase fw-bold"></label>
+                    <input asp-for="FotoArchivo" class="form-control" type="file" accept="image/*" />
+                    <span asp-validation-for="FotoArchivo" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Descripcion" class="form-label text-muted small text-uppercase fw-bold"></label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-1">
+                    <label class="form-label text-muted small text-uppercase fw-bold">Flores del arreglo</label>
+                </div>
+
+                @if (Model.Flores.Count == 0)
+                {
+                    <div class="alert alert-warning mb-0">No hay flores registradas todavía. Primero agrega flores al catálogo.</div>
+                }
+                else
+                {
+                    <div class="table-responsive border rounded">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 90px;">Agregar</th>
+                                    <th>Flor</th>
+                                    <th style="width: 140px;">Cantidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Flores.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="hidden" asp-for="Flores[i].FlorId" />
+                                            <input type="hidden" asp-for="Flores[i].FlorNombre" />
+                                            <div class="form-check m-0">
+                                                <input asp-for="Flores[i].Seleccionada" class="form-check-input chk-flor-arreglo" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <label asp-for="Flores[i].Seleccionada" class="form-label m-0">@Model.Flores[i].FlorNombre</label>
+                                        </td>
+                                        <td>
+                                            <input asp-for="Flores[i].Cantidad" class="form-control form-control-sm" min="0" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <span asp-validation-for="Flores" class="text-danger small"></span>
+                }
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary px-4" @(Model.Flores.Count == 0 ? "disabled" : null)>Guardar Arreglo</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function actualizarCantidadesArreglo() {
+        $('#modalCatalogoContenido .chk-flor-arreglo').each(function () {
+            var $check = $(this);
+            var $fila = $check.closest('tr');
+            var $cantidad = $fila.find('input[name$=".Cantidad"]');
+            $cantidad.prop('disabled', !$check.is(':checked'));
+        });
+    }
+
+    $(document).on('change', '#modalCatalogoContenido .chk-flor-arreglo', actualizarCantidadesArreglo);
+    actualizarCantidadesArreglo();
+</script>

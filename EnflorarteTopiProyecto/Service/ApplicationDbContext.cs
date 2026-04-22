@@ -12,6 +12,8 @@ namespace EnflorarteTopiProyecto.Service
         public DbSet<Usuario> Usuarios { get; set; } = null!;
         public DbSet<Comanda> Comandas { get; set; } = null!;
         public DbSet<Flor> Flores { get; set; } = null!;
+        public DbSet<Arreglo> Arreglos { get; set; } = null!;
+        public DbSet<ArregloFlor> ArreglosFlores { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) // Codigo para que se convierta el Enum de roles a string, o algo asi.
         {
@@ -166,6 +168,54 @@ namespace EnflorarteTopiProyecto.Service
                 entity.Property(e => e.Descripcion)
                       .HasColumnName("descripcion")
                       .HasMaxLength(500);
+            });
+
+            modelBuilder.Entity<Arreglo>(entity =>
+            {
+                entity.ToTable("arreglo");
+
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id)
+                      .HasColumnName("arreglo_id");
+
+                entity.Property(e => e.Nombre)
+                      .HasColumnName("nombre")
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(e => e.FotoRuta)
+                      .HasColumnName("foto_ruta")
+                      .HasMaxLength(300);
+
+                entity.Property(e => e.Descripcion)
+                      .HasColumnName("descripcion")
+                      .HasMaxLength(500);
+            });
+
+            modelBuilder.Entity<ArregloFlor>(entity =>
+            {
+                entity.ToTable("arreglo_flor");
+
+                entity.HasKey(e => new { e.ArregloId, e.FlorId });
+
+                entity.Property(e => e.ArregloId)
+                      .HasColumnName("arreglo_id");
+
+                entity.Property(e => e.FlorId)
+                      .HasColumnName("flor_id");
+
+                entity.Property(e => e.Cantidad)
+                      .HasColumnName("cantidad");
+
+                entity.HasOne(e => e.Arreglo)
+                      .WithMany(e => e.Flores)
+                      .HasForeignKey(e => e.ArregloId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Flor)
+                      .WithMany(e => e.Arreglos)
+                      .HasForeignKey(e => e.FlorId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
         }
 

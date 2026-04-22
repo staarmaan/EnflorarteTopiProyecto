@@ -1,4 +1,4 @@
-@model List<Flor>
+@model CatalogoIndexViewModel
 @{
     ViewData["Title"] = "Catálogo";
 }
@@ -50,7 +50,7 @@
             </div>
 
             <div class="row g-3" id="contenedorFlores">
-                @if (Model.Count == 0)
+                @if (Model.Flores.Count == 0)
                 {
                     <div class="col-12">
                         <div class="alert alert-light border text-muted mb-0">Aún no hay flores registradas.</div>
@@ -58,7 +58,7 @@
                 }
                 else
                 {
-                    foreach (var flor in Model)
+                    foreach (var flor in Model.Flores)
                     {
                         <div class="col-12 col-md-6 col-lg-4 tarjeta-flor"
                              data-id="@flor.Id"
@@ -81,8 +81,42 @@
         </div>
 
         <div class="tab-pane fade" id="panel-arreglos" role="tabpanel" aria-labelledby="tab-arreglos">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-muted">Próximamente podrás registrar y visualizar arreglos aquí.</div>
+            <div class="d-flex justify-content-end align-items-end mb-3">
+                <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearArreglo", "ControladorCatalogo")', 'Registrar Arreglo')">+ Agregar Arreglo</button>
+            </div>
+
+            <div class="row g-3">
+                @if (Model.Arreglos.Count == 0)
+                {
+                    <div class="col-12">
+                        <div class="alert alert-light border text-muted mb-0">Aún no hay arreglos registrados.</div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var arreglo in Model.Arreglos)
+                    {
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card shadow-sm border-0 h-100">
+                                @if (!string.IsNullOrWhiteSpace(arreglo.FotoRuta))
+                                {
+                                    <img src="@arreglo.FotoRuta" class="card-img-top" alt="@arreglo.Nombre" style="height: 220px; object-fit: cover;" />
+                                }
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">@arreglo.Nombre</h5>
+                                    <p class="card-text text-muted mb-2">@arreglo.Descripcion</p>
+                                    <div class="small text-muted">Flores del arreglo:</div>
+                                    <ul class="mb-0 small">
+                                        @foreach (var florArreglo in arreglo.Flores.OrderBy(f => f.Flor.Nombre))
+                                        {
+                                            <li>@florArreglo.Flor.Nombre x @florArreglo.Cantidad</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </div>
     </div>
@@ -126,20 +160,33 @@
 
         $(document).on('submit', '#modalCatalogoContenido form', function (e) {
             e.preventDefault();
-            var formData = new FormData(this);
+            var form = this;
+            var formData = new FormData(form);
+            var $btnSubmit = $(form).find('button[type="submit"]');
+            $btnSubmit.prop('disabled', true);
 
             $.ajax({
-                url: $(this).attr('action'),
+                url: $(form).attr('action'),
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    if (response.indexOf('<!DOCTYPE html>') > -1) {
+                    var html = (response || '').toString();
+                    var htmlLower = html.toLowerCase();
+                    var esPaginaCompleta = htmlLower.indexOf('<!doctype html') > -1 || htmlLower.indexOf('<html') > -1;
+
+                    if (esPaginaCompleta) {
                         location.reload();
                     } else {
-                        $('#modalCatalogoContenido').html(response);
+                        $('#modalCatalogoContenido').html(html);
                     }
+                },
+                error: function () {
+                    $('#modalCatalogoContenido').prepend('<div class="alert alert-danger mb-3">No se pudo guardar. Intenta de nuevo.</div>');
+                },
+                complete: function () {
+                    $btnSubmit.prop('disabled', false);
                 }
             });
         });

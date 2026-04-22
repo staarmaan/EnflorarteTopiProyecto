@@ -1,4 +1,10 @@
-﻿USE EnflorarteTopiProyectoDb;
+﻿IF DB_ID(N'EnflorarteTopiProyectoDb') IS NULL
+BEGIN
+    CREATE DATABASE EnflorarteTopiProyectoDb;
+END
+GO
+
+USE EnflorarteTopiProyectoDb;
 GO
 
 -- Usuarios
@@ -21,6 +27,33 @@ CREATE TABLE dbo.flor (
     nombre NVARCHAR(100) NOT NULL,
     foto_ruta NVARCHAR(300) NULL,
     descripcion NVARCHAR(500) NULL
+);
+GO
+
+-- Arreglos (catálogo)
+CREATE TABLE dbo.arreglo (
+    arreglo_id INT IDENTITY(1,1) PRIMARY KEY,
+    nombre NVARCHAR(100) NOT NULL,
+    foto_ruta NVARCHAR(300) NULL,
+    descripcion NVARCHAR(500) NULL
+);
+GO
+
+CREATE TABLE dbo.arreglo_flor (
+    arreglo_id INT NOT NULL,
+    flor_id INT NOT NULL,
+    cantidad INT NOT NULL,
+
+    CONSTRAINT pk_arreglo_flor PRIMARY KEY (arreglo_id, flor_id),
+    CONSTRAINT fk_arreglo_flor_arreglo FOREIGN KEY (arreglo_id)
+        REFERENCES dbo.arreglo(arreglo_id)
+        ON DELETE CASCADE
+        ON UPDATE NO ACTION,
+    CONSTRAINT fk_arreglo_flor_flor FOREIGN KEY (flor_id)
+        REFERENCES dbo.flor(flor_id)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION,
+    CONSTRAINT chk_arreglo_flor_cantidad CHECK (cantidad > 0)
 );
 GO
 
