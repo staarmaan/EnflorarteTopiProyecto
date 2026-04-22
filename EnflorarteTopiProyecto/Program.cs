@@ -2,7 +2,9 @@ using EnflorarteTopiProyecto.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
-var builder = WebApplication.CreateBuilder(args);
+using OpcionesBd;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
@@ -12,12 +14,13 @@ builder.Services.AddControllersWithViews(options =>
 });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
+    var dbType = builder.Configuration.GetSection("DatabaseType").Value ?? "sql";
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    options.UseSqlServer(connectionString);
+    OpcionesBD.UsarBD(options, dbType, builder);
 });
 //builder.Services.AddScoped<IPasswordService, PasswordService>();
 
-// Autenticación por cookies y autorización por roles
+// Autenticaciï¿½n por cookies y autorizaciï¿½n por roles
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
     {
@@ -51,13 +54,21 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseStaticFiles();
+app.MapControllerRoute(
+    name: "default",
+    //pattern: "{controller=Home}/{action=Index}/{id?}") // Te lleva a la pï¿½gina principal Home
+    pattern: "{controller=ControladorSesion}/{action=Index}/{id?}" // Te lleva a la pï¿½gina de inicio de sesiï¿½n
+); 
+
+/*
 app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    //pattern: "{controller=Home}/{action=Index}/{id?}") // Te lleva a la página principal Home
-    pattern: "{controller=ControladorSesion}/{action=Index}/{id?}") // Te lleva a la página de inicio de sesión
+    //pattern: "{controller=Home}/{action=Index}/{id?}") // Te lleva a la pï¿½gina principal Home
+    pattern: "{controller=ControladorSesion}/{action=Index}/{id?}") // Te lleva a la pï¿½gina de inicio de sesiï¿½n
     .WithStaticAssets();
-
+*/
 
 app.Run();

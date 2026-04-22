@@ -112,10 +112,10 @@ namespace EnflorarteTopiProyecto.Models
         // Datos del arreglo.
         public string NombreArreglo { get; set; } = string.Empty;
         [Precision(7, 2)] // 7 digitos en total y dos decimales. Entonces, el valor maximo permitido seria 99,999.99
-        [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El precio del arreglo debe ser entre 0 y 99,999.99.")]
+        [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El precio del arreglo debe ser entre 0 y 99,999.99.")]
         public decimal PrecioArreglo { get; set; }
         [Precision(7, 2)] // x2
-        [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El pago del envío debe ser entre 0 y 99,999.99.")]
+        [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El pago del envío debe ser entre 0 y 99,999.99.")]
         public decimal PagoEnvio { get; set; }
 
         /*
@@ -139,8 +139,8 @@ namespace EnflorarteTopiProyecto.Models
          */
 
         public AnticipoTipos? AnticipoTipo { get; set; } = AnticipoTipos.manual; // Por defecto, el tipo de anticipo es manual.
-        [Precision(7, 2)] // x3
-        [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El pago de anticipo debe ser entre 0 y 99,999.99.")]
+        [Precision(7, 2)] // x3             ʕ·͡ᴥ·ʔ
+        [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El pago de anticipo debe ser entre 0 y 99,999.99.")]
         public decimal AnticipoPagoTotal { get; set; }
     }
 }

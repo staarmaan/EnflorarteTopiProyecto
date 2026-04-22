@@ -67,11 +67,11 @@ namespace EnflorarteTopiProyecto.Models
 
         [Display(Name = "precio del arreglo")]
         [Required(ErrorMessage = "El {0} es obligatorio.")]
-        [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El {0} debe ser entre 0 y 99,999.99.")]
+        [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El {0} debe ser entre 0 y 99,999.99.")]
         public decimal PrecioArreglo { get; set; }
 
         [Display(Name = "pago del envío")]
-        [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El {0} debe ser entre 0 y 99,999.99.")]
+        [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El {0} debe ser entre 0 y 99,999.99.")]
         public decimal PagoEnvio { get; set; }
 
         [Display(Name = "ruta de foto del arreglo")]
@@ -92,7 +92,7 @@ namespace EnflorarteTopiProyecto.Models
         public AnticipoTipos? AnticipoTipo { get; set; }
 
         [Display(Name = "pago total de anticipo")]
-        [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El {0} debe ser entre 0 y 99,999.99.")]
+        [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El {0} debe ser entre 0 y 99,999.99.")]
         public decimal AnticipoPagoTotal { get; set; }
     }
 }
