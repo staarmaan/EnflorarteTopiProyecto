@@ -15,6 +15,14 @@ ALTER TABLE dbo.usuario
     ADD CONSTRAINT chk_usuario_rol CHECK (rol IN (N'supervisor', N'ventas', N'florista', N'repartidor'));
 GO
 
+-- Flores (catálogo)
+CREATE TABLE dbo.flor (
+    flor_id INT IDENTITY(1,1) PRIMARY KEY,
+    nombre NVARCHAR(100) NOT NULL,
+    foto_ruta NVARCHAR(300) NULL,
+    descripcion NVARCHAR(500) NULL
+);
+GO
 
 
 
