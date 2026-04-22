@@ -4,6 +4,7 @@ using EnflorarteTopiProyecto.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EnflorarteTopiProyecto.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260422060642_AddCamposComanda")]
+    partial class AddCamposComanda
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,15 +149,15 @@ namespace EnflorarteTopiProyecto.Migrations
 
                     b.ToTable("comanda", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Comanda_AnticipoTotal_NonNegative", "anticipo_total >= 0");
+                            t.HasCheckConstraint("CK_Comanda_AnticipoTotal_NonNegative", "[anticipo_total] >= 0");
 
-                            t.HasCheckConstraint("CK_Comanda_CantidadArreglo_ValidRange", "cantidad_arreglo BETWEEN 1 AND 100");
+                            t.HasCheckConstraint("CK_Comanda_CantidadArreglo_ValidRange", "[cantidad_arreglo] BETWEEN 1 AND 100");
 
-                            t.HasCheckConstraint("CK_Comanda_NumeroRuta_PositiveOrNull", "numero_ruta IS NULL OR numero_ruta > 0");
+                            t.HasCheckConstraint("CK_Comanda_NumeroRuta_PositiveOrNull", "[numero_ruta] IS NULL OR [numero_ruta] > 0");
 
-                            t.HasCheckConstraint("CK_Comanda_PagoEnvio_NonNegative", "pago_envio >= 0");
+                            t.HasCheckConstraint("CK_Comanda_PagoEnvio_NonNegative", "[pago_envio] >= 0");
 
-                            t.HasCheckConstraint("CK_Comanda_PrecioArreglo_NonNegative", "precio_arreglo >= 0");
+                            t.HasCheckConstraint("CK_Comanda_PrecioArreglo_NonNegative", "[precio_arreglo] >= 0");
                         });
                 });
 

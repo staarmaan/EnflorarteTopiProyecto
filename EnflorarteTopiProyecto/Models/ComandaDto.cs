@@ -39,6 +39,19 @@ namespace EnflorarteTopiProyecto.Models
         [Phone(ErrorMessage = "El {0} no tiene un formato válido.")]
         public string? ClienteTelefono { get; set; }
 
+        [Display(Name = "link de dirección")]
+        [StringLength(1000, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
+        [Url(ErrorMessage = "El {0} no tiene un formato válido.")]
+        public string? LinkDireccion { get; set; }
+
+        [Display(Name = "referencias de domicilio")]
+        [StringLength(500, ErrorMessage = "Las {0} no deben exceder {1} carácteres.")]
+        public string? DomicilioReferencias { get; set; }
+
+        [Display(Name = "número de ruta")]
+        [Range(1, int.MaxValue, ErrorMessage = "El {0} debe ser mayor a 0.")]
+        public int? NumeroRuta { get; set; }
+
         [Display(Name = "tipo de entrega")]
         [Required(ErrorMessage = "El {0} es obligatorio.")]
         [EnumDataType(typeof(TipoEntrega), ErrorMessage = "El {0} seleccionado no es válido.")]
@@ -73,6 +86,15 @@ namespace EnflorarteTopiProyecto.Models
         [Display(Name = "pago del envío")]
         [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El {0} debe ser entre 0 y 99,999.99.")]
         public decimal PagoEnvio { get; set; }
+
+        [Display(Name = "cantidad de arreglos")]
+        [Required(ErrorMessage = "La {0} es obligatoria.")]
+        [Range(1, 100, ErrorMessage = "La {0} debe estar entre {1} y {2}.")]
+        public int CantidadArreglo { get; set; } = 1;
+
+        [Display(Name = "mensaje del arreglo")]
+        [StringLength(500, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
+        public string? MensajeArreglo { get; set; }
 
         [Display(Name = "ruta de foto del arreglo")]
         [StringLength(300, ErrorMessage = "La {0} no debe exceder {1} carácteres.")]

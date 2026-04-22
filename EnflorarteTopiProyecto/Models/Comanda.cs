@@ -87,6 +87,7 @@ namespace EnflorarteTopiProyecto.Models
         public int UsuarioId { get; set; } // Usuario que creo la comanda.
         [ForeignKey(nameof(UsuarioId))]
         public Usuario? UsuarioCreador { get; set; } // navegación al usuario que creó la comanda
+       
         /*
         Creo que, en teoria, cualquier usuario podria ser repartidor. 
         Se le podria advertir al usuario asignando el repartiro de que esta eligiendo a uno que no lo es, pero si se le podria permitir.
@@ -104,6 +105,10 @@ namespace EnflorarteTopiProyecto.Models
         // Datos del cliente y entrega.
         public string ClienteNombre { get; set; } = string.Empty;
         public string? ClienteTelefono { get; set; } // No se si deberia ser obligatorio u opcional.
+        public string? LinkDireccion { get; set; } // link de la dirección del cliente.
+        public string? DomicilioReferencias { get; set; } // Detalles visuales de la ubicacion del  cliente.
+        public int? NumeroRuta { get; set; }
+
         public TipoEntrega TipoEntrega { get; set; }
         public string? DireccionEntrega { get; set; } // No seria obligatorio si el tipo de entrega es "recoger".
         public DateTime FechaEntrega { get; set; }
@@ -114,9 +119,15 @@ namespace EnflorarteTopiProyecto.Models
         [Precision(7, 2)] // 7 digitos en total y dos decimales. Entonces, el valor maximo permitido seria 99,999.99
         [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El precio del arreglo debe ser entre 0 y 99,999.99.")]
         public decimal PrecioArreglo { get; set; }
-        [Precision(7, 2)] // x2
+        [Precision(7, 2)] // lo mismo que en NombreArreglo.
         [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El pago del envío debe ser entre 0 y 99,999.99.")]
         public decimal PagoEnvio { get; set; }
+
+        [Range(1, 100, ErrorMessage = "La máxima cantiad de arreglos debe estar entre 1 y 100.")]
+        public int CantidadArreglo { get; set; } = 1;
+
+        public string? MensajeArreglo { get; set; }
+
 
         /*
         No se guarda la foto como tal en la bd, sino la ruta donde se encuentra almacenada. Si se guardara la foto en la bd, esta podria crecer mucho en tamaño y hacer las consultas muy lentas.

@@ -136,6 +136,9 @@ namespace EnflorarteTopiProyecto.Controllers
                 Liquidado = comandaDto.Liquidado,
                 ClienteNombre = comandaDto.ClienteNombre,
                 ClienteTelefono = comandaDto.ClienteTelefono,
+                LinkDireccion = comandaDto.LinkDireccion,
+                DomicilioReferencias = comandaDto.DomicilioReferencias,
+                NumeroRuta = comandaDto.NumeroRuta,
                 TipoEntrega = comandaDto.TipoEntrega,
                 DireccionEntrega = comandaDto.DireccionEntrega,
                 FechaEntrega = comandaDto.FechaEntrega,
@@ -143,6 +146,8 @@ namespace EnflorarteTopiProyecto.Controllers
                 NombreArreglo = comandaDto.NombreArreglo,
                 PrecioArreglo = comandaDto.PrecioArreglo,
                 PagoEnvio = comandaDto.PagoEnvio,
+                CantidadArreglo = comandaDto.CantidadArreglo,
+                MensajeArreglo = comandaDto.MensajeArreglo,
                 FotoArregloRuta = comandaDto.FotoArregloRuta,
                 AnticipoTipo = comandaDto.AnticipoTipo,
                 AnticipoPagoTotal = comandaDto.AnticipoPagoTotal
@@ -180,6 +185,9 @@ namespace EnflorarteTopiProyecto.Controllers
                 Liquidado = comandaAEditar.Liquidado,
                 ClienteNombre = comandaAEditar.ClienteNombre,
                 ClienteTelefono = comandaAEditar.ClienteTelefono,
+                LinkDireccion = comandaAEditar.LinkDireccion,
+                DomicilioReferencias = comandaAEditar.DomicilioReferencias,
+                NumeroRuta = comandaAEditar.NumeroRuta,
                 TipoEntrega = comandaAEditar.TipoEntrega,
                 DireccionEntrega = comandaAEditar.DireccionEntrega,
                 FechaEntrega = comandaAEditar.FechaEntrega,
@@ -187,6 +195,8 @@ namespace EnflorarteTopiProyecto.Controllers
                 NombreArreglo = comandaAEditar.NombreArreglo,
                 PrecioArreglo = comandaAEditar.PrecioArreglo,
                 PagoEnvio = comandaAEditar.PagoEnvio,
+                CantidadArreglo = comandaAEditar.CantidadArreglo,
+                MensajeArreglo = comandaAEditar.MensajeArreglo,
                 FotoArregloRuta = comandaAEditar.FotoArregloRuta,
                 AnticipoTipo = comandaAEditar.AnticipoTipo,
                 AnticipoPagoTotal = comandaAEditar.AnticipoPagoTotal
@@ -270,6 +280,9 @@ namespace EnflorarteTopiProyecto.Controllers
             comandaExistente.Liquidado = comandaDto.Liquidado;
             comandaExistente.ClienteNombre = comandaDto.ClienteNombre;
             comandaExistente.ClienteTelefono = comandaDto.ClienteTelefono;
+            comandaExistente.LinkDireccion = comandaDto.LinkDireccion;
+            comandaExistente.DomicilioReferencias = comandaDto.DomicilioReferencias;
+            comandaExistente.NumeroRuta = comandaDto.NumeroRuta;
             comandaExistente.TipoEntrega = comandaDto.TipoEntrega;
             comandaExistente.DireccionEntrega = comandaDto.DireccionEntrega;
             comandaExistente.FechaEntrega = comandaDto.FechaEntrega;
@@ -277,6 +290,8 @@ namespace EnflorarteTopiProyecto.Controllers
             comandaExistente.NombreArreglo = comandaDto.NombreArreglo;
             comandaExistente.PrecioArreglo = comandaDto.PrecioArreglo;
             comandaExistente.PagoEnvio = comandaDto.PagoEnvio;
+            comandaExistente.CantidadArreglo = comandaDto.CantidadArreglo;
+            comandaExistente.MensajeArreglo = comandaDto.MensajeArreglo;
             comandaExistente.FotoArregloRuta = comandaDto.FotoArregloRuta;
             comandaExistente.AnticipoTipo = comandaDto.AnticipoTipo;
             comandaExistente.AnticipoPagoTotal = comandaDto.AnticipoPagoTotal;
