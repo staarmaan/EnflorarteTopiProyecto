@@ -1,0 +1,56 @@
+@model Flor
+@{
+    Layout = null;
+}
+
+<div class="p-2">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-md-5">
+                    @if (!string.IsNullOrWhiteSpace(Model.FotoRuta))
+                    {
+                        <img src="@Model.FotoRuta" class="w-100 rounded border detalle-flor-img" alt="@Model.Nombre" />
+                    }
+                    else
+                    {
+                        <div class="w-100 rounded border d-flex align-items-center justify-content-center text-muted detalle-flor-img">Sin imagen</div>
+                    }
+                </div>
+                <div class="col-12 col-md-7">
+                    <h4 class="card-title mb-2">@Model.Nombre</h4>
+                    <p class="text-muted mb-3">@(string.IsNullOrWhiteSpace(Model.Descripcion) ? "Sin descripción." : Model.Descripcion)</p>
+
+                    <div class="small text-muted mb-1">Inventario por color:</div>
+                    @if (Model.InventarioColores.Count == 0)
+                    {
+                        <div class="text-muted">No hay colores registrados para esta flor.</div>
+                    }
+                    else
+                    {
+                        <ul class="mb-3">
+                            @foreach (var inventario in Model.InventarioColores.OrderBy(c => c.Color))
+                            {
+                                <li>@inventario.Color: @inventario.Cantidad</li>
+                            }
+                        </ul>
+                    }
+
+                    <button type="button"
+                            class="btn btn-outline-primary"
+                            onclick="cargarModalCatalogo('@Url.Action("EditarInventarioFlor", "ControladorCatalogo", new { id = Model.Id })', 'Editar Inventario')">
+                        Editar inventario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .detalle-flor-img {
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        background-color: #f8f9fa;
+    }
+</style>

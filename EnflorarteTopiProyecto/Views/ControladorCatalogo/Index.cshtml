@@ -1,4 +1,4 @@
-@model List<Flor>
+@model CatalogoIndexViewModel
 @{
     ViewData["Title"] = "Catálogo";
 }
@@ -45,12 +45,13 @@
                     </button>
                 </div>
                 <div class="col-12 col-md-2 col-lg-4 d-flex justify-content-md-end align-items-end">
+                    <button class="btn btn-outline-primary me-2" onclick="cargarModalCatalogo('@Url.Action("InventarioGeneral", "ControladorCatalogo")', 'Inventario General')">Inventario</button>
                     <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearFlor", "ControladorCatalogo")', 'Registrar Flor')">+ Agregar Flor</button>
                 </div>
             </div>
 
             <div class="row g-3" id="contenedorFlores">
-                @if (Model.Count == 0)
+                @if (Model.Flores.Count == 0)
                 {
                     <div class="col-12">
                         <div class="alert alert-light border text-muted mb-0">Aún no hay flores registradas.</div>
@@ -58,22 +59,27 @@
                 }
                 else
                 {
-                    foreach (var flor in Model)
+                    foreach (var flor in Model.Flores)
                     {
-                        <div class="col-12 col-md-6 col-lg-4 tarjeta-flor"
+                        <div class="col-12 col-sm-6 col-lg-3 tarjeta-flor"
                              data-id="@flor.Id"
                              data-nombre="@flor.Nombre.ToLowerInvariant()"
                              data-descripcion="@((flor.Descripcion ?? string.Empty).ToLowerInvariant())">
-                            <div class="card shadow-sm border-0 h-100">
+                            <button type="button"
+                                    class="card shadow-sm border-0 w-100 text-start card-catalogo-cuadrada card-catalogo-flor"
+                                    onclick="cargarModalCatalogo('@Url.Action("DetalleFlor", "ControladorCatalogo", new { id = flor.Id })', 'Detalle de Flor')">
                                 @if (!string.IsNullOrWhiteSpace(flor.FotoRuta))
                                 {
-                                    <img src="@flor.FotoRuta" class="card-img-top" alt="@flor.Nombre" style="height: 220px; object-fit: cover;" />
+                                    <img src="@flor.FotoRuta" class="card-img-top card-catalogo-flor-img" alt="@flor.Nombre" />
                                 }
-                                <div class="card-body">
-                                    <h5 class="card-title mb-2">@flor.Nombre</h5>
-                                    <p class="card-text text-muted mb-0">@flor.Descripcion</p>
+                                else
+                                {
+                                    <div class="card-catalogo-flor-img d-flex align-items-center justify-content-center text-muted">Sin imagen</div>
+                                }
+                                <div class="card-body py-2 d-flex align-items-center justify-content-center">
+                                    <h5 class="card-title mb-0 text-center">@flor.Nombre</h5>
                                 </div>
-                            </div>
+                            </button>
                         </div>
                     }
                 }
@@ -81,8 +87,40 @@
         </div>
 
         <div class="tab-pane fade" id="panel-arreglos" role="tabpanel" aria-labelledby="tab-arreglos">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-muted">Próximamente podrás registrar y visualizar arreglos aquí.</div>
+            <div class="d-flex justify-content-end align-items-end mb-3">
+                <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearArreglo", "ControladorCatalogo")', 'Registrar Arreglo')">+ Agregar Arreglo</button>
+            </div>
+
+            <div class="row g-3">
+                @if (Model.Arreglos.Count == 0)
+                {
+                    <div class="col-12">
+                        <div class="alert alert-light border text-muted mb-0">Aún no hay arreglos registrados.</div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var arreglo in Model.Arreglos)
+                    {
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <button type="button"
+                                    class="card shadow-sm border-0 w-100 text-start card-catalogo-cuadrada card-catalogo-arreglo"
+                                    onclick="cargarModalCatalogo('@Url.Action("DetalleArreglo", "ControladorCatalogo", new { id = arreglo.Id })', 'Detalle de Arreglo')">
+                                @if (!string.IsNullOrWhiteSpace(arreglo.FotoRuta))
+                                {
+                                    <img src="@arreglo.FotoRuta" class="card-img-top card-catalogo-flor-img" alt="@arreglo.Nombre" />
+                                }
+                                else
+                                {
+                                    <div class="card-catalogo-flor-img d-flex align-items-center justify-content-center text-muted">Sin imagen</div>
+                                }
+                                <div class="card-body py-2 d-flex align-items-center justify-content-center">
+                                    <h5 class="card-title mb-0 text-center">@arreglo.Nombre</h5>
+                                </div>
+                            </button>
+                        </div>
+                    }
+                }
             </div>
         </div>
     </div>
@@ -111,6 +149,40 @@
             white-space: nowrap;
             width: 100%;
         }
+
+        .card-catalogo-cuadrada {
+            min-height: 220px;
+            border-radius: 12px;
+            background: #fff;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .card-catalogo-cuadrada:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12) !important;
+        }
+
+        .card-catalogo-cuadrada .card-title {
+            color: var(--color-primario);
+            font-weight: 600;
+        }
+
+        .card-catalogo-flor {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .card-catalogo-arreglo {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .card-catalogo-flor-img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            background-color: #f8f9fa;
+        }
     </style>
 
     <script>
@@ -126,20 +198,33 @@
 
         $(document).on('submit', '#modalCatalogoContenido form', function (e) {
             e.preventDefault();
-            var formData = new FormData(this);
+            var form = this;
+            var formData = new FormData(form);
+            var $btnSubmit = $(form).find('button[type="submit"]');
+            $btnSubmit.prop('disabled', true);
 
             $.ajax({
-                url: $(this).attr('action'),
+                url: $(form).attr('action'),
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    if (response.indexOf('<!DOCTYPE html>') > -1) {
+                    var html = (response || '').toString();
+                    var htmlLower = html.toLowerCase();
+                    var esPaginaCompleta = htmlLower.indexOf('<!doctype html') > -1 || htmlLower.indexOf('<html') > -1;
+
+                    if (esPaginaCompleta) {
                         location.reload();
                     } else {
-                        $('#modalCatalogoContenido').html(response);
+                        $('#modalCatalogoContenido').html(html);
                     }
+                },
+                error: function () {
+                    $('#modalCatalogoContenido').prepend('<div class="alert alert-danger mb-3">No se pudo guardar. Intenta de nuevo.</div>');
+                },
+                complete: function () {
+                    $btnSubmit.prop('disabled', false);
                 }
             });
         });
