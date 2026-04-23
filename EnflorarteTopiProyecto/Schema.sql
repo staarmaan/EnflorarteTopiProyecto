@@ -58,6 +58,7 @@ CREATE TABLE dbo.arreglo_flor (
     arreglo_id INT NOT NULL,
     flor_id INT NOT NULL,
     cantidad INT NOT NULL,
+    color_seleccionado NVARCHAR(50) NOT NULL DEFAULT(N'a elegir'),
 
     CONSTRAINT pk_arreglo_flor PRIMARY KEY (arreglo_id, flor_id),
     CONSTRAINT fk_arreglo_flor_arreglo FOREIGN KEY (arreglo_id)
