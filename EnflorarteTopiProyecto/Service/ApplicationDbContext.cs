@@ -12,6 +12,7 @@ namespace EnflorarteTopiProyecto.Service
         public DbSet<Usuario> Usuarios { get; set; } = null!;
         public DbSet<Comanda> Comandas { get; set; } = null!;
         public DbSet<Flor> Flores { get; set; } = null!;
+        public DbSet<FlorInventarioColor> FloresInventarioColores { get; set; } = null!;
         public DbSet<Arreglo> Arreglos { get; set; } = null!;
         public DbSet<ArregloFlor> ArreglosFlores { get; set; } = null!;
 
@@ -216,6 +217,34 @@ namespace EnflorarteTopiProyecto.Service
                       .WithMany(e => e.Arreglos)
                       .HasForeignKey(e => e.FlorId)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<FlorInventarioColor>(entity =>
+            {
+                entity.ToTable("flor_inventario_color");
+
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id)
+                      .HasColumnName("flor_inventario_color_id");
+
+                entity.Property(e => e.FlorId)
+                      .HasColumnName("flor_id");
+
+                entity.Property(e => e.Color)
+                      .HasColumnName("color")
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(e => e.Cantidad)
+                      .HasColumnName("cantidad");
+
+                entity.HasIndex(e => new { e.FlorId, e.Color })
+                      .IsUnique();
+
+                entity.HasOne(e => e.Flor)
+                      .WithMany(e => e.InventarioColores)
+                      .HasForeignKey(e => e.FlorId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

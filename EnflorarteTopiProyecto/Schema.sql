@@ -30,6 +30,21 @@ CREATE TABLE dbo.flor (
 );
 GO
 
+CREATE TABLE dbo.flor_inventario_color (
+    flor_inventario_color_id INT IDENTITY(1,1) PRIMARY KEY,
+    flor_id INT NOT NULL,
+    color NVARCHAR(50) NOT NULL,
+    cantidad INT NOT NULL DEFAULT(0),
+
+    CONSTRAINT fk_flor_inventario_color_flor FOREIGN KEY (flor_id)
+        REFERENCES dbo.flor(flor_id)
+        ON DELETE CASCADE
+        ON UPDATE NO ACTION,
+    CONSTRAINT ck_flor_inventario_color_cantidad_nonnegative CHECK (cantidad >= 0),
+    CONSTRAINT uq_flor_inventario_color UNIQUE (flor_id, color)
+);
+GO
+
 -- Arreglos (catálogo)
 CREATE TABLE dbo.arreglo (
     arreglo_id INT IDENTITY(1,1) PRIMARY KEY,

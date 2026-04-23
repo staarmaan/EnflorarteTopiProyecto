@@ -13,6 +13,7 @@ namespace EnflorarteTopiProyecto.Controllers
     public class ControladorCatalogo : Controller
     {
         private const int MAX_IMAGEN_BYTES = 10 * 1024 * 1024;
+        private static readonly string[] COLORES_BASE_INVENTARIO = { "Rojo", "Rosa Claro", "Fiusha", "Blanca", "Lila" };
         private readonly ApplicationDbContext context;
 
         public ControladorCatalogo(ApplicationDbContext context)
@@ -64,9 +65,52 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(new FlorDto());
         }
 
+        public IActionResult InventarioGeneral()
+        {
+            var flores = context.Flores
+                .Include(f => f.InventarioColores)
+                .OrderBy(f => f.Nombre)
+                .ToList();
+
+            var coloresEnInventario = flores
+                .SelectMany(f => f.InventarioColores.Select(c => c.Color))
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .ToList();
+
+            var coloresExtras = coloresEnInventario
+                .Where(c => !COLORES_BASE_INVENTARIO.Any(baseColor => string.Equals(baseColor, c, StringComparison.OrdinalIgnoreCase)))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(c => c)
+                .ToList();
+
+            var colores = COLORES_BASE_INVENTARIO
+                .Concat(coloresExtras)
+                .ToList();
+
+            var modelo = new InventarioGeneralViewModel
+            {
+                Colores = colores,
+                Filas = flores.Select(f => new InventarioGeneralFilaViewModel
+                {
+                    FlorId = f.Id,
+                    FlorNombre = f.Nombre,
+                    CantidadesPorColor = colores.ToDictionary(
+                        color => color,
+                        color => f.InventarioColores
+                            .FirstOrDefault(i => string.Equals(i.Color, color, StringComparison.OrdinalIgnoreCase))?.Cantidad ?? 0)
+                }).ToList()
+            };
+
+            return View(modelo);
+        }
+
         public IActionResult DetalleFlor(int id)
         {
-            var flor = context.Flores.FirstOrDefault(f => f.Id == id);
+            AsegurarColoresBaseInventario(id);
+
+            var flor = context.Flores
+                .Include(f => f.InventarioColores)
+                .FirstOrDefault(f => f.Id == id);
             if (flor == null)
             {
                 return Content("<div class='alert alert-warning mb-0'>Flor no encontrada.</div>", "text/html");
@@ -106,6 +150,17 @@ namespace EnflorarteTopiProyecto.Controllers
             context.Flores.Add(flor);
             context.SaveChanges();
 
+            var coloresIniciales = COLORES_BASE_INVENTARIO
+                .Select(color => new FlorInventarioColor
+                {
+                    FlorId = flor.Id,
+                    Color = color,
+                    Cantidad = 0
+                }).ToList();
+
+            context.FloresInventarioColores.AddRange(coloresIniciales);
+            context.SaveChanges();
+
             TempData["Toast.Message"] = "Flor registrada correctamente.";
             TempData["Toast.Type"] = "success";
 
@@ -123,6 +178,41 @@ namespace EnflorarteTopiProyecto.Controllers
                         FlorId = f.Id,
                         FlorNombre = f.Nombre,
                         Cantidad = 1
+                    })
+                    .ToList()
+            };
+
+            return View(dto);
+        }
+
+        public IActionResult EditarInventarioFlor(int id)
+        {
+            AsegurarColoresBaseInventario(id);
+
+            var flor = context.Flores
+                .Include(f => f.InventarioColores)
+                .FirstOrDefault(f => f.Id == id);
+
+            if (flor == null)
+            {
+                TempData["Toast.Message"] = "Flor no encontrada.";
+                TempData["Toast.Type"] = "warning";
+                return RedirectToAction("Index");
+            }
+
+            var dto = new EditarInventarioFlorDto
+            {
+                FlorId = flor.Id,
+                NombreFlor = flor.Nombre,
+                DescripcionFlor = flor.Descripcion,
+                FotoRutaFlor = flor.FotoRuta,
+                Colores = flor.InventarioColores
+                    .OrderBy(c => c.Color)
+                    .Select(c => new InventarioColorAjusteDto
+                    {
+                        InventarioId = c.Id,
+                        Color = c.Color,
+                        CantidadActual = c.Cantidad
                     })
                     .ToList()
             };
@@ -379,6 +469,166 @@ namespace EnflorarteTopiProyecto.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditarInventarioFlor(EditarInventarioFlorDto dto, string? accion)
+        {
+            var flor = context.Flores
+                .Include(f => f.InventarioColores)
+                .FirstOrDefault(f => f.Id == dto.FlorId);
+
+            if (flor == null)
+            {
+                TempData["Toast.Message"] = "Flor no encontrada.";
+                TempData["Toast.Type"] = "warning";
+                return RedirectToAction("Index");
+            }
+
+            dto.Colores ??= new List<InventarioColorAjusteDto>();
+            dto.NombreFlor = flor.Nombre;
+            dto.DescripcionFlor = flor.Descripcion;
+            dto.FotoRutaFlor = flor.FotoRuta;
+
+            foreach (var ajuste in dto.Colores)
+            {
+                if (ajuste.AgregarCantidad.HasValue && (ajuste.AgregarCantidad.Value < 1 || ajuste.AgregarCantidad.Value > 999))
+                {
+                    ModelState.AddModelError(string.Empty, $"La cantidad a agregar para '{ajuste.Color}' no es válida.");
+                }
+
+                if (ajuste.QuitarCantidad.HasValue && (ajuste.QuitarCantidad.Value < 1 || ajuste.QuitarCantidad.Value > 999))
+                {
+                    ModelState.AddModelError(string.Empty, $"La cantidad a quitar para '{ajuste.Color}' no es válida.");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.NuevoColor) && dto.NuevoColor.Trim().Length > 50)
+            {
+                ModelState.AddModelError(nameof(dto.NuevoColor), "El color no debe exceder 50 caracteres.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                dto.Colores = flor.InventarioColores
+                    .OrderBy(c => c.Color)
+                    .Select(c => new InventarioColorAjusteDto
+                    {
+                        InventarioId = c.Id,
+                        Color = c.Color,
+                        CantidadActual = c.Cantidad
+                    })
+                    .ToList();
+
+                return View(dto);
+            }
+
+            if (string.Equals(accion, "agregar-color", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(dto.NuevoColor))
+                {
+                    ModelState.AddModelError(nameof(dto.NuevoColor), "Ingresa un color para agregar.");
+                }
+                else
+                {
+                    var nuevoColor = dto.NuevoColor.Trim();
+                    var existeColor = flor.InventarioColores
+                        .Any(c => c.Color.ToLower() == nuevoColor.ToLower());
+
+                    if (existeColor)
+                    {
+                        ModelState.AddModelError(nameof(dto.NuevoColor), "Ese color ya existe para esta flor.");
+                    }
+                    else
+                    {
+                        context.FloresInventarioColores.Add(new FlorInventarioColor
+                        {
+                            FlorId = flor.Id,
+                            Color = nuevoColor,
+                            Cantidad = 0
+                        });
+
+                        context.SaveChanges();
+                        dto.NuevoColor = string.Empty;
+                    }
+                }
+
+                dto.Colores = context.FloresInventarioColores
+                    .Where(c => c.FlorId == flor.Id)
+                    .OrderBy(c => c.Color)
+                    .Select(c => new InventarioColorAjusteDto
+                    {
+                        InventarioId = c.Id,
+                        Color = c.Color,
+                        CantidadActual = c.Cantidad
+                    })
+                    .ToList();
+
+                return View(dto);
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.NuevoColor))
+            {
+                var nuevoColor = dto.NuevoColor.Trim();
+                var existeColor = flor.InventarioColores
+                    .Any(c => c.Color.ToLower() == nuevoColor.ToLower());
+
+                if (existeColor)
+                {
+                    ModelState.AddModelError(nameof(dto.NuevoColor), "Ese color ya existe para esta flor.");
+                }
+                else
+                {
+                    context.FloresInventarioColores.Add(new FlorInventarioColor
+                    {
+                        FlorId = flor.Id,
+                        Color = nuevoColor,
+                        Cantidad = 0
+                    });
+                }
+            }
+
+            foreach (var ajuste in dto.Colores)
+            {
+                var colorDb = flor.InventarioColores.FirstOrDefault(c => c.Id == ajuste.InventarioId);
+                if (colorDb == null)
+                {
+                    continue;
+                }
+
+                if (ajuste.AgregarCantidad.HasValue)
+                {
+                    colorDb.Cantidad += ajuste.AgregarCantidad.Value;
+                }
+
+                if (ajuste.QuitarCantidad.HasValue)
+                {
+                    colorDb.Cantidad = Math.Max(0, colorDb.Cantidad - ajuste.QuitarCantidad.Value);
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                dto.Colores = flor.InventarioColores
+                    .OrderBy(c => c.Color)
+                    .Select(c => new InventarioColorAjusteDto
+                    {
+                        InventarioId = c.Id,
+                        Color = c.Color,
+                        CantidadActual = c.Cantidad
+                    })
+                    .ToList();
+
+                return View(dto);
+            }
+
+            context.SaveChanges();
+
+            TempData["Toast.Message"] = "Inventario actualizado correctamente.";
+            TempData["Toast.Type"] = "success";
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
         [Authorize(Roles = "supervisor")]
         [ValidateAntiForgeryToken]
         public IActionResult EliminarArreglo(int id, string contrasenaSupervisor)
@@ -463,6 +713,39 @@ namespace EnflorarteTopiProyecto.Controllers
             }
 
             return false;
+        }
+
+        private void AsegurarColoresBaseInventario(int florId)
+        {
+            if (florId <= 0)
+            {
+                return;
+            }
+
+            var existentes = context.FloresInventarioColores
+                .Where(c => c.FlorId == florId)
+                .Select(c => c.Color)
+                .ToList();
+
+            var setExistentes = existentes
+                .Select(c => c.Trim().ToLower())
+                .ToHashSet();
+
+            var faltantes = COLORES_BASE_INVENTARIO
+                .Where(color => !setExistentes.Contains(color.Trim().ToLower()))
+                .Select(color => new FlorInventarioColor
+                {
+                    FlorId = florId,
+                    Color = color,
+                    Cantidad = 0
+                })
+                .ToList();
+
+            if (faltantes.Count > 0)
+            {
+                context.FloresInventarioColores.AddRange(faltantes);
+                context.SaveChanges();
+            }
         }
 
         private bool ValidarContrasenaSupervisor(string contrasenaIngresada)

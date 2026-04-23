@@ -96,6 +96,35 @@ BEGIN
         CONSTRAINT chk_arreglo_flor_cantidad CHECK (cantidad > 0)
     );
 END");
+
+    db.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID(N'dbo.flor_inventario_color', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.flor_inventario_color (
+        flor_inventario_color_id INT IDENTITY(1,1) PRIMARY KEY,
+        flor_id INT NOT NULL,
+        color NVARCHAR(50) NOT NULL,
+        cantidad INT NOT NULL DEFAULT(0),
+
+        CONSTRAINT fk_flor_inventario_color_flor FOREIGN KEY (flor_id)
+            REFERENCES dbo.flor(flor_id)
+            ON DELETE CASCADE
+            ON UPDATE NO ACTION,
+        CONSTRAINT ck_flor_inventario_color_cantidad_nonnegative CHECK (cantidad >= 0),
+        CONSTRAINT uq_flor_inventario_color UNIQUE (flor_id, color)
+    );
+END");
+
+    db.Database.ExecuteSqlRaw(@"
+INSERT INTO dbo.flor_inventario_color (flor_id, color, cantidad)
+SELECT f.flor_id, v.color, 0
+FROM dbo.flor f
+CROSS JOIN (VALUES (N'Rojo'), (N'Rosa Claro'), (N'Fiusha'), (N'Blanca'), (N'Lila')) v(color)
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.flor_inventario_color fic
+    WHERE fic.flor_id = f.flor_id AND fic.color = v.color
+);");
 }
 
 // Configure the HTTP request pipeline.
