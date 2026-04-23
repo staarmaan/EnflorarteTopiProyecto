@@ -1,0 +1,17 @@
+@model Flor
+@{
+    Layout = null;
+}
+
+<div class="p-2">
+    <div class="card border-0 shadow-sm">
+        @if (!string.IsNullOrWhiteSpace(Model.FotoRuta))
+        {
+            <img src="@Model.FotoRuta" class="card-img-top" alt="@Model.Nombre" style="max-height: 320px; object-fit: cover;" />
+        }
+        <div class="card-body">
+            <h4 class="card-title mb-2">@Model.Nombre</h4>
+            <p class="text-muted mb-0">@(string.IsNullOrWhiteSpace(Model.Descripcion) ? "Sin descripción." : Model.Descripcion)</p>
+        </div>
+    </div>
+</div>

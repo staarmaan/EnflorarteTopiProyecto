@@ -5,6 +5,8 @@ namespace EnflorarteTopiProyecto.Models
 {
     public class ArregloDto
     {
+        public string? FotoRutaActual { get; set; }
+
         [Display(Name = "nombre")]
         [Required(ErrorMessage = "El {0} es obligatorio.")]
         [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} caracteres.")]

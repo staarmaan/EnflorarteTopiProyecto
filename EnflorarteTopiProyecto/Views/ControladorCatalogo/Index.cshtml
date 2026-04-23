@@ -60,20 +60,25 @@
                 {
                     foreach (var flor in Model.Flores)
                     {
-                        <div class="col-12 col-md-6 col-lg-4 tarjeta-flor"
+                        <div class="col-12 col-sm-6 col-lg-3 tarjeta-flor"
                              data-id="@flor.Id"
                              data-nombre="@flor.Nombre.ToLowerInvariant()"
                              data-descripcion="@((flor.Descripcion ?? string.Empty).ToLowerInvariant())">
-                            <div class="card shadow-sm border-0 h-100">
+                            <button type="button"
+                                    class="card shadow-sm border-0 w-100 text-start card-catalogo-cuadrada card-catalogo-flor"
+                                    onclick="cargarModalCatalogo('@Url.Action("DetalleFlor", "ControladorCatalogo", new { id = flor.Id })', 'Detalle de Flor')">
                                 @if (!string.IsNullOrWhiteSpace(flor.FotoRuta))
                                 {
-                                    <img src="@flor.FotoRuta" class="card-img-top" alt="@flor.Nombre" style="height: 220px; object-fit: cover;" />
+                                    <img src="@flor.FotoRuta" class="card-img-top card-catalogo-flor-img" alt="@flor.Nombre" />
                                 }
-                                <div class="card-body">
-                                    <h5 class="card-title mb-2">@flor.Nombre</h5>
-                                    <p class="card-text text-muted mb-0">@flor.Descripcion</p>
+                                else
+                                {
+                                    <div class="card-catalogo-flor-img d-flex align-items-center justify-content-center text-muted">Sin imagen</div>
+                                }
+                                <div class="card-body py-2 d-flex align-items-center justify-content-center">
+                                    <h5 class="card-title mb-0 text-center">@flor.Nombre</h5>
                                 </div>
-                            </div>
+                            </button>
                         </div>
                     }
                 }
@@ -96,24 +101,22 @@
                 {
                     foreach (var arreglo in Model.Arreglos)
                     {
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="card shadow-sm border-0 h-100">
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <button type="button"
+                                    class="card shadow-sm border-0 w-100 text-start card-catalogo-cuadrada card-catalogo-arreglo"
+                                    onclick="cargarModalCatalogo('@Url.Action("DetalleArreglo", "ControladorCatalogo", new { id = arreglo.Id })', 'Detalle de Arreglo')">
                                 @if (!string.IsNullOrWhiteSpace(arreglo.FotoRuta))
                                 {
-                                    <img src="@arreglo.FotoRuta" class="card-img-top" alt="@arreglo.Nombre" style="height: 220px; object-fit: cover;" />
+                                    <img src="@arreglo.FotoRuta" class="card-img-top card-catalogo-flor-img" alt="@arreglo.Nombre" />
                                 }
-                                <div class="card-body">
-                                    <h5 class="card-title mb-2">@arreglo.Nombre</h5>
-                                    <p class="card-text text-muted mb-2">@arreglo.Descripcion</p>
-                                    <div class="small text-muted">Flores del arreglo:</div>
-                                    <ul class="mb-0 small">
-                                        @foreach (var florArreglo in arreglo.Flores.OrderBy(f => f.Flor.Nombre))
-                                        {
-                                            <li>@florArreglo.Flor.Nombre x @florArreglo.Cantidad</li>
-                                        }
-                                    </ul>
+                                else
+                                {
+                                    <div class="card-catalogo-flor-img d-flex align-items-center justify-content-center text-muted">Sin imagen</div>
+                                }
+                                <div class="card-body py-2 d-flex align-items-center justify-content-center">
+                                    <h5 class="card-title mb-0 text-center">@arreglo.Nombre</h5>
                                 </div>
-                            </div>
+                            </button>
                         </div>
                     }
                 }
@@ -144,6 +147,40 @@
             height: 31px;
             white-space: nowrap;
             width: 100%;
+        }
+
+        .card-catalogo-cuadrada {
+            min-height: 220px;
+            border-radius: 12px;
+            background: #fff;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .card-catalogo-cuadrada:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12) !important;
+        }
+
+        .card-catalogo-cuadrada .card-title {
+            color: var(--color-primario);
+            font-weight: 600;
+        }
+
+        .card-catalogo-flor {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .card-catalogo-arreglo {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .card-catalogo-flor-img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            background-color: #f8f9fa;
         }
     </style>
 
