@@ -28,10 +28,7 @@ namespace EnflorarteTopiProyecto.Controllers
 
             try
             {
-                flores = context.Flores
-                    .Include(f => f.InventarioColores)
-                    .OrderByDescending(f => f.Id)
-                    .ToList();
+                flores = context.Flores.OrderByDescending(f => f.Id).ToList();
 
                 arreglos = context.Arreglos
                     .Include(a => a.Flores)
@@ -46,10 +43,7 @@ namespace EnflorarteTopiProyecto.Controllers
 
                 try
                 {
-                    flores = context.Flores
-                        .Include(f => f.InventarioColores)
-                        .OrderByDescending(f => f.Id)
-                        .ToList();
+                    flores = context.Flores.OrderByDescending(f => f.Id).ToList();
                 }
                 catch
                 {
@@ -175,8 +169,6 @@ namespace EnflorarteTopiProyecto.Controllers
 
         public IActionResult CrearArreglo()
         {
-            var coloresPorFlorId = ObtenerColoresPorFlorId();
-
             var dto = new ArregloDto
             {
                 Flores = context.Flores
@@ -185,9 +177,7 @@ namespace EnflorarteTopiProyecto.Controllers
                     {
                         FlorId = f.Id,
                         FlorNombre = f.Nombre,
-                        Cantidad = 1,
-                        ColorSeleccionado = "a elegir",
-                        ColoresDisponibles = ObtenerOpcionesColorParaFlor(f.Id, coloresPorFlorId)
+                        Cantidad = 1
                     })
                     .ToList()
             };
@@ -263,10 +253,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 .Select(f => new { f.Id, f.Nombre })
                 .ToList();
 
-            var coloresPorFlorId = ObtenerColoresPorFlorId();
-
             var cantidades = arreglo.Flores.ToDictionary(f => f.FlorId, f => f.Cantidad);
-            var coloresSeleccionados = arreglo.Flores.ToDictionary(f => f.FlorId, f => f.ColorSeleccionado);
 
             var dto = new ArregloDto
             {
@@ -278,9 +265,7 @@ namespace EnflorarteTopiProyecto.Controllers
                     FlorId = f.Id,
                     FlorNombre = f.Nombre,
                     Seleccionada = cantidades.ContainsKey(f.Id),
-                    Cantidad = cantidades.TryGetValue(f.Id, out var cantidad) ? cantidad : 1,
-                    ColorSeleccionado = coloresSeleccionados.TryGetValue(f.Id, out var color) ? NormalizarColorSeleccionado(color) : "a elegir",
-                    ColoresDisponibles = ObtenerOpcionesColorParaFlor(f.Id, coloresPorFlorId)
+                    Cantidad = cantidades.TryGetValue(f.Id, out var cantidad) ? cantidad : 1
                 }).ToList()
             };
 
@@ -293,7 +278,6 @@ namespace EnflorarteTopiProyecto.Controllers
         public IActionResult CrearArreglo(ArregloDto dto)
         {
             dto.Flores ??= new List<ArregloFlorSeleccionDto>();
-            var coloresPorFlorId = ObtenerColoresPorFlorId();
 
             if (dto.FotoArchivo == null || dto.FotoArchivo.Length <= 0)
             {
@@ -314,9 +298,7 @@ namespace EnflorarteTopiProyecto.Controllers
                     {
                         FlorId = f.Id,
                         FlorNombre = f.Nombre,
-                        Cantidad = 1,
-                        ColorSeleccionado = "a elegir",
-                        ColoresDisponibles = ObtenerOpcionesColorParaFlor(f.Id, coloresPorFlorId)
+                        Cantidad = 1
                     })
                     .ToList();
             }
@@ -328,9 +310,6 @@ namespace EnflorarteTopiProyecto.Controllers
                     {
                         item.FlorNombre = nombreFlor;
                     }
-
-                    item.ColoresDisponibles = ObtenerOpcionesColorParaFlor(item.FlorId, coloresPorFlorId);
-                    item.ColorSeleccionado = NormalizarColorSeleccionado(item.ColorSeleccionado);
                 }
             }
 
@@ -363,8 +342,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 Flores = floresSeleccionadas.Select(f => new ArregloFlor
                 {
                     FlorId = f.FlorId,
-                    Cantidad = f.Cantidad,
-                    ColorSeleccionado = NormalizarColorSeleccionado(f.ColorSeleccionado)
+                    Cantidad = f.Cantidad
                 }).ToList()
             };
 
@@ -402,7 +380,6 @@ namespace EnflorarteTopiProyecto.Controllers
             }
 
             dto.Flores ??= new List<ArregloFlorSeleccionDto>();
-            var coloresPorFlorId = ObtenerColoresPorFlorId();
 
             var floresCatalogo = context.Flores
                 .OrderBy(f => f.Nombre)
@@ -418,9 +395,7 @@ namespace EnflorarteTopiProyecto.Controllers
                     {
                         FlorId = f.Id,
                         FlorNombre = f.Nombre,
-                        Cantidad = 1,
-                        ColorSeleccionado = "a elegir",
-                        ColoresDisponibles = ObtenerOpcionesColorParaFlor(f.Id, coloresPorFlorId)
+                        Cantidad = 1
                     })
                     .ToList();
             }
@@ -432,9 +407,6 @@ namespace EnflorarteTopiProyecto.Controllers
                     {
                         item.FlorNombre = nombreFlor;
                     }
-
-                    item.ColoresDisponibles = ObtenerOpcionesColorParaFlor(item.FlorId, coloresPorFlorId);
-                    item.ColorSeleccionado = NormalizarColorSeleccionado(item.ColorSeleccionado);
                 }
             }
 
@@ -475,8 +447,7 @@ namespace EnflorarteTopiProyecto.Controllers
             arreglo.Flores = floresSeleccionadas.Select(f => new ArregloFlor
             {
                 FlorId = f.FlorId,
-                Cantidad = f.Cantidad,
-                ColorSeleccionado = NormalizarColorSeleccionado(f.ColorSeleccionado)
+                Cantidad = f.Cantidad
             }).ToList();
 
             try
@@ -775,43 +746,6 @@ namespace EnflorarteTopiProyecto.Controllers
                 context.FloresInventarioColores.AddRange(faltantes);
                 context.SaveChanges();
             }
-        }
-
-        private Dictionary<int, List<string>> ObtenerColoresPorFlorId()
-        {
-            return context.FloresInventarioColores
-                .AsNoTracking()
-                .GroupBy(c => c.FlorId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(x => x.Color)
-                          .Where(c => !string.IsNullOrWhiteSpace(c))
-                          .Distinct(StringComparer.OrdinalIgnoreCase)
-                          .OrderBy(c => c)
-                          .ToList());
-        }
-
-        private static List<string> ObtenerOpcionesColorParaFlor(int florId, Dictionary<int, List<string>> coloresPorFlorId)
-        {
-            var opciones = new List<string> { "a elegir" };
-
-            if (coloresPorFlorId.TryGetValue(florId, out var colores))
-            {
-                foreach (var color in colores)
-                {
-                    if (!opciones.Any(o => string.Equals(o, color, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        opciones.Add(color);
-                    }
-                }
-            }
-
-            return opciones;
-        }
-
-        private static string NormalizarColorSeleccionado(string? color)
-        {
-            return string.IsNullOrWhiteSpace(color) ? "a elegir" : color.Trim();
         }
 
         private bool ValidarContrasenaSupervisor(string contrasenaIngresada)

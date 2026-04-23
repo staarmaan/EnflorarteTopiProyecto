@@ -49,7 +49,7 @@
                                 <option value="">Selecciona una flor...</option>
                                 @foreach (var flor in Model.Flores.OrderBy(f => f.FlorNombre))
                                 {
-                                    <option value="@flor.FlorId" data-nombre="@flor.FlorNombre" data-colores="@string.Join("|", flor.ColoresDisponibles)">@flor.FlorNombre</option>
+                                    <option value="@flor.FlorId" data-nombre="@flor.FlorNombre">@flor.FlorNombre</option>
                                 }
                             </select>
                         </div>
@@ -83,14 +83,6 @@
                                         <td>
                                             <input name="Flores[@i].Cantidad" value="@seleccionadas[i].Cantidad" type="number" min="1" class="form-control form-control-sm" />
                                         </td>
-                                        <td>
-                                            <select name="Flores[@i].ColorSeleccionado" class="form-select form-select-sm">
-                                                @foreach (var color in seleccionadas[i].ColoresDisponibles)
-                                                {
-                                                    <option value="@color" selected="@(string.Equals(color, seleccionadas[i].ColorSeleccionado, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@color</option>
-                                                }
-                                            </select>
-                                        </td>
                                         <td class="text-end">
                                             <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-flor">Eliminar</button>
                                         </td>
@@ -121,7 +113,6 @@
             $(this).find('input[name$=".FlorNombre"]').attr('name', 'Flores[' + index + '].FlorNombre');
             $(this).find('input[name$=".Seleccionada"]').attr('name', 'Flores[' + index + '].Seleccionada');
             $(this).find('input[name$=".Cantidad"]').attr('name', 'Flores[' + index + '].Cantidad');
-            $(this).find('select[name$=".ColorSeleccionado"]').attr('name', 'Flores[' + index + '].ColorSeleccionado');
         });
     }
 
@@ -140,32 +131,6 @@
         }
 
         return ($option.data('nombre') || $option.text() || '').toString();
-    }
-
-    function obtenerOpcionesColorHtml(florId, colorSeleccionado) {
-        var $option = $('#selectFlorCatalogo option[value="' + florId + '"]');
-        var rawColores = ($option.data('colores') || 'a elegir').toString();
-        var colores = rawColores.split('|').filter(function (c) { return c && c.trim().length > 0; });
-
-        if (colores.length === 0) {
-            colores = ['a elegir'];
-        }
-
-        if (!colorSeleccionado) {
-            colorSeleccionado = 'a elegir';
-        }
-
-        if (colores.findIndex(function (c) { return c.toLowerCase() === colorSeleccionado.toLowerCase(); }) < 0) {
-            colores.unshift('a elegir');
-        }
-
-        var html = '';
-        colores.forEach(function (color) {
-            var selected = color.toLowerCase() === colorSeleccionado.toLowerCase() ? ' selected' : '';
-            html += '<option value="' + color + '"' + selected + '>' + color + '</option>';
-        });
-
-        return html;
     }
 
     function agregarFlorSeleccionadaATabla() {
@@ -195,7 +160,6 @@
             '    <input type="hidden" name="Flores[' + nuevoIndex + '].Seleccionada" value="true" />' +
             '  </td>' +
             '  <td><input name="Flores[' + nuevoIndex + '].Cantidad" type="number" min="1" value="1" class="form-control form-control-sm" /></td>' +
-            '  <td><select name="Flores[' + nuevoIndex + '].ColorSeleccionado" class="form-select form-select-sm">' + obtenerOpcionesColorHtml(florId, 'a elegir') + '</select></td>' +
             '  <td class="text-end"><button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-flor">Eliminar</button></td>' +
             '</tr>';
 
