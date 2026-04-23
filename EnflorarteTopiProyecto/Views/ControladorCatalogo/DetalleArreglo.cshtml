@@ -32,7 +32,7 @@
                         <ul class="mb-3">
                             @foreach (var florArreglo in Model.Flores.OrderBy(f => f.Flor.Nombre))
                             {
-                                <li>@florArreglo.Flor.Nombre x @florArreglo.Cantidad</li>
+                                <li>@florArreglo.Flor.Nombre x @florArreglo.Cantidad (@florArreglo.ColorSeleccionado)</li>
                             }
                         </ul>
                     }
