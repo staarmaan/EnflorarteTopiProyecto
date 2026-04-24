@@ -230,6 +230,11 @@ namespace EnflorarteTopiProyecto.Service
                 entity.Property(e => e.Cantidad)
                       .HasColumnName("cantidad");
 
+                entity.Property(e => e.ColorSeleccionado)
+                      .HasColumnName("color_seleccionado")
+                      .IsRequired()
+                      .HasMaxLength(50);
+
                 entity.HasOne(e => e.Arreglo)
                       .WithMany(e => e.Flores)
                       .HasForeignKey(e => e.ArregloId)

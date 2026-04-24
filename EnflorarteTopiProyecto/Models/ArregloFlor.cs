@@ -9,5 +9,6 @@ namespace EnflorarteTopiProyecto.Models
         public Flor Flor { get; set; } = null!;
 
         public int Cantidad { get; set; }
+        public string ColorSeleccionado { get; set; } = "a elegir";
     }
 }

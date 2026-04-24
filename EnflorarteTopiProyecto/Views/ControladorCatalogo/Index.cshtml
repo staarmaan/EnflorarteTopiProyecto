@@ -87,11 +87,73 @@
         </div>
 
         <div class="tab-pane fade" id="panel-arreglos" role="tabpanel" aria-labelledby="tab-arreglos">
-            <div class="d-flex justify-content-end align-items-end mb-3">
-                <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearArreglo", "ControladorCatalogo")', 'Registrar Arreglo')">+ Agregar Arreglo</button>
+            @{
+                var inventarioPorFlor = Model.Flores.ToDictionary(
+                    f => f.Id,
+                    f => new
+                    {
+                        Total = f.InventarioColores.Sum(i => i.Cantidad),
+                        PorColor = f.InventarioColores.ToDictionary(i => i.Color, i => i.Cantidad, StringComparer.OrdinalIgnoreCase)
+                    });
+            }
+
+            <div class="row g-2 g-md-3 align-items-end mb-3">
+                <div class="col-12 col-md-5 col-lg-4">
+                    <label for="inputBuscarArreglos" class="form-label text-muted small text-uppercase fw-bold mb-1">Buscar</label>
+                    <input id="inputBuscarArreglos"
+                           type="search"
+                           class="form-control form-control-sm"
+                           placeholder="Nombre del arreglo..."
+                           autocomplete="off"
+                           autocapitalize="off"
+                           autocorrect="off"
+                           spellcheck="false" />
+                </div>
+
+                <div class="col-12 col-md-2 col-lg-2">
+                    <label class="form-label text-muted small text-uppercase fw-bold mb-1">Flores</label>
+                    <div class="dropdown w-100">
+                        <button class="btn btn-sm w-100 text-start d-flex justify-content-between align-items-center btn-filtro-flores"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside"
+                                aria-expanded="false">
+                            <span>Filtrar por flores</span>
+                            <span class="ms-2">?</span>
+                        </button>
+                        <div class="dropdown-menu p-2 w-100" style="max-height: 260px; overflow:auto;">
+                            @foreach (var florFiltro in Model.Flores.OrderBy(f => f.Nombre))
+                            {
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input chk-filtro-flor-arreglo" type="checkbox" value="@florFiltro.Nombre.ToLowerInvariant()" id="chkFiltroArregloFlor_@florFiltro.Id">
+                                    <label class="form-check-label small" for="chkFiltroArregloFlor_@florFiltro.Id">@florFiltro.Nombre</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-2 col-lg-2">
+                    <label class="form-label text-muted small text-uppercase fw-bold mb-1 d-block text-center">Con inventario</label>
+                    <div class="filtro-inventario-wrap d-flex align-items-center justify-content-center">
+                        <div class="form-check form-switch d-flex align-items-center justify-content-center m-0">
+                            <input class="form-check-input switch-inventario" type="checkbox" id="switchArreglosConInventario" aria-label="Mostrar solo arreglos con inventario suficiente">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-1 col-lg-1 d-flex align-items-end">
+                    <button type="button" id="btnLimpiarFiltrosArreglos" class="btn btn-outline-secondary btn-sm px-2 btn-limpiar-filtros">
+                        Limpiar
+                    </button>
+                </div>
+
+                <div class="col-12 col-md-auto ms-md-auto d-flex justify-content-md-end align-items-end">
+                    <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearArreglo", "ControladorCatalogo")', 'Registrar Arreglo')">+ Agregar Arreglo</button>
+                </div>
             </div>
 
-            <div class="row g-3">
+            <div class="row g-3" id="contenedorArreglos">
                 @if (Model.Arreglos.Count == 0)
                 {
                     <div class="col-12">
@@ -102,7 +164,27 @@
                 {
                     foreach (var arreglo in Model.Arreglos)
                     {
-                        <div class="col-12 col-sm-6 col-lg-3">
+                        var cumpleInventario = arreglo.Flores.All(af =>
+                        {
+                            if (!inventarioPorFlor.TryGetValue(af.FlorId, out var inv))
+                            {
+                                return false;
+                            }
+
+                            if (string.Equals(af.ColorSeleccionado, "a elegir", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return inv.Total >= af.Cantidad;
+                            }
+
+                            var disponibleColor = inv.PorColor.TryGetValue(af.ColorSeleccionado, out var cantColor) ? cantColor : 0;
+                            return disponibleColor >= af.Cantidad;
+                        });
+
+                        <div class="col-12 col-sm-6 col-lg-3 tarjeta-arreglo"
+                             data-id="@arreglo.Id"
+                             data-nombre="@arreglo.Nombre.ToLowerInvariant()"
+                             data-flores="@string.Join("|", arreglo.Flores.Select(f => f.Flor.Nombre.ToLowerInvariant()).Distinct())"
+                             data-inventario-ok="@cumpleInventario.ToString().ToLowerInvariant()">
                             <button type="button"
                                     class="card shadow-sm border-0 w-100 text-start card-catalogo-cuadrada card-catalogo-arreglo"
                                     onclick="cargarModalCatalogo('@Url.Action("DetalleArreglo", "ControladorCatalogo", new { id = arreglo.Id })', 'Detalle de Arreglo')">
@@ -183,9 +265,73 @@
             object-fit: cover;
             background-color: #f8f9fa;
         }
+
+        .btn-filtro-flores {
+            background-color: #fff;
+            border: 1px solid var(--color-secundario);
+            color: #212529;
+        }
+
+        .btn-filtro-flores:hover,
+        .btn-filtro-flores:focus,
+        .btn-filtro-flores:active {
+            background-color: #fff;
+            color: #212529;
+            border-color: var(--color-secundario);
+        }
+
+        .filtro-inventario-wrap {
+            min-height: 31px;
+            padding: .2rem .4rem;
+            border: 1px solid var(--color-secundario);
+            border-radius: .5rem;
+            background-color: #fff;
+        }
+
+        .switch-inventario {
+            width: 2.2rem;
+            height: 1.1rem;
+            cursor: pointer;
+        }
+
+        .switch-inventario:checked {
+            background-color: var(--color-primario);
+            border-color: var(--color-primario);
+        }
+
+        .switch-inventario:focus {
+            box-shadow: 0 0 0 0.2rem rgba(46, 79, 57, 0.25);
+            border-color: var(--color-primario);
+        }
     </style>
 
     <script>
+        var claveTabCatalogo = 'catalogo.tab.activa';
+
+        function guardarTabActivaCatalogo(tabId) {
+            try {
+                sessionStorage.setItem(claveTabCatalogo, tabId || 'tab-flores');
+            } catch (e) { }
+        }
+
+        function restaurarTabActivaCatalogo() {
+            try {
+                var tabIdGuardada = sessionStorage.getItem(claveTabCatalogo) || 'tab-flores';
+                var tabBtn = document.getElementById(tabIdGuardada);
+                if (tabBtn) {
+                    bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+                }
+            } catch (e) { }
+        }
+
+        document.querySelectorAll('#tabsCatalogo [data-bs-toggle="tab"]').forEach(function (tab) {
+            tab.addEventListener('shown.bs.tab', function (e) {
+                guardarTabActivaCatalogo(e.target.id);
+            });
+        });
+
+        restaurarTabActivaCatalogo();
+
         function cargarModalCatalogo(url, titulo) {
             $('#modalCatalogoTitulo').text(titulo);
             $('#modalCatalogoContenido').html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
@@ -287,6 +433,56 @@
             aplicarFiltroYOrdenFlores();
         });
 
+        function aplicarFiltrosArreglos() {
+            var termino = ($('#inputBuscarArreglos').val() || '').toString().trim().toLowerCase();
+            var soloConInventario = $('#switchArreglosConInventario').is(':checked');
+            var floresSeleccionadas = $('.chk-filtro-flor-arreglo:checked').map(function () {
+                return ($(this).val() || '').toString().toLowerCase();
+            }).get();
+
+            var $contenedor = $('#contenedorArreglos');
+            var $tarjetas = $contenedor.find('.tarjeta-arreglo');
+
+            $tarjetas.each(function () {
+                var $tarjeta = $(this);
+                var nombre = ($tarjeta.data('nombre') || '').toString();
+                var floresTexto = ($tarjeta.data('flores') || '').toString();
+                var floresArreglo = floresTexto ? floresTexto.split('|') : [];
+                var inventarioOkRaw = $tarjeta.data('inventario-ok');
+                var inventarioOk = inventarioOkRaw === true || inventarioOkRaw === 'true';
+
+                var coincideBusqueda = !termino || nombre.includes(termino);
+                var coincideFlores = floresSeleccionadas.length === 0 || floresSeleccionadas.every(function (florSel) {
+                    return floresArreglo.includes(florSel);
+                });
+                var coincideInventario = !soloConInventario || inventarioOk;
+
+                if (coincideBusqueda && coincideFlores && coincideInventario) {
+                    $tarjeta.show();
+                } else {
+                    $tarjeta.hide();
+                }
+            });
+
+            $('#filaSinResultadosArreglos').remove();
+            var visibles = $tarjetas.filter(function () { return $(this).css('display') !== 'none'; }).length;
+            if (visibles === 0 && $tarjetas.length > 0) {
+                $contenedor.append('<div class="col-12" id="filaSinResultadosArreglos"><div class="alert alert-light border text-muted mb-0">No se encontraron arreglos con los filtros seleccionados.</div></div>');
+            }
+        }
+
+        $('#inputBuscarArreglos').on('input', aplicarFiltrosArreglos);
+        $(document).on('change', '.chk-filtro-flor-arreglo', aplicarFiltrosArreglos);
+        $('#switchArreglosConInventario').on('change', aplicarFiltrosArreglos);
+
+        $('#btnLimpiarFiltrosArreglos').on('click', function () {
+            $('#inputBuscarArreglos').val('');
+            $('.chk-filtro-flor-arreglo').prop('checked', false);
+            $('#switchArreglosConInventario').prop('checked', false);
+            aplicarFiltrosArreglos();
+        });
+
         aplicarFiltroYOrdenFlores();
+        aplicarFiltrosArreglos();
     </script>
 }

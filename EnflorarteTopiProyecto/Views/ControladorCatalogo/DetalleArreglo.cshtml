@@ -32,21 +32,34 @@
                         <ul class="mb-3">
                             @foreach (var florArreglo in Model.Flores.OrderBy(f => f.Flor.Nombre))
                             {
-                                <li>@florArreglo.Flor.Nombre x @florArreglo.Cantidad</li>
+                                <li>@florArreglo.Flor.Nombre x @florArreglo.Cantidad (@florArreglo.ColorSeleccionado)</li>
                             }
                         </ul>
                     }
 
                     <div class="d-flex flex-wrap gap-2 mt-2">
                         <button type="button"
-                                class="btn btn-outline-primary"
-                                onclick="cargarModalCatalogo('@Url.Action("EditarArreglo", "ControladorCatalogo", new { id = Model.Id })', 'Editar Arreglo')">
-                            Editar arreglo
+                                class="btn btn-accion-redondo btn-editar-redondo"
+                                onclick="cargarModalCatalogo('@Url.Action("EditarArreglo", "ControladorCatalogo", new { id = Model.Id })', 'Editar Arreglo')"
+                                title="Editar arreglo"
+                                aria-label="Editar arreglo">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M12 20h9" />
+                                <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L8 18l-4 1 1-4 11.5-11.5z" />
+                            </svg>
                         </button>
 
                         @if (User.IsInRole("supervisor"))
                         {
-                            <button type="button" class="btn btn-outline-danger" onclick="confirmarEliminarArreglo(@Model.Id)">Borrar arreglo</button>
+                            <button type="button" class="btn btn-accion-redondo btn-eliminar-redondo" onclick="confirmarEliminarArreglo(@Model.Id)" title="Borrar arreglo" aria-label="Borrar arreglo">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M3 6h18" />
+                                    <path d="M8 6V4h8v2" />
+                                    <path d="M19 6l-1 14H6L5 6" />
+                                    <path d="M10 11v6" />
+                                    <path d="M14 11v6" />
+                                </svg>
+                            </button>
                         }
                     </div>
                 </div>

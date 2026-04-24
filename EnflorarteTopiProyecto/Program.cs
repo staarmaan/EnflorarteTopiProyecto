@@ -88,6 +88,7 @@ BEGIN
         arreglo_id INT NOT NULL,
         flor_id INT NOT NULL,
         cantidad INT NOT NULL,
+        color_seleccionado NVARCHAR(50) NOT NULL DEFAULT(N'a elegir'),
 
         CONSTRAINT pk_arreglo_flor PRIMARY KEY (arreglo_id, flor_id),
         CONSTRAINT fk_arreglo_flor_arreglo FOREIGN KEY (arreglo_id)
@@ -100,6 +101,14 @@ BEGIN
             ON UPDATE NO ACTION,
         CONSTRAINT chk_arreglo_flor_cantidad CHECK (cantidad > 0)
     );
+END");
+
+    db.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID(N'dbo.arreglo_flor', N'U') IS NOT NULL
+AND COL_LENGTH('dbo.arreglo_flor', 'color_seleccionado') IS NULL
+BEGIN
+    ALTER TABLE dbo.arreglo_flor
+        ADD color_seleccionado NVARCHAR(50) NOT NULL CONSTRAINT DF_arreglo_flor_color_seleccionado DEFAULT(N'a elegir');
 END");
 
         db.Database.ExecuteSqlRaw(@"
