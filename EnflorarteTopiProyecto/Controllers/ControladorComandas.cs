@@ -3,14 +3,13 @@ using EnflorarteTopiProyecto.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
     [Authorize]
     public class ControladorComandas : Controller
     {
-        const int MAX_IMAGEN_BYTES = 20 * 1024 * 1024; // Tamaño máximo de imagen permitida.
-
         private readonly ApplicationDbContext context;
 
         public ControladorComandas(ApplicationDbContext context)
@@ -18,55 +17,15 @@ namespace EnflorarteTopiProyecto.Controllers
             this.context = context;
         }
 
-        private (bool ok, string? rutaPublica, string? error) ProcesarImagen(IFormFile archivo, int maxBytes)
-        {
-            if (archivo == null || archivo.Length <= 0)
-            {
-                return (false, null, "No se proporcionó archivo.");
-            }
-
-            var permittedContentTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
-            var permittedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
-            var ext = Path.GetExtension(archivo.FileName).ToLowerInvariant();
-            var contentTypeOk = archivo.ContentType != null && permittedContentTypes.Contains(archivo.ContentType);
-            var extensionOk = permittedExtensions.Contains(ext);
-
-            if (!contentTypeOk && !extensionOk)
-            {
-                return (false, null, "Solo se permiten imágenes (jpg, jpeg, png, webp, gif).");
-            }
-
-            if (archivo.Length > maxBytes)
-            {
-                return (false, null, "La imagen supera el tamaño permitido (20 MB).");
-            }
-
-            var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            if (!Directory.Exists(uploadsRoot))
-            {
-                Directory.CreateDirectory(uploadsRoot);
-            }
-
-            var fileName = $"{Guid.NewGuid():N}{ext}";
-            var filePath = Path.Combine(uploadsRoot, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                archivo.CopyTo(stream);
-            }
-
-            var rutaPublica = $"/uploads/{fileName}";
-            return (true, rutaPublica, null);
-        }
-
-        private bool ComprobarImagenSubida(ComandaDto comandaDto)
-        {
-            return (comandaDto.FotoArregloArchivo != null && comandaDto.FotoArregloArchivo.Length > 0);
-        }
-
         public IActionResult Index()
         {
-            var comandas = context.Comandas.OrderByDescending(comanda => comanda.Id).ToList();
+            var haceUnaSemana = DateTime.Now.AddDays(-7);
+            var comandas = context.Comandas
+                .Include(c => c.Arreglo)
+                .Where(c => !c.Archivado && 
+                    !(c.Estado == Models.EstadoComanda.entregado && c.FechaEntrega < haceUnaSemana))
+                .OrderByDescending(comanda => comanda.Id)
+                .ToList();
             return View(comandas);
         }
 
@@ -113,19 +72,15 @@ namespace EnflorarteTopiProyecto.Controllers
                 }
             }
 
-            if (ComprobarImagenSubida(comandaDto))
+            // Validar que el arreglo exista
+            var arregloExiste = context.Arreglos.Any(a => a.Id == comandaDto.ArregloId);
+            if (!arregloExiste)
             {
-                var res = ProcesarImagen(comandaDto.FotoArregloArchivo, MAX_IMAGEN_BYTES);
-                if (!res.ok)
-                {
-                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), res.error!);
-                    TempData["Toast.Message"] = res.error!;
-                    TempData["Toast.Type"] = "warning";
-                    CargarListasViewBag();
-                    return View(comandaDto);
-                }
-
-                comandaDto.FotoArregloRuta = res.rutaPublica;
+                ModelState.AddModelError(nameof(comandaDto.ArregloId), "El arreglo especificado no existe.");
+                TempData["Toast.Message"] = "Arreglo especificado no existe.";
+                TempData["Toast.Type"] = "warning";
+                CargarListasViewBag();
+                return View(comandaDto);
             }
 
             ProcesarAnticipoParaGuardar(comandaDto); //JENNY: Si es porcentaje, calcula el dinero $ antes de guardar en la BD.
@@ -137,19 +92,66 @@ namespace EnflorarteTopiProyecto.Controllers
                 RepartidorId = comandaDto.RepartidorId,
                 Estado = comandaDto.Estado,
                 Liquidado = comandaDto.Liquidado,
+                Archivado = comandaDto.Archivado,
                 ClienteNombre = comandaDto.ClienteNombre,
                 ClienteTelefono = comandaDto.ClienteTelefono,
+                LinkDireccion = comandaDto.LinkDireccion,
+                DomicilioReferencias = comandaDto.DomicilioReferencias,
+                NumeroRuta = comandaDto.NumeroRuta,
+                MedioDeLaSolicitud = comandaDto.MedioDeLaSolicitud,
                 TipoEntrega = comandaDto.TipoEntrega,
                 DireccionEntrega = comandaDto.DireccionEntrega,
+                NombreReceptorEnvio = comandaDto.NombreReceptorEnvio,
+                TelefonoReceptorEnvio = comandaDto.TelefonoReceptorEnvio,
                 FechaEntrega = comandaDto.FechaEntrega,
                 HoraEntrega = comandaDto.HoraEntrega,
-                NombreArreglo = comandaDto.NombreArreglo,
+                ArregloId = comandaDto.ArregloId,
                 PrecioArreglo = comandaDto.PrecioArreglo,
                 PagoEnvio = comandaDto.PagoEnvio,
-                FotoArregloRuta = comandaDto.FotoArregloRuta,
+                CantidadArreglo = comandaDto.CantidadArreglo,
+                MensajeArreglo = comandaDto.MensajeArreglo,
+                AccesorioArreglo = comandaDto.AccesorioArreglo,
                 AnticipoTipo = comandaDto.AnticipoTipo,
                 AnticipoPagoTotal = comandaDto.AnticipoPagoTotal
             };
+
+            // Copiar composición del arreglo (flores y colores) a la comanda nueva.
+            // Si el formulario envía `Flores`, usamos esa composición; si no, copiamos desde el Arreglo.
+            var arreglo = context.Arreglos
+                .Include(a => a.Flores)
+                .ThenInclude(af => af.Flor)
+                .FirstOrDefault(a => a.Id == comandaDto.ArregloId);
+
+            if (arreglo != null)
+            {
+                comandaNueva.NombreArreglo = arreglo.Nombre;
+                comandaNueva.FotoArregloRuta = arreglo.FotoRuta;
+
+                if (comandaDto.Flores != null && comandaDto.Flores.Any())
+                {
+                    foreach (var f in comandaDto.Flores)
+                    {
+                        comandaNueva.Flores.Add(new ComandaFlor
+                        {
+                            FlorId = f.FlorId,
+                            Cantidad = f.Cantidad,
+                            ColorSeleccionado = f.ColorSeleccionado
+                        });
+                    }
+                }
+                else
+                {
+                    foreach (var af in arreglo.Flores)
+                    {
+                        comandaNueva.Flores.Add(new ComandaFlor
+                        {
+                            FlorId = af.FlorId,
+                            Cantidad = af.Cantidad,
+                            ColorSeleccionado = af.ColorSeleccionado
+                        });
+                    }
+                }
+            }
 
             context.Comandas.Add(comandaNueva);
             context.SaveChanges();
@@ -164,7 +166,11 @@ namespace EnflorarteTopiProyecto.Controllers
         [Authorize(Policy = "EsVentas")]
         public IActionResult Editar(int id)
         {
-            var comandaAEditar = context.Comandas.Find(id);
+            var comandaAEditar = context.Comandas
+                .Include(c => c.Flores)
+                .ThenInclude(cf => cf.Flor)
+                .FirstOrDefault(c => c.Id == id);
+
             if (comandaAEditar == null)
             {
                 TempData["Toast.Message"] = "Comanda no encontrada.";
@@ -181,18 +187,34 @@ namespace EnflorarteTopiProyecto.Controllers
                 RepartidorId = comandaAEditar.RepartidorId,
                 Estado = comandaAEditar.Estado,
                 Liquidado = comandaAEditar.Liquidado,
+                Archivado = comandaAEditar.Archivado,
                 ClienteNombre = comandaAEditar.ClienteNombre,
                 ClienteTelefono = comandaAEditar.ClienteTelefono,
+                LinkDireccion = comandaAEditar.LinkDireccion,
+                DomicilioReferencias = comandaAEditar.DomicilioReferencias,
+                NumeroRuta = comandaAEditar.NumeroRuta,
+                MedioDeLaSolicitud = comandaAEditar.MedioDeLaSolicitud,
                 TipoEntrega = comandaAEditar.TipoEntrega,
                 DireccionEntrega = comandaAEditar.DireccionEntrega,
+                NombreReceptorEnvio = comandaAEditar.NombreReceptorEnvio,
+                TelefonoReceptorEnvio = comandaAEditar.TelefonoReceptorEnvio,
                 FechaEntrega = comandaAEditar.FechaEntrega,
                 HoraEntrega = comandaAEditar.HoraEntrega,
-                NombreArreglo = comandaAEditar.NombreArreglo,
+                ArregloId = comandaAEditar.ArregloId,
                 PrecioArreglo = comandaAEditar.PrecioArreglo,
                 PagoEnvio = comandaAEditar.PagoEnvio,
-                FotoArregloRuta = comandaAEditar.FotoArregloRuta,
+                CantidadArreglo = comandaAEditar.CantidadArreglo,
+                MensajeArreglo = comandaAEditar.MensajeArreglo,
+                AccesorioArreglo = comandaAEditar.AccesorioArreglo,
                 AnticipoTipo = comandaAEditar.AnticipoTipo,
-                AnticipoPagoTotal = comandaAEditar.AnticipoPagoTotal
+                AnticipoPagoTotal = comandaAEditar.AnticipoPagoTotal,
+                Flores = comandaAEditar.Flores.Select(f => new ComandaFlorDto
+                {
+                    FlorId = f.FlorId,
+                    Nombre = f.Flor?.Nombre ?? string.Empty,
+                    Cantidad = f.Cantidad,
+                    ColorSeleccionado = f.ColorSeleccionado
+                }).ToList()
             };
 
             ProcesarAnticipoParaVista(comandaDto); //JENNY: convierte el dinero a porcentaje para mostrarlo en la vista
@@ -205,13 +227,17 @@ namespace EnflorarteTopiProyecto.Controllers
         [Authorize(Policy = "EsVentas")]
         public IActionResult Editar(int id, ComandaDto comandaDto)
         {
-            var comandaExistente = context.Comandas.Find(id);
+            var comandaExistente = context.Comandas
+                .Include(c => c.Flores)
+                .FirstOrDefault(c => c.Id == id);
             if (comandaExistente == null)
             {
                 TempData["Toast.Message"] = "Comanda no encontrada.";
                 TempData["Toast.Type"] = "error";
                 return RedirectToAction("Index");
             }
+
+            ValidarReglasNegocio(comandaDto); //JENNY: Validación personalizada de Lógica de Negocio
 
             if (!ModelState.IsValid)
             {
@@ -244,47 +270,120 @@ namespace EnflorarteTopiProyecto.Controllers
                 }
             }
 
-            if (ComprobarImagenSubida(comandaDto))
+            // Validar que el arreglo exista
+            var arregloExiste = context.Arreglos.Any(a => a.Id == comandaDto.ArregloId);
+            if (!arregloExiste)
             {
-                var res = ProcesarImagen(comandaDto.FotoArregloArchivo, MAX_IMAGEN_BYTES);
-                if (!res.ok)
-                {
-                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), res.error!);
-                    CargarListasViewBag();
-                    return View(comandaDto);
-                }
-
-                comandaDto.FotoArregloRuta = res.rutaPublica;
-            }
-            else
-            {
-                if (comandaDto.EliminarFoto == true)
-                {
-                    comandaDto.FotoArregloRuta = null;
-                }
-                else
-                {
-                    comandaDto.FotoArregloRuta = comandaExistente.FotoArregloRuta;
-                }
+                ModelState.AddModelError(nameof(comandaDto.ArregloId), "El arreglo especificado no existe.");
+                TempData["Toast.Message"] = "Arreglo especificado no existe.";
+                TempData["Toast.Type"] = "warning";
+                CargarListasViewBag();
+                return View(comandaDto);
             }
 
                 ProcesarAnticipoParaGuardar(comandaDto); //JENNY: Si cambiaron el anticipo a porcentaje, recalculamos el dinero $ antes de actualizar la BD.
 
             // Actualizar los campos de la comanda existente.
+            var arregloCambiado = comandaExistente.ArregloId != comandaDto.ArregloId;
+
             comandaExistente.UsuarioId = comandaDto.UsuarioId;
             comandaExistente.RepartidorId = comandaDto.RepartidorId;
             comandaExistente.Estado = comandaDto.Estado;
             comandaExistente.Liquidado = comandaDto.Liquidado;
+            comandaExistente.Archivado = comandaDto.Archivado;
             comandaExistente.ClienteNombre = comandaDto.ClienteNombre;
             comandaExistente.ClienteTelefono = comandaDto.ClienteTelefono;
+            comandaExistente.LinkDireccion = comandaDto.LinkDireccion;
+            comandaExistente.DomicilioReferencias = comandaDto.DomicilioReferencias;
+            comandaExistente.NumeroRuta = comandaDto.NumeroRuta;
+            comandaExistente.MedioDeLaSolicitud = comandaDto.MedioDeLaSolicitud;
             comandaExistente.TipoEntrega = comandaDto.TipoEntrega;
             comandaExistente.DireccionEntrega = comandaDto.DireccionEntrega;
+            comandaExistente.NombreReceptorEnvio = comandaDto.NombreReceptorEnvio;
+            comandaExistente.TelefonoReceptorEnvio = comandaDto.TelefonoReceptorEnvio;
             comandaExistente.FechaEntrega = comandaDto.FechaEntrega;
             comandaExistente.HoraEntrega = comandaDto.HoraEntrega;
-            comandaExistente.NombreArreglo = comandaDto.NombreArreglo;
+            comandaExistente.ArregloId = comandaDto.ArregloId;
+            // Si el formulario envía `Flores` (con elementos), usamos esa composición enviada por el usuario.
+            // Si no se envían flores, solo copiamos la composición desde el Arreglo si el usuario marcó la acción explícita `CopiarDesdeArreglo`.
+            if (comandaDto.Flores != null && comandaDto.Flores.Any())
+            {
+                if (comandaExistente.Flores != null && comandaExistente.Flores.Any())
+                {
+                    context.ComandasFlores.RemoveRange(comandaExistente.Flores);
+                    comandaExistente.Flores.Clear();
+                }
+
+                foreach (var f in comandaDto.Flores)
+                {
+                    comandaExistente.Flores.Add(new ComandaFlor
+                    {
+                        FlorId = f.FlorId,
+                        Cantidad = f.Cantidad,
+                        ColorSeleccionado = f.ColorSeleccionado
+                    });
+                }
+
+                // Si además cambió el arreglo, actualizamos el snapshot de nombre/foto
+                if (arregloCambiado)
+                {
+                    var nuevoArreglo = context.Arreglos
+                        .Include(a => a.Flores)
+                        .ThenInclude(af => af.Flor)
+                        .FirstOrDefault(a => a.Id == comandaDto.ArregloId);
+
+                    if (nuevoArreglo != null)
+                    {
+                        comandaExistente.NombreArreglo = nuevoArreglo.Nombre;
+                        comandaExistente.FotoArregloRuta = nuevoArreglo.FotoRuta;
+                    }
+                    else
+                    {
+                        comandaExistente.NombreArreglo = string.Empty;
+                        comandaExistente.FotoArregloRuta = null;
+                    }
+                }
+            }
+            else if (comandaDto.CopiarDesdeArreglo)
+            {
+                // El usuario solicitó copiar la composición desde el arreglo seleccionado.
+                if (comandaExistente.Flores != null && comandaExistente.Flores.Any())
+                {
+                    context.ComandasFlores.RemoveRange(comandaExistente.Flores);
+                    comandaExistente.Flores.Clear();
+                }
+
+                var nuevoArreglo = context.Arreglos
+                    .Include(a => a.Flores)
+                    .ThenInclude(af => af.Flor)
+                    .FirstOrDefault(a => a.Id == comandaDto.ArregloId);
+
+                if (nuevoArreglo != null)
+                {
+                    comandaExistente.NombreArreglo = nuevoArreglo.Nombre;
+                    comandaExistente.FotoArregloRuta = nuevoArreglo.FotoRuta;
+
+                    foreach (var af in nuevoArreglo.Flores)
+                    {
+                        comandaExistente.Flores.Add(new ComandaFlor
+                        {
+                            FlorId = af.FlorId,
+                            Cantidad = af.Cantidad,
+                            ColorSeleccionado = af.ColorSeleccionado
+                        });
+                    }
+                }
+                else
+                {
+                    comandaExistente.NombreArreglo = string.Empty;
+                    comandaExistente.FotoArregloRuta = null;
+                }
+            }
             comandaExistente.PrecioArreglo = comandaDto.PrecioArreglo;
             comandaExistente.PagoEnvio = comandaDto.PagoEnvio;
-            comandaExistente.FotoArregloRuta = comandaDto.FotoArregloRuta;
+            comandaExistente.CantidadArreglo = comandaDto.CantidadArreglo;
+            comandaExistente.MensajeArreglo = comandaDto.MensajeArreglo;
+            comandaExistente.AccesorioArreglo = comandaDto.AccesorioArreglo;
             comandaExistente.AnticipoTipo = comandaDto.AnticipoTipo;
             comandaExistente.AnticipoPagoTotal = comandaDto.AnticipoPagoTotal;
 
@@ -327,6 +426,40 @@ namespace EnflorarteTopiProyecto.Controllers
                 .ToList();
 
             ViewBag.ListaRepartidores = new SelectList(repartidores, "Id", "Nombre"); //Para los repartidores (rep y sup)
+            
+            // Cargar lista de arreglos disponibles (incluye composición de flores)
+            var arreglos = context.Arreglos
+                .Include(a => a.Flores)
+                .ThenInclude(af => af.Flor)
+                .ToList();
+
+            ViewBag.ListaArreglos = new SelectList(arreglos, "Id", "Nombre");
+            ViewBag.ArreglosFotoMap = arreglos.ToDictionary(a => a.Id, a => a.FotoRuta ?? string.Empty);
+
+            // Mapa para la vista: arregloId -> lista de flores (nombre, cantidad, color)
+            ViewBag.ArreglosFloresMap = arreglos.ToDictionary(
+                a => a.Id,
+                a => a.Flores.Select(af => new {
+                    FlorId = af.FlorId,
+                    Nombre = af.Flor?.Nombre ?? string.Empty,
+                    Cantidad = af.Cantidad,
+                    ColorSeleccionado = af.ColorSeleccionado
+                }).ToList()
+            );
+
+            // Lista de flores para que el formulario de comanda permita agregar/editar flores (incluye colores disponibles)
+            var floresCatalogo = context.Flores
+                .Include(f => f.InventarioColores)
+                .OrderBy(f => f.Nombre)
+                .Select(f => new
+                {
+                    FlorId = f.Id,
+                    FlorNombre = f.Nombre,
+                    Colores = f.InventarioColores.Select(ic => ic.Color).ToList()
+                })
+                .ToList();
+
+            ViewBag.FloresCatalogo = floresCatalogo;
         }
 
         private void ValidarReglasNegocio(ComandaDto dto) //JENNY: Validaciones
@@ -335,6 +468,19 @@ namespace EnflorarteTopiProyecto.Controllers
             if (dto.TipoEntrega == TipoEntrega.envio && string.IsNullOrWhiteSpace(dto.DireccionEntrega))
             {
                 ModelState.AddModelError("DireccionEntrega", "La dirección es obligatoria para envíos a domicilio.");
+            }
+
+            if (dto.TipoEntrega == TipoEntrega.envio)
+            {
+                if (string.IsNullOrWhiteSpace(dto.NombreReceptorEnvio))
+                {
+                    ModelState.AddModelError("NombreReceptorEnvio", "El nombre del receptor es obligatorio para envíos a domicilio.");
+                }
+
+                if (!dto.TelefonoReceptorEnvio.HasValue || dto.TelefonoReceptorEnvio.Value <= 0)
+                {
+                    ModelState.AddModelError("TelefonoReceptorEnvio", "El teléfono del receptor es obligatorio para envíos a domicilio.");
+                }
             }
 
             // Validación de Anticipos

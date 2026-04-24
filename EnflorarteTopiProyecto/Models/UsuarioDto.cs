@@ -6,8 +6,9 @@ namespace EnflorarteTopiProyecto.Models
     {
         /* 
         Esta clase es un DTO (Data Transfer Object) para la entidad Usuario.
-        Nos permite validar y transferir datos relacionados con los usuarios.
+        Nos permite validar y transferir datos relacionados con ellos.
         Esta clase se utiliza en los archivos cshtml que estan en la carpeta Views/ControladorUsuarios
+        En otras palabras, sirve para desplegar datos de una clase de la BD en la vista, ya que no se pueden usar instancias de las clases directamente.
         */
 
         /*

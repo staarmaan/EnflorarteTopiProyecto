@@ -1,0 +1,9 @@
+SQL SERVER
+dotnet ef migrations add NOMBRE_DE_TU_MIGRACION --context ApplicationDbContext
+dotnet ef database update --context ApplicationDbContext
+
+POSTGRE
+dotnet ef migrations add NOMBRE_DE_TU_MIGRACION --context ApplicationDbContextPostgres --output-dir Migrations/Postgres
+dotnet ef database update --context ApplicationDbContextPostgres
+
+aaaa

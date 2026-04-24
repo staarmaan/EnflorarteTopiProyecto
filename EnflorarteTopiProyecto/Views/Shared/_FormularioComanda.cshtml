@@ -15,23 +15,12 @@
         <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Usuario creador</label>
             <div class="col-sm-8">
-                <select asp-for="UsuarioId" class="form-select" asp-items="ViewBag.ListaUsuarios">
-                    <option value="">Selecciona un usuario</option>
+                <select class="form-select" asp-for="UsuarioId" asp-items="ViewBag.ListaUsuarios">
+                    <option value="" disabled selected>Selecciona un usuario</option>
                 </select>
                 <span asp-validation-for="UsuarioId" class="text-danger"></span>
             </div>
         </div>
-
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Repartidor (opcional)</label>
-            <div class="col-sm-8">
-                <select asp-for="RepartidorId" class="form-select" asp-items="ViewBag.ListaRepartidores">
-                    <option value="">Selecciona un repartidor</option>
-                </select>
-                <span asp-validation-for="RepartidorId" class="text-danger"></span>
-            </div>
-        </div>
-
         <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Estado de la comanda</label>
             <div class="col-sm-8">
@@ -76,14 +65,33 @@
         </div>
 
         <div class="row mb-3">
+            <label class="col-sm-4 col-form-label">Medio de la solicitud</label>
+            <div class="col-sm-8">
+                <select id="medioSolicitudSelect" class="form-select">
+                    <option value="" selected hidden>Selecciona un medio</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Marketplace">Marketplace</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Otro">Otro</option>
+                </select>
+                <input id="medioSolicitudOtro" class="form-control mt-2 d-none" type="text" placeholder="Especifica el medio" />
+                <input id="medioSolicitudValor" type="hidden" asp-for="MedioDeLaSolicitud" />
+                <span asp-validation-for="MedioDeLaSolicitud" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Tipo de entrega</label>
             <div class="col-sm-8">
                 <select id="selectTipoEntrega" class="form-select" asp-for="TipoEntrega">
                     <option value="" selected hidden>Selecciona un tipo</option>
                     <option value="envio">Envío</option>
                     <option value="recoger">Recoger</option>
-                    <option value="otro">Otro</option>
                 </select>
+                <div id="receptorWarning" class="form-text text-danger d-none">
+                    Falta el nombre y/o teléfono del receptor para envíos.
+                </div>
                 <span asp-validation-for="TipoEntrega" class="text-danger"></span>
             </div>
         </div>
@@ -93,6 +101,22 @@
             <div class="col-sm-8">
                 <input class="form-control" asp-for="DireccionEntrega" />
                 <span asp-validation-for="DireccionEntrega" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3 d-none" id="divNombreReceptorEnvio">
+            <label class="col-sm-4 col-form-label">Nombre del receptor</label>
+            <div class="col-sm-8">
+                <input id="inputNombreReceptorEnvio" class="form-control" asp-for="NombreReceptorEnvio" />
+                <span asp-validation-for="NombreReceptorEnvio" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3 d-none" id="divTelefonoReceptorEnvio">
+            <label class="col-sm-4 col-form-label">Teléfono del receptor</label>
+            <div class="col-sm-8">
+                <input id="inputTelefonoReceptorEnvio" class="form-control" asp-for="TelefonoReceptorEnvio" type="number" min="0" step="1" />
+                <span asp-validation-for="TelefonoReceptorEnvio" class="text-danger"></span>
             </div>
         </div>
 
@@ -194,10 +218,72 @@
         <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Detalles del Arreglo</h6>
 
         <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Nombre del arreglo</label>
+            <label class="col-sm-4 col-form-label">Arreglo</label>
             <div class="col-sm-8">
-                <input class="form-control" asp-for="NombreArreglo" />
-                <span asp-validation-for="NombreArreglo" class="text-danger"></span>
+                <select class="form-select" asp-for="ArregloId" asp-items="ViewBag.ListaArreglos">
+                    <option value="" disabled selected>Selecciona un arreglo</option>
+                </select>
+                <span asp-validation-for="ArregloId" class="text-danger"></span>
+                <div id="arregloPreviewWrapper" class="mt-3 d-none">
+                    <div class="text-muted small mb-1">Vista previa</div>
+                    <img id="arregloPreviewImg"
+                         class="img-fluid rounded border d-none"
+                         style="max-height: 220px; object-fit: cover;"
+                         alt="Vista previa del arreglo" />
+                    <div id="arregloPreviewEmpty" class="text-muted small d-none">Sin imagen</div>
+                </div>
+                <div id="arregloFloresWrapper" class="mt-2 d-none">
+                    <div class="small text-muted mb-1">Flores originales del arreglo</div>
+                    <ul id="arregloFloresList" class="mb-3 list-unstyled"></ul>
+                </div>
+
+                <div id="arregloFloresEditorWrapper" class="mt-2 d-none">
+                    <div id="floresEditorCatalog" class="mb-3">
+                        @if (ViewBag.FloresCatalogo == null || !((System.Collections.IEnumerable)ViewBag.FloresCatalogo).GetEnumerator().MoveNext())
+                        {
+                            <div class="alert alert-warning mb-0">No hay flores registradas en el catálogo.</div>
+                        }
+                        else
+                        {
+                            <div class="row g-2 mb-2">
+                                <div class="col-12 col-md-8">
+                                    <label for="selectFlorCatalogoComanda" class="form-label text-muted small text-uppercase fw-bold mb-1">Lista de flores</label>
+                                    <select id="selectFlorCatalogoComanda" class="form-select form-select-sm">
+                                        <option value="">Selecciona una flor...</option>
+                                        @foreach (var flor in (System.Collections.Generic.IEnumerable<dynamic>)ViewBag.FloresCatalogo)
+                                        {
+                                            var colores = (System.Collections.Generic.List<string>)flor.Colores;
+                                            <option value="@flor.FlorId" data-nombre="@flor.FlorNombre" data-colores="@string.Join("|", colores)">@flor.FlorNombre</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-4 d-flex align-items-end">
+                                    <button type="button" id="btnAgregarFlorComanda" class="btn btn-outline-primary btn-sm w-100">Agregar flor</button>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive border rounded">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Flor</th>
+                                            <th style="width: 140px;">Cantidad</th>
+                                            <th style="width: 120px;" class="text-end">Color</th>
+                                            <th class="text-end">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyFloresComanda"></tbody>
+                                </table>
+                            </div>
+
+                            <input type="hidden" id="CopiarDesdeArreglo" name="CopiarDesdeArreglo" value="false" />
+                            <button type="button" id="btnCopiarDesdeArregloComanda" class="btn btn-outline-secondary btn-sm mt-2">Copiar desde arreglo</button>
+
+                            <div id="mensajeSinFloresSeleccionadasComanda" class="text-muted small mt-2">Aún no agregas flores a la comanda.</div>
+                            <span asp-validation-for="Flores" class="text-danger small"></span>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -223,69 +309,11 @@
             </div>
         </div>
 
-        <div class="row mb-4">
-            <label class="col-sm-4 col-form-label">Foto del arreglo</label>
+        <div class="row mb-3">
+            <label class="col-sm-4 col-form-label">Accesorio del arreglo</label>
             <div class="col-sm-8">
-                <input id="fotoArregloInput" class="form-control" asp-for="FotoArregloArchivo" type="file" accept="image/*" />
-                <span asp-validation-for="FotoArregloArchivo" class="text-danger"></span>
-
-                <div id="fotoArregloPreviewContainer" class="mt-3 text-center p-2 border rounded bg-light" style="display:@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "none" : "block");">
-                    <img id="fotoArregloPreview" src="@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "" : Model.FotoArregloRuta)" alt="Vista previa" class="img-fluid rounded shadow-sm" style="max-height: 200px;" />
-
-                    <div class="mt-2">
-                        <input type="hidden" asp-for="EliminarFoto" />
-                        <button type="button" id="btnEliminarFoto" class="btn btn-outline-danger btn-sm">
-                            Eliminar imagen
-                        </button>
-                    </div>
-                </div>
-
-                <script>
-                    (function () {
-                        var input = document.getElementById('fotoArregloInput');
-                        var previewImg = document.getElementById('fotoArregloPreview');
-                        var previewContainer = document.getElementById('fotoArregloPreviewContainer');
-                        var btnEliminar = document.getElementById('btnEliminarFoto');
-                        var eliminarFotoField = document.getElementById('EliminarFoto');
-
-                        function clearPreview() {
-                            if (previewImg) previewImg.src = '';
-                            if (previewContainer) previewContainer.style.display = 'none';
-                        }
-
-                        function showPreview(url) {
-                            if (!previewImg || !previewContainer) return;
-                            previewImg.src = url;
-                            previewContainer.style.display = 'block';
-                        }
-
-                        if (input) {
-                            input.addEventListener('change', function (e) {
-                                var file = e.target.files && e.target.files[0];
-                                if (!file) return;
-
-                                if (file.type && file.type.indexOf('image/') === 0) {
-                                    var url = URL.createObjectURL(file);
-                                    showPreview(url);
-
-                                    input.addEventListener('blur', function () {
-                                        try { URL.revokeObjectURL(url); } catch (_) { }
-                                    }, { once: true });
-
-                                    if(eliminarFotoField) eliminarFotoField.value = 'false';
-                                }
-                            });
-                        }
-
-                        if (btnEliminar) {
-                            btnEliminar.addEventListener('click', function () {
-                                if (eliminarFotoField) eliminarFotoField.value = 'true';
-                                clearPreview();
-                                if (input) input.value = '';
-                            });
-                        }
-                    })();
-                </script>
+                <input class="form-control" asp-for="AccesorioArreglo" />
+                <span asp-validation-for="AccesorioArreglo" class="text-danger"></span>
             </div>
         </div>
 
@@ -316,3 +344,368 @@
 
     </div>
 </div>
+
+<script>
+    (function () {
+        var select = document.getElementById('ArregloId');
+        var previewWrapper = document.getElementById('arregloPreviewWrapper');
+        var previewImg = document.getElementById('arregloPreviewImg');
+        var previewEmpty = document.getElementById('arregloPreviewEmpty');
+        var arregloFotos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ArreglosFotoMap ?? new System.Collections.Generic.Dictionary<int, string>()));
+        var arreglosFlores = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ArreglosFloresMap ?? new System.Collections.Generic.Dictionary<int, object>()));
+        var modelFlores = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.Flores ?? new System.Collections.Generic.List<EnflorarteTopiProyecto.Models.ComandaFlorDto>()));
+
+        if (!select || !previewWrapper || !previewImg || !previewEmpty) {
+            return;
+        }
+
+        // Utilities to render and manage editable table of Flores for the comanda
+        function actualizarIndicesFloresComanda() {
+            $('#tbodyFloresComanda tr').each(function (index) {
+                $(this).find('input[name$=".FlorId"]').attr('name', 'Flores[' + index + '].FlorId');
+                $(this).find('input[name$=".Nombre"]').attr('name', 'Flores[' + index + '].Nombre');
+                $(this).find('input[name$=".Cantidad"]').attr('name', 'Flores[' + index + '].Cantidad');
+                $(this).find('select[name$=".ColorSeleccionado"]').attr('name', 'Flores[' + index + '].ColorSeleccionado');
+            });
+        }
+
+        function actualizarMensajeSinFloresComanda() {
+            if ($('#tbodyFloresComanda tr').length === 0) {
+                $('#mensajeSinFloresSeleccionadasComanda').removeClass('d-none');
+            } else {
+                $('#mensajeSinFloresSeleccionadasComanda').addClass('d-none');
+            }
+        }
+
+        function obtenerNombreFlorSeleccionadaComanda() {
+            var $option = $('#selectFlorCatalogoComanda option:selected');
+            if (!$option.val()) return '';
+            return ($option.data('nombre') || $option.text() || '').toString();
+        }
+
+        function obtenerOpcionesColorHtmlComanda(florId, colorSeleccionado) {
+            var $option = $('#selectFlorCatalogoComanda option[value="' + florId + '"]');
+            var rawColores = ($option.data('colores') || 'a elegir').toString();
+            var colores = rawColores.split('|').filter(function (c) { return c && c.trim().length > 0; });
+
+            if (colores.length === 0) colores = ['a elegir'];
+            if (!colorSeleccionado) colorSeleccionado = 'a elegir';
+            if (colores.findIndex(function (c) { return c.toLowerCase() === colorSeleccionado.toLowerCase(); }) < 0) colores.unshift('a elegir');
+
+            var html = '';
+            colores.forEach(function (color) {
+                var selected = color.toLowerCase() === colorSeleccionado.toLowerCase() ? ' selected' : '';
+                html += '<option value="' + color + '"' + selected + '>' + color + '</option>';
+            });
+            return html;
+        }
+
+        function agregarFlorSeleccionadaATablaComanda() {
+            var florId = ($('#selectFlorCatalogoComanda').val() || '').toString();
+            if (!florId) return;
+
+            var nombre = obtenerNombreFlorSeleccionadaComanda();
+            var $tbody = $('#tbodyFloresComanda');
+            var $filaExistente = $tbody.find('tr[data-flor-id="' + florId + '"]');
+
+            if ($filaExistente.length > 0) {
+                var $inputCantidad = $filaExistente.find('input[name$=".Cantidad"]');
+                var cantidadActual = parseInt($inputCantidad.val()) || 0;
+                $inputCantidad.val(cantidadActual + 1);
+                return;
+            }
+
+            var nuevoIndex = $tbody.find('tr').length;
+            var fila = '' +
+                '<tr data-flor-id="' + florId + '">' +
+                '  <td>' + nombre +
+                '    <input type="hidden" name="Flores[' + nuevoIndex + '].FlorId" value="' + florId + '" />' +
+                '    <input type="hidden" name="Flores[' + nuevoIndex + '].Nombre" value="' + nombre + '" />' +
+                '  </td>' +
+                '  <td><input name="Flores[' + nuevoIndex + '].Cantidad" type="number" min="0" value="1" class="form-control form-control-sm" /></td>' +
+                '  <td><select name="Flores[' + nuevoIndex + '].ColorSeleccionado" class="form-select form-select-sm">' + obtenerOpcionesColorHtmlComanda(florId, 'a elegir') + '</select></td>' +
+                '  <td class="text-end"><button type="button" class="btn btn-accion-redondo btn-eliminar-redondo btn-eliminar-flor" title="Quitar flor" aria-label="Quitar flor">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></td>' +
+                '</tr>';
+
+            $tbody.append(fila);
+            actualizarIndicesFloresComanda();
+            actualizarMensajeSinFloresComanda();
+        }
+
+        function renderComandaRowsFromArray(flores) {
+            var $tbody = $('#tbodyFloresComanda');
+            $tbody.empty();
+            if (!flores || flores.length === 0) return;
+
+            for (var i = 0; i < flores.length; i++) {
+                var f = flores[i] || {};
+                var florId = f.FlorId || f.florId || '';
+                var nombre = f.Nombre || f.nombre || '';
+                var cantidad = f.Cantidad || f.cantidad || 0;
+                var color = f.ColorSeleccionado || f.colorSeleccionado || 'a elegir';
+
+                var row = '' +
+                    '<tr data-flor-id="' + florId + '">' +
+                    '  <td>' + nombre +
+                    '    <input type="hidden" name="Flores[' + i + '].FlorId" value="' + florId + '" />' +
+                    '    <input type="hidden" name="Flores[' + i + '].Nombre" value="' + nombre + '" />' +
+                    '  </td>' +
+                    '  <td><input name="Flores[' + i + '].Cantidad" type="number" min="0" value="' + cantidad + '" class="form-control form-control-sm" /></td>' +
+                    '  <td><select name="Flores[' + i + '].ColorSeleccionado" class="form-select form-select-sm">' + obtenerOpcionesColorHtmlComanda(florId, color) + '</select></td>' +
+                    '  <td class="text-end"><button type="button" class="btn btn-accion-redondo btn-eliminar-redondo btn-eliminar-flor" title="Quitar flor" aria-label="Quitar flor">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></td>' +
+                    '</tr>';
+
+                $tbody.append(row);
+            }
+
+            actualizarIndicesFloresComanda();
+            actualizarMensajeSinFloresComanda();
+        }
+
+        function updatePreview() {
+            var id = select.value;
+
+            if (!id) {
+                previewWrapper.classList.add('d-none');
+                previewImg.classList.add('d-none');
+                previewEmpty.classList.add('d-none');
+                previewImg.removeAttribute('src');
+                return;
+            }
+
+            previewWrapper.classList.remove('d-none');
+            var foto = arregloFotos[id];
+
+            if (foto) {
+                previewImg.src = foto;
+                previewImg.classList.remove('d-none');
+                previewEmpty.classList.add('d-none');
+            } else {
+                previewImg.removeAttribute('src');
+                previewImg.classList.add('d-none');
+                previewEmpty.classList.remove('d-none');
+            }
+
+            // Actualizar lista de flores
+            try {
+                var floresWrapper = document.getElementById('arregloFloresWrapper');
+                var floresList = document.getElementById('arregloFloresList');
+                var flores = arreglosFlores[id] || arreglosFlores[Number(id)] || [];
+
+                if (!flores || flores.length === 0) {
+                    floresWrapper.classList.add('d-none');
+                    floresList.innerHTML = '';
+                } else {
+                    floresWrapper.classList.remove('d-none');
+                    floresList.innerHTML = '';
+                    flores.forEach(function (f) {
+                        var li = document.createElement('li');
+                        li.textContent = (f.Nombre || 'Flor') + ' x ' + (f.Cantidad || f.cantidad || 0) + ' (' + (f.ColorSeleccionado || f.colorSeleccionado || 'a elegir') + ')';
+                        floresList.appendChild(li);
+                    });
+                }
+            } catch (e) { /* noop */ }
+
+            // Mostrar u ocultar el editor de composición; NO repoblar la tabla editable automáticamente.
+            try {
+                var editorWrapper = document.getElementById('arregloFloresEditorWrapper');
+                var editableFlores = arreglosFlores[id] || arreglosFlores[Number(id)] || [];
+
+                if (!editableFlores || editableFlores.length === 0) {
+                    editorWrapper.classList.add('d-none');
+                } else {
+                    editorWrapper.classList.remove('d-none');
+                }
+            } catch (e) { /* noop */ }
+        }
+
+        // Si el modelo trae flores (editar), renderizarlas en el editor (tabla)
+        try {
+            var mf = modelFlores || [];
+            if (mf && mf.length > 0) {
+                renderComandaRowsFromArray(mf);
+                $('#arregloFloresEditorWrapper').removeClass('d-none');
+            }
+        } catch (e) { /* noop */ }
+
+        select.addEventListener('change', updatePreview);
+        updatePreview();
+
+            // Bind handlers for comanda flower editor (uses jQuery)
+        try {
+            $('#btnAgregarFlorComanda').on('click', function () { agregarFlorSeleccionadaATablaComanda(); });
+
+            $('#selectFlorCatalogoComanda').on('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    agregarFlorSeleccionadaATablaComanda();
+                }
+            });
+
+            $(document).on('click', '#tbodyFloresComanda .btn-eliminar-flor', function () {
+                var $fila = $(this).closest('tr');
+                var nombreFlor = ($fila.find('input[name$=".Nombre"]').val() || '').toString();
+                var confirmar = confirm('Eliminar "' + nombreFlor + '" de la comanda?');
+                if (!confirmar) return;
+                $fila.remove();
+                actualizarIndicesFloresComanda();
+                actualizarMensajeSinFloresComanda();
+            });
+
+            $('#btnCopiarDesdeArregloComanda').on('click', function () {
+                var idVal = ($('#ArregloId').val() || '').toString();
+                if (!idVal) {
+                    alert('Selecciona primero un arreglo.');
+                    return;
+                }
+                var editableFlores = arreglosFlores[idVal] || arreglosFlores[Number(idVal)] || [];
+                if (!editableFlores || editableFlores.length === 0) {
+                    alert('El arreglo seleccionado no contiene flores.');
+                    return;
+                }
+                var $tbody = $('#tbodyFloresComanda');
+                if ($tbody.find('tr').length > 0) {
+                    if (!confirm('Esto reemplazará las flores actualmente en la comanda. Continuar?')) return;
+                }
+                renderComandaRowsFromArray(editableFlores);
+                $('#CopiarDesdeArreglo').val('true');
+            });
+        } catch (e) { /* noop */ }
+    })();
+</script>
+
+<script>
+    (function () {
+        var select = document.getElementById('medioSolicitudSelect');
+        var otroInput = document.getElementById('medioSolicitudOtro');
+        var hidden = document.getElementById('medioSolicitudValor');
+
+        if (!select || !otroInput || !hidden) {
+            return;
+        }
+
+        var presets = {
+            facebook: 'Facebook',
+            marketplace: 'Marketplace',
+            whatsapp: 'WhatsApp',
+            instagram: 'Instagram'
+        };
+
+        function setFromValue(rawValue) {
+            var value = (rawValue || '').trim();
+            var normalized = value.toLowerCase();
+
+            if (value && presets[normalized]) {
+                select.value = presets[normalized];
+                otroInput.classList.add('d-none');
+                otroInput.value = '';
+                hidden.value = presets[normalized];
+                return;
+            }
+
+            if (value) {
+                select.value = 'Otro';
+                otroInput.classList.remove('d-none');
+                otroInput.value = value;
+                hidden.value = value;
+                return;
+            }
+
+            select.value = '';
+            otroInput.classList.add('d-none');
+            otroInput.value = '';
+            hidden.value = '';
+        }
+
+        function onSelectChange() {
+            if (select.value === 'Otro') {
+                otroInput.classList.remove('d-none');
+                otroInput.focus();
+                hidden.value = otroInput.value.trim();
+                return;
+            }
+
+            otroInput.classList.add('d-none');
+            otroInput.value = '';
+            hidden.value = select.value;
+        }
+
+        function onOtroInputChange() {
+            if (select.value === 'Otro') {
+                hidden.value = otroInput.value.trim();
+            }
+        }
+
+        setFromValue(hidden.value);
+        select.addEventListener('change', onSelectChange);
+        otroInput.addEventListener('input', onOtroInputChange);
+    })();
+</script>
+
+<script>
+    (function () {
+        var tipoEntregaSelect = document.getElementById('selectTipoEntrega');
+        var divNombre = document.getElementById('divNombreReceptorEnvio');
+        var divTelefono = document.getElementById('divTelefonoReceptorEnvio');
+        var inputNombre = document.getElementById('inputNombreReceptorEnvio');
+        var inputTelefono = document.getElementById('inputTelefonoReceptorEnvio');
+        var receptorWarning = document.getElementById('receptorWarning');
+
+        if (!tipoEntregaSelect || !divNombre || !divTelefono) {
+            return;
+        }
+
+        function updateReceptorWarning(isEnvio) {
+            if (!receptorWarning || !isEnvio) {
+                if (receptorWarning) {
+                    receptorWarning.classList.add('d-none');
+                }
+                return;
+            }
+
+            var nombreOk = inputNombre && inputNombre.value.trim().length > 0;
+            var telefonoOk = inputTelefono && inputTelefono.value.trim().length > 0;
+            receptorWarning.classList.toggle('d-none', nombreOk && telefonoOk);
+        }
+
+        function toggleReceptorFields() {
+            var isEnvio = tipoEntregaSelect.value === 'envio';
+            divNombre.classList.toggle('d-none', !isEnvio);
+            divTelefono.classList.toggle('d-none', !isEnvio);
+
+            if (inputNombre) {
+                inputNombre.required = isEnvio;
+            }
+
+            if (inputTelefono) {
+                inputTelefono.required = isEnvio;
+            }
+
+            if (!isEnvio) {
+                if (inputNombre) {
+                    inputNombre.value = '';
+                }
+                if (inputTelefono) {
+                    inputTelefono.value = '';
+                }
+            }
+
+            updateReceptorWarning(isEnvio);
+        }
+
+        tipoEntregaSelect.addEventListener('change', toggleReceptorFields);
+        if (inputNombre) {
+            inputNombre.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        if (inputTelefono) {
+            inputTelefono.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        toggleReceptorFields();
+    })();
+</script>

@@ -3,7 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Data.SqlClient;
 
-var builder = WebApplication.CreateBuilder(args);
+using OpcionesBd;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+var dbType = builder.Configuration.GetSection("DatabaseType").Value ?? "sql";
+var dbTypeNormalized = dbType.Trim().ToLowerInvariant();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
@@ -13,12 +17,11 @@ builder.Services.AddControllersWithViews(options =>
 });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    options.UseSqlServer(connectionString);
+    OpcionesBD.UsarBD(options, dbType, builder);
 });
 //builder.Services.AddScoped<IPasswordService, PasswordService>();
 
-// Autenticación por cookies y autorización por roles
+// Autenticaciï¿½n por cookies y autorizaciï¿½n por roles
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
     {
@@ -41,31 +44,33 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var connectionString = db.Database.GetConnectionString();
-
-    if (!string.IsNullOrWhiteSpace(connectionString))
+    if (dbTypeNormalized == "sql")
     {
-        var builderSql = new SqlConnectionStringBuilder(connectionString);
-        var dbName = builderSql.InitialCatalog;
+        var connectionString = db.Database.GetConnectionString();
 
-        if (!string.IsNullOrWhiteSpace(dbName))
+        if (!string.IsNullOrWhiteSpace(connectionString))
         {
-            builderSql.InitialCatalog = "master";
+            var builderSql = new SqlConnectionStringBuilder(connectionString);
+            var dbName = builderSql.InitialCatalog;
 
-            using var connection = new SqlConnection(builderSql.ConnectionString);
-            connection.Open();
+            if (!string.IsNullOrWhiteSpace(dbName))
+            {
+                builderSql.InitialCatalog = "master";
 
-            using var createDbCmd = connection.CreateCommand();
-            createDbCmd.CommandText = $@"
+                using var connection = new SqlConnection(builderSql.ConnectionString);
+                connection.Open();
+
+                using var createDbCmd = connection.CreateCommand();
+                createDbCmd.CommandText = $@"
 IF DB_ID(N'{dbName.Replace("'", "''")}') IS NULL
 BEGIN
     CREATE DATABASE [{dbName.Replace("]", "]]" )}];
 END";
-            createDbCmd.ExecuteNonQuery();
+                createDbCmd.ExecuteNonQuery();
+            }
         }
-    }
 
-    db.Database.ExecuteSqlRaw(@"
+        db.Database.ExecuteSqlRaw(@"
 IF OBJECT_ID(N'dbo.arreglo', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.arreglo (
@@ -76,7 +81,7 @@ BEGIN
     );
 END");
 
-    db.Database.ExecuteSqlRaw(@"
+        db.Database.ExecuteSqlRaw(@"
 IF OBJECT_ID(N'dbo.arreglo_flor', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.arreglo_flor (
@@ -106,7 +111,7 @@ BEGIN
         ADD color_seleccionado NVARCHAR(50) NOT NULL CONSTRAINT DF_arreglo_flor_color_seleccionado DEFAULT(N'a elegir');
 END");
 
-    db.Database.ExecuteSqlRaw(@"
+        db.Database.ExecuteSqlRaw(@"
 IF OBJECT_ID(N'dbo.flor_inventario_color', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.flor_inventario_color (
@@ -124,7 +129,7 @@ BEGIN
     );
 END");
 
-    db.Database.ExecuteSqlRaw(@"
+        db.Database.ExecuteSqlRaw(@"
 INSERT INTO dbo.flor_inventario_color (flor_id, color, cantidad)
 SELECT f.flor_id, v.color, 0
 FROM dbo.flor f
@@ -134,6 +139,7 @@ WHERE NOT EXISTS (
     FROM dbo.flor_inventario_color fic
     WHERE fic.flor_id = f.flor_id AND fic.color = v.color
 );");
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -150,13 +156,21 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseStaticFiles();
+app.MapControllerRoute(
+    name: "default",
+    //pattern: "{controller=Home}/{action=Index}/{id?}") // Te lleva a la pï¿½gina principal Home
+    pattern: "{controller=ControladorSesion}/{action=Index}/{id?}" // Te lleva a la pï¿½gina de inicio de sesiï¿½n
+); 
+
+/*
 app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    //pattern: "{controller=Home}/{action=Index}/{id?}") // Te lleva a la página principal Home
-    pattern: "{controller=ControladorSesion}/{action=Index}/{id?}") // Te lleva a la página de inicio de sesión
+    //pattern: "{controller=Home}/{action=Index}/{id?}") // Te lleva a la pï¿½gina principal Home
+    pattern: "{controller=ControladorSesion}/{action=Index}/{id?}") // Te lleva a la pï¿½gina de inicio de sesiï¿½n
     .WithStaticAssets();
-
+*/
 
 app.Run();

@@ -10,6 +10,8 @@ using System.Security.Claims;
 namespace EnflorarteTopiProyecto.Controllers
 {
     [Authorize]
+    //[Authorize(Roles = "supervisor")] // Solo los supervisores pueden manejan el catalogo.
+
     public class ControladorCatalogo : Controller
     {
         private const int MAX_IMAGEN_BYTES = 10 * 1024 * 1024;
@@ -66,6 +68,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(modelo);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         public IActionResult CrearFlor()
         {
             return View(new FlorDto());
@@ -125,6 +128,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(flor);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult CrearFlor(FlorDto dto)
@@ -173,6 +177,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         public IActionResult CrearArreglo()
         {
             var coloresPorFlorId = ObtenerColoresPorFlorId();
@@ -195,6 +200,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(dto);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         public IActionResult EditarInventarioFlor(int id)
         {
             AsegurarColoresBaseInventario(id);
@@ -245,6 +251,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(arreglo);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         public IActionResult EditarArreglo(int id)
         {
             var arreglo = context.Arreglos
@@ -288,6 +295,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(dto);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult CrearArreglo(ArregloDto dto)
@@ -386,6 +394,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult EditarArreglo(int id, ArregloDto dto)
@@ -497,6 +506,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult EditarInventarioFlor(EditarInventarioFlorDto dto, string? accion)
@@ -521,12 +531,12 @@ namespace EnflorarteTopiProyecto.Controllers
             {
                 if (ajuste.AgregarCantidad.HasValue && (ajuste.AgregarCantidad.Value < 1 || ajuste.AgregarCantidad.Value > 999))
                 {
-                    ModelState.AddModelError(string.Empty, $"La cantidad a agregar para '{ajuste.Color}' no es válida.");
+                    ModelState.AddModelError(string.Empty, $"La cantidad a agregar para '{ajuste.Color}' no es vï¿½lida.");
                 }
 
                 if (ajuste.QuitarCantidad.HasValue && (ajuste.QuitarCantidad.Value < 1 || ajuste.QuitarCantidad.Value > 999))
                 {
-                    ModelState.AddModelError(string.Empty, $"La cantidad a quitar para '{ajuste.Color}' no es válida.");
+                    ModelState.AddModelError(string.Empty, $"La cantidad a quitar para '{ajuste.Color}' no es vï¿½lida.");
                 }
             }
 
@@ -664,7 +674,7 @@ namespace EnflorarteTopiProyecto.Controllers
         {
             if (string.IsNullOrWhiteSpace(contrasenaSupervisor) || !ValidarContrasenaSupervisor(contrasenaSupervisor))
             {
-                TempData["Toast.Message"] = "Contraseña de supervisor incorrecta.";
+                TempData["Toast.Message"] = "Contraseï¿½a de supervisor incorrecta.";
                 TempData["Toast.Type"] = "warning";
                 return RedirectToAction("Index");
             }
@@ -700,12 +710,12 @@ namespace EnflorarteTopiProyecto.Controllers
 
             if (!contentTypeOk && !extensionOk)
             {
-                return (false, null, "Solo se permiten imágenes (jpg, jpeg, png, webp, gif).");
+                return (false, null, "Solo se permiten imï¿½genes (jpg, jpeg, png, webp, gif).");
             }
 
             if (archivo.Length > MAX_IMAGEN_BYTES)
             {
-                return (false, null, "La imagen supera el tamaño permitido (10 MB).");
+                return (false, null, "La imagen supera el tamaï¿½o permitido (10 MB).");
             }
 
             var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "flores");

@@ -7,6 +7,6 @@
   },
   "DatabaseType": "postgres",
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=db;Username=admin;Password=admin;Pooling=false"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=enflorarte_topi_proyecto;Username=postgres;Password=YOUR_PASSWORD_HERE"
   }
 }

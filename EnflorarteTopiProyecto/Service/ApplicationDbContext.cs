@@ -15,6 +15,7 @@ namespace EnflorarteTopiProyecto.Service
         public DbSet<FlorInventarioColor> FloresInventarioColores { get; set; } = null!;
         public DbSet<Arreglo> Arreglos { get; set; } = null!;
         public DbSet<ArregloFlor> ArreglosFlores { get; set; } = null!;
+      public DbSet<ComandaFlor> ComandasFlores { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) // Codigo para que se convierta el Enum de roles a string, o algo asi.
         {
@@ -52,7 +53,15 @@ namespace EnflorarteTopiProyecto.Service
 
             modelBuilder.Entity<Comanda>(entity =>
             {
-                entity.ToTable("comanda");
+                        entity.ToTable("comanda", t =>
+                        {
+                              // Constraints para evitar valores inválidos (protección en BD)
+                              t.HasCheckConstraint("CK_Comanda_PrecioArreglo_NonNegative", "precio_arreglo >= 0");
+                              t.HasCheckConstraint("CK_Comanda_PagoEnvio_NonNegative", "pago_envio >= 0");
+                              t.HasCheckConstraint("CK_Comanda_AnticipoTotal_NonNegative", "anticipo_total >= 0");
+                              t.HasCheckConstraint("CK_Comanda_CantidadArreglo_ValidRange", "cantidad_arreglo BETWEEN 1 AND 100");
+                              t.HasCheckConstraint("CK_Comanda_NumeroRuta_PositiveOrNull", "numero_ruta IS NULL OR numero_ruta > 0");
+                        });
 
                 entity.HasKey(e => e.Id);
 
@@ -87,6 +96,17 @@ namespace EnflorarteTopiProyecto.Service
                       .HasColumnName("cliente_telefono")
                       .HasMaxLength(20);
 
+                entity.Property(e => e.LinkDireccion)
+                      .HasColumnName("link_direccion")
+                      .HasMaxLength(1000);
+
+                entity.Property(e => e.DomicilioReferencias)
+                      .HasColumnName("domicilio_referencias")
+                      .HasMaxLength(500);
+
+                entity.Property(e => e.NumeroRuta)
+                      .HasColumnName("numero_ruta");
+
                 entity.Property(e => e.DireccionEntrega)
                       .HasColumnName("direccion_entrega")
                       .HasMaxLength(255);
@@ -106,10 +126,13 @@ namespace EnflorarteTopiProyecto.Service
                       .IsUnicode(true);
 
                 // Datos del arreglo
-                entity.Property(e => e.NombreArreglo)
-                      .HasColumnName("nombre_arreglo")
-                      .IsRequired()
-                      .HasMaxLength(150);
+                entity.Property(e => e.ArregloId)
+                      .HasColumnName("arreglo_id");
+
+                entity.HasOne(e => e.Arreglo)
+                      .WithMany()
+                      .HasForeignKey(e => e.ArregloId)
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.Property(e => e.PrecioArreglo)
                       .HasColumnName("precio_arreglo")
@@ -119,9 +142,13 @@ namespace EnflorarteTopiProyecto.Service
                       .HasColumnName("pago_envio")
                       .HasPrecision(7, 2);
 
-                entity.Property(e => e.FotoArregloRuta)
-                      .HasColumnName("foto_arreglo_ruta")
-                      .HasMaxLength(300);
+                entity.Property(e => e.CantidadArreglo)
+                      .HasColumnName("cantidad_arreglo")
+                      .HasDefaultValue(1);
+
+                entity.Property(e => e.MensajeArreglo)
+                      .HasColumnName("mensaje_arreglo")
+                      .HasMaxLength(500);
 
                 // Estados y anticipos
                 entity.Property(e => e.Estado)
@@ -143,10 +170,6 @@ namespace EnflorarteTopiProyecto.Service
                       .HasColumnName("anticipo_total")
                       .HasPrecision(7, 2);
 
-                // Constraints para evitar valores negativos (protección en BD)
-                entity.HasCheckConstraint("CK_Comanda_PrecioArreglo_NonNegative", "[precio_arreglo] >= 0");
-                entity.HasCheckConstraint("CK_Comanda_PagoEnvio_NonNegative", "[pago_envio] >= 0");
-                entity.HasCheckConstraint("CK_Comanda_AnticipoTotal_NonNegative", "[anticipo_total] >= 0");
             });
 
             modelBuilder.Entity<Flor>(entity =>
@@ -220,6 +243,37 @@ namespace EnflorarteTopiProyecto.Service
 
                 entity.HasOne(e => e.Flor)
                       .WithMany(e => e.Arreglos)
+                      .HasForeignKey(e => e.FlorId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ComandaFlor>(entity =>
+            {
+                entity.ToTable("comanda_flor");
+
+                entity.HasKey(e => new { e.ComandaId, e.FlorId });
+
+                entity.Property(e => e.ComandaId)
+                      .HasColumnName("comanda_id");
+
+                entity.Property(e => e.FlorId)
+                      .HasColumnName("flor_id");
+
+                entity.Property(e => e.Cantidad)
+                      .HasColumnName("cantidad");
+
+                entity.Property(e => e.ColorSeleccionado)
+                      .HasColumnName("color_seleccionado")
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.HasOne(e => e.Comanda)
+                      .WithMany(c => c.Flores)
+                      .HasForeignKey(e => e.ComandaId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Flor)
+                      .WithMany()
                       .HasForeignKey(e => e.FlorId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
