@@ -76,7 +76,17 @@
                     <label asp-for="NuevoColor" class="form-label text-muted small text-uppercase fw-bold mb-1">Otro color</label>
                     <div class="input-group input-group-sm">
                         <input asp-for="NuevoColor" class="form-control" maxlength="50" placeholder="Ej. Amarillo" />
-                        <button type="submit" class="btn btn-outline-secondary-flower" name="accion" value="agregar-color">Agregar color</button>
+                        <button type="submit"
+                                class="btn btn-accion-redondo btn-agregar-redondo"
+                                name="accion"
+                                value="agregar-color"
+                                title="Agregar color"
+                                aria-label="Agregar color">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path d="M12 5v14" />
+                                <path d="M5 12h14" />
+                            </svg>
+                        </button>
                     </div>
                     <span asp-validation-for="NuevoColor" class="text-danger small"></span>
                     <div class="form-text">Se agrega para esta flor con cantidad inicial 0.</div>

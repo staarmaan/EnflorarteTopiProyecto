@@ -64,7 +64,16 @@
                             <path d="M20 7l-8 4-8-4" />
                         </svg>
                     </button>
-                    <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearFlor", "ControladorCatalogo")', 'Registrar Flor')">+ Agregar Flor</button>
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-agregar-redondo me-2"
+                            onclick="cargarModalCatalogo('@Url.Action("CrearFlor", "ControladorCatalogo")', 'Registrar Flor')"
+                            title="Agregar flor"
+                            aria-label="Agregar flor">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -186,7 +195,16 @@
                             <path d="M20 7l-8 4-8-4" />
                         </svg>
                     </button>
-                    <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearArreglo", "ControladorCatalogo")', 'Registrar Arreglo')">+ Agregar Arreglo</button>
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-agregar-redondo"
+                            onclick="cargarModalCatalogo('@Url.Action("CrearArreglo", "ControladorCatalogo")', 'Registrar Arreglo')"
+                            title="Agregar arreglo"
+                            aria-label="Agregar arreglo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 

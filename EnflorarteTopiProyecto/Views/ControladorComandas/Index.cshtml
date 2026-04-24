@@ -7,9 +7,16 @@
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="display-6 m-0">Lista de Comandas</h1>
-        <a href="javascript:void(0);" onclick="cargarModal('@Url.Action("Crear", "ControladorComandas")', 'Nueva Comanda')" class="btn btn-primary">
-            + Nueva Comanda
-        </a>
+        <button type="button"
+                class="btn btn-accion-redondo btn-agregar-redondo"
+                onclick="cargarModal('@Url.Action("Crear", "ControladorComandas")', 'Nueva Comanda')"
+                title="Nueva comanda"
+                aria-label="Nueva comanda">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 5v14" />
+                <path d="M5 12h14" />
+            </svg>
+        </button>
     </div>
 
     <div class="card shadow-sm border-0">

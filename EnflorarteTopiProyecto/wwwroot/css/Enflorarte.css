@@ -205,6 +205,18 @@ a {
     color: var(--color-primario);
 }
 
+.btn-agregar-redondo {
+    background-color: var(--color-primario);
+    border-color: var(--color-primario);
+    color: #fff;
+}
+
+.btn-agregar-redondo:hover {
+    background-color: #25422f;
+    border-color: var(--color-primario);
+    color: #fff;
+}
+
 /* Estilo para el footer */
 footer.border-top {
     border-top-color: var(--color-secundario) !important;
