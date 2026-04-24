@@ -19,9 +19,11 @@ namespace EnflorarteTopiProyecto.Controllers
 
         public IActionResult Index()
         {
+            var haceUnaSemana = DateTime.Now.AddDays(-7);
             var comandas = context.Comandas
                 .Include(c => c.Arreglo)
-                .Where(c => !c.Archivado)
+                .Where(c => !c.Archivado && 
+                    !(c.Estado == Models.EstadoComanda.entregado && c.FechaEntrega < haceUnaSemana))
                 .OrderByDescending(comanda => comanda.Id)
                 .ToList();
             return View(comandas);
@@ -113,6 +115,44 @@ namespace EnflorarteTopiProyecto.Controllers
                 AnticipoPagoTotal = comandaDto.AnticipoPagoTotal
             };
 
+            // Copiar composición del arreglo (flores y colores) a la comanda nueva.
+            // Si el formulario envía `Flores`, usamos esa composición; si no, copiamos desde el Arreglo.
+            var arreglo = context.Arreglos
+                .Include(a => a.Flores)
+                .ThenInclude(af => af.Flor)
+                .FirstOrDefault(a => a.Id == comandaDto.ArregloId);
+
+            if (arreglo != null)
+            {
+                comandaNueva.NombreArreglo = arreglo.Nombre;
+                comandaNueva.FotoArregloRuta = arreglo.FotoRuta;
+
+                if (comandaDto.Flores != null && comandaDto.Flores.Any())
+                {
+                    foreach (var f in comandaDto.Flores)
+                    {
+                        comandaNueva.Flores.Add(new ComandaFlor
+                        {
+                            FlorId = f.FlorId,
+                            Cantidad = f.Cantidad,
+                            ColorSeleccionado = f.ColorSeleccionado
+                        });
+                    }
+                }
+                else
+                {
+                    foreach (var af in arreglo.Flores)
+                    {
+                        comandaNueva.Flores.Add(new ComandaFlor
+                        {
+                            FlorId = af.FlorId,
+                            Cantidad = af.Cantidad,
+                            ColorSeleccionado = af.ColorSeleccionado
+                        });
+                    }
+                }
+            }
+
             context.Comandas.Add(comandaNueva);
             context.SaveChanges();
 
@@ -126,7 +166,11 @@ namespace EnflorarteTopiProyecto.Controllers
         [Authorize(Policy = "EsVentas")]
         public IActionResult Editar(int id)
         {
-            var comandaAEditar = context.Comandas.Find(id);
+            var comandaAEditar = context.Comandas
+                .Include(c => c.Flores)
+                .ThenInclude(cf => cf.Flor)
+                .FirstOrDefault(c => c.Id == id);
+
             if (comandaAEditar == null)
             {
                 TempData["Toast.Message"] = "Comanda no encontrada.";
@@ -163,7 +207,14 @@ namespace EnflorarteTopiProyecto.Controllers
                 MensajeArreglo = comandaAEditar.MensajeArreglo,
                 AccesorioArreglo = comandaAEditar.AccesorioArreglo,
                 AnticipoTipo = comandaAEditar.AnticipoTipo,
-                AnticipoPagoTotal = comandaAEditar.AnticipoPagoTotal
+                AnticipoPagoTotal = comandaAEditar.AnticipoPagoTotal,
+                Flores = comandaAEditar.Flores.Select(f => new ComandaFlorDto
+                {
+                    FlorId = f.FlorId,
+                    Nombre = f.Flor?.Nombre ?? string.Empty,
+                    Cantidad = f.Cantidad,
+                    ColorSeleccionado = f.ColorSeleccionado
+                }).ToList()
             };
 
             ProcesarAnticipoParaVista(comandaDto); //JENNY: convierte el dinero a porcentaje para mostrarlo en la vista
@@ -176,7 +227,9 @@ namespace EnflorarteTopiProyecto.Controllers
         [Authorize(Policy = "EsVentas")]
         public IActionResult Editar(int id, ComandaDto comandaDto)
         {
-            var comandaExistente = context.Comandas.Find(id);
+            var comandaExistente = context.Comandas
+                .Include(c => c.Flores)
+                .FirstOrDefault(c => c.Id == id);
             if (comandaExistente == null)
             {
                 TempData["Toast.Message"] = "Comanda no encontrada.";
@@ -231,6 +284,8 @@ namespace EnflorarteTopiProyecto.Controllers
                 ProcesarAnticipoParaGuardar(comandaDto); //JENNY: Si cambiaron el anticipo a porcentaje, recalculamos el dinero $ antes de actualizar la BD.
 
             // Actualizar los campos de la comanda existente.
+            var arregloCambiado = comandaExistente.ArregloId != comandaDto.ArregloId;
+
             comandaExistente.UsuarioId = comandaDto.UsuarioId;
             comandaExistente.RepartidorId = comandaDto.RepartidorId;
             comandaExistente.Estado = comandaDto.Estado;
@@ -249,6 +304,81 @@ namespace EnflorarteTopiProyecto.Controllers
             comandaExistente.FechaEntrega = comandaDto.FechaEntrega;
             comandaExistente.HoraEntrega = comandaDto.HoraEntrega;
             comandaExistente.ArregloId = comandaDto.ArregloId;
+            // Si el formulario envía `Flores` (con elementos), usamos esa composición enviada por el usuario.
+            // Si no se envían flores, solo copiamos la composición desde el Arreglo si el usuario marcó la acción explícita `CopiarDesdeArreglo`.
+            if (comandaDto.Flores != null && comandaDto.Flores.Any())
+            {
+                if (comandaExistente.Flores != null && comandaExistente.Flores.Any())
+                {
+                    context.ComandasFlores.RemoveRange(comandaExistente.Flores);
+                    comandaExistente.Flores.Clear();
+                }
+
+                foreach (var f in comandaDto.Flores)
+                {
+                    comandaExistente.Flores.Add(new ComandaFlor
+                    {
+                        FlorId = f.FlorId,
+                        Cantidad = f.Cantidad,
+                        ColorSeleccionado = f.ColorSeleccionado
+                    });
+                }
+
+                // Si además cambió el arreglo, actualizamos el snapshot de nombre/foto
+                if (arregloCambiado)
+                {
+                    var nuevoArreglo = context.Arreglos
+                        .Include(a => a.Flores)
+                        .ThenInclude(af => af.Flor)
+                        .FirstOrDefault(a => a.Id == comandaDto.ArregloId);
+
+                    if (nuevoArreglo != null)
+                    {
+                        comandaExistente.NombreArreglo = nuevoArreglo.Nombre;
+                        comandaExistente.FotoArregloRuta = nuevoArreglo.FotoRuta;
+                    }
+                    else
+                    {
+                        comandaExistente.NombreArreglo = string.Empty;
+                        comandaExistente.FotoArregloRuta = null;
+                    }
+                }
+            }
+            else if (comandaDto.CopiarDesdeArreglo)
+            {
+                // El usuario solicitó copiar la composición desde el arreglo seleccionado.
+                if (comandaExistente.Flores != null && comandaExistente.Flores.Any())
+                {
+                    context.ComandasFlores.RemoveRange(comandaExistente.Flores);
+                    comandaExistente.Flores.Clear();
+                }
+
+                var nuevoArreglo = context.Arreglos
+                    .Include(a => a.Flores)
+                    .ThenInclude(af => af.Flor)
+                    .FirstOrDefault(a => a.Id == comandaDto.ArregloId);
+
+                if (nuevoArreglo != null)
+                {
+                    comandaExistente.NombreArreglo = nuevoArreglo.Nombre;
+                    comandaExistente.FotoArregloRuta = nuevoArreglo.FotoRuta;
+
+                    foreach (var af in nuevoArreglo.Flores)
+                    {
+                        comandaExistente.Flores.Add(new ComandaFlor
+                        {
+                            FlorId = af.FlorId,
+                            Cantidad = af.Cantidad,
+                            ColorSeleccionado = af.ColorSeleccionado
+                        });
+                    }
+                }
+                else
+                {
+                    comandaExistente.NombreArreglo = string.Empty;
+                    comandaExistente.FotoArregloRuta = null;
+                }
+            }
             comandaExistente.PrecioArreglo = comandaDto.PrecioArreglo;
             comandaExistente.PagoEnvio = comandaDto.PagoEnvio;
             comandaExistente.CantidadArreglo = comandaDto.CantidadArreglo;
@@ -297,10 +427,39 @@ namespace EnflorarteTopiProyecto.Controllers
 
             ViewBag.ListaRepartidores = new SelectList(repartidores, "Id", "Nombre"); //Para los repartidores (rep y sup)
             
-            // Cargar lista de arreglos disponibles
-            var arreglos = context.Arreglos.ToList();
+            // Cargar lista de arreglos disponibles (incluye composición de flores)
+            var arreglos = context.Arreglos
+                .Include(a => a.Flores)
+                .ThenInclude(af => af.Flor)
+                .ToList();
+
             ViewBag.ListaArreglos = new SelectList(arreglos, "Id", "Nombre");
             ViewBag.ArreglosFotoMap = arreglos.ToDictionary(a => a.Id, a => a.FotoRuta ?? string.Empty);
+
+            // Mapa para la vista: arregloId -> lista de flores (nombre, cantidad, color)
+            ViewBag.ArreglosFloresMap = arreglos.ToDictionary(
+                a => a.Id,
+                a => a.Flores.Select(af => new {
+                    FlorId = af.FlorId,
+                    Nombre = af.Flor?.Nombre ?? string.Empty,
+                    Cantidad = af.Cantidad,
+                    ColorSeleccionado = af.ColorSeleccionado
+                }).ToList()
+            );
+
+            // Lista de flores para que el formulario de comanda permita agregar/editar flores (incluye colores disponibles)
+            var floresCatalogo = context.Flores
+                .Include(f => f.InventarioColores)
+                .OrderBy(f => f.Nombre)
+                .Select(f => new
+                {
+                    FlorId = f.Id,
+                    FlorNombre = f.Nombre,
+                    Colores = f.InventarioColores.Select(ic => ic.Color).ToList()
+                })
+                .ToList();
+
+            ViewBag.FloresCatalogo = floresCatalogo;
         }
 
         private void ValidarReglasNegocio(ComandaDto dto) //JENNY: Validaciones

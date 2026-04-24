@@ -19,7 +19,7 @@
                 </div>
                 <div class="col-12 col-md-7">
                     <h4 class="card-title mb-2">@Model.Nombre</h4>
-                    <p class="text-muted mb-3">@(string.IsNullOrWhiteSpace(Model.Descripcion) ? "Sin descripción." : Model.Descripcion)</p>
+                    <p class="text-muted mb-3">@(string.IsNullOrWhiteSpace(Model.Descripcion) ? "Sin descripciï¿½n." : Model.Descripcion)</p>
 
                     <div class="small text-muted mb-1">Inventario por color:</div>
                     @if (Model.InventarioColores.Count == 0)
@@ -36,16 +36,20 @@
                         </ul>
                     }
 
-                    <button type="button"
-                            class="btn btn-accion-redondo btn-editar-redondo"
-                            onclick="cargarModalCatalogo('@Url.Action("EditarInventarioFlor", "ControladorCatalogo", new { id = Model.Id })', 'Editar Inventario')"
-                            title="Editar inventario"
-                            aria-label="Editar inventario">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                            <path d="M12 20h9" />
-                            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L8 18l-4 1 1-4 11.5-11.5z" />
-                        </svg>
-                    </button>
+                        @using EnflorarteTopiProyecto.Utils
+                        @if (await Html.UserCanAccessActionAsync("EditarInventarioFlor", "ControladorCatalogo"))
+                        {
+                            <button type="button"
+                                    class="btn btn-accion-redondo btn-editar-redondo"
+                                    onclick="cargarModalCatalogo('@Url.Action("EditarInventarioFlor", "ControladorCatalogo", new { id = Model.Id })', 'Editar Inventario')"
+                                    title="Editar inventario"
+                                    aria-label="Editar inventario">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <path d="M12 20h9" />
+                                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L8 18l-4 1 1-4 11.5-11.5z" />
+                                </svg>
+                            </button>
+                        }
                 </div>
             </div>
         </div>

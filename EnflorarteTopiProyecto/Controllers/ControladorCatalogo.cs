@@ -68,6 +68,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(modelo);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         public IActionResult CrearFlor()
         {
             return View(new FlorDto());
@@ -127,6 +128,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(flor);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult CrearFlor(FlorDto dto)
@@ -175,6 +177,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         public IActionResult CrearArreglo()
         {
             var coloresPorFlorId = ObtenerColoresPorFlorId();
@@ -197,6 +200,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(dto);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         public IActionResult EditarInventarioFlor(int id)
         {
             AsegurarColoresBaseInventario(id);
@@ -247,6 +251,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(arreglo);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         public IActionResult EditarArreglo(int id)
         {
             var arreglo = context.Arreglos
@@ -290,6 +295,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return View(dto);
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult CrearArreglo(ArregloDto dto)
@@ -388,6 +394,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult EditarArreglo(int id, ArregloDto dto)
@@ -499,6 +506,7 @@ namespace EnflorarteTopiProyecto.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "supervisor,ventas,florista")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult EditarInventarioFlor(EditarInventarioFlorDto dto, string? accion)

@@ -15,6 +15,7 @@ namespace EnflorarteTopiProyecto.Service
         public DbSet<FlorInventarioColor> FloresInventarioColores { get; set; } = null!;
         public DbSet<Arreglo> Arreglos { get; set; } = null!;
         public DbSet<ArregloFlor> ArreglosFlores { get; set; } = null!;
+      public DbSet<ComandaFlor> ComandasFlores { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) // Codigo para que se convierta el Enum de roles a string, o algo asi.
         {
@@ -242,6 +243,37 @@ namespace EnflorarteTopiProyecto.Service
 
                 entity.HasOne(e => e.Flor)
                       .WithMany(e => e.Arreglos)
+                      .HasForeignKey(e => e.FlorId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ComandaFlor>(entity =>
+            {
+                entity.ToTable("comanda_flor");
+
+                entity.HasKey(e => new { e.ComandaId, e.FlorId });
+
+                entity.Property(e => e.ComandaId)
+                      .HasColumnName("comanda_id");
+
+                entity.Property(e => e.FlorId)
+                      .HasColumnName("flor_id");
+
+                entity.Property(e => e.Cantidad)
+                      .HasColumnName("cantidad");
+
+                entity.Property(e => e.ColorSeleccionado)
+                      .HasColumnName("color_seleccionado")
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.HasOne(e => e.Comanda)
+                      .WithMany(c => c.Flores)
+                      .HasForeignKey(e => e.ComandaId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Flor)
+                      .WithMany()
                       .HasForeignKey(e => e.FlorId)
                       .OnDelete(DeleteBehavior.Restrict);
             });

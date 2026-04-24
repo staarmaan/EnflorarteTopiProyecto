@@ -142,6 +142,13 @@ namespace EnflorarteTopiProyecto.Models
         [ForeignKey(nameof(ArregloId))]
         public Arreglo? Arreglo {get; set;}
 
+        // Snapshot del arreglo en la comanda (inmutable históricamente)
+        public string NombreArreglo { get; set; } = string.Empty;
+        public string? FotoArregloRuta { get; set; }
+
+        // Copia de las flores usadas en esta comanda
+        public ICollection<ComandaFlor> Flores { get; set; } = new List<ComandaFlor>();
+
         [Precision(7, 2)] // 7 digitos en total y dos decimales. Entonces, el valor maximo permitido seria 99,999.99
         [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El precio del arreglo debe ser entre 0 y 99,999.99.")]
         public decimal PrecioArreglo { get; set; }

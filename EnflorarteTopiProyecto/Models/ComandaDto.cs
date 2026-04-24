@@ -113,6 +113,12 @@ namespace EnflorarteTopiProyecto.Models
         [StringLength(150, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
         public string? AccesorioArreglo { get; set; }
 
+        // Flores por comanda (editable en el formulario)
+        public System.Collections.Generic.List<ComandaFlorDto> Flores { get; set; } = new System.Collections.Generic.List<ComandaFlorDto>();
+
+        // Flag para indicar que el usuario pidió copiar la composición desde el Arreglo
+        public bool CopiarDesdeArreglo { get; set; } = false;
+
         // Anticipo
         [Display(Name = "tipo de anticipo")]
         [EnumDataType(typeof(AnticipoTipos), ErrorMessage = "El {0} seleccionado no es válido.")]
