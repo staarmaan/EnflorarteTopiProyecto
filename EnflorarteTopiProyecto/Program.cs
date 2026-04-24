@@ -6,8 +6,6 @@ using Microsoft.Data.SqlClient;
 using OpcionesBd;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-var dbType = builder.Configuration.GetSection("DatabaseType").Value ?? "sql";
-var dbTypeNormalized = dbType.Trim().ToLowerInvariant();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
@@ -17,6 +15,8 @@ builder.Services.AddControllersWithViews(options =>
 });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
+    var dbType = builder.Configuration.GetSection("DatabaseType").Value ?? "sql";
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     OpcionesBD.UsarBD(options, dbType, builder);
 });
 //builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -44,33 +44,31 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    if (dbTypeNormalized == "sql")
+    var connectionString = db.Database.GetConnectionString();
+
+    if (!string.IsNullOrWhiteSpace(connectionString))
     {
-        var connectionString = db.Database.GetConnectionString();
+        var builderSql = new SqlConnectionStringBuilder(connectionString);
+        var dbName = builderSql.InitialCatalog;
 
-        if (!string.IsNullOrWhiteSpace(connectionString))
+        if (!string.IsNullOrWhiteSpace(dbName))
         {
-            var builderSql = new SqlConnectionStringBuilder(connectionString);
-            var dbName = builderSql.InitialCatalog;
+            builderSql.InitialCatalog = "master";
 
-            if (!string.IsNullOrWhiteSpace(dbName))
-            {
-                builderSql.InitialCatalog = "master";
+            using var connection = new SqlConnection(builderSql.ConnectionString);
+            connection.Open();
 
-                using var connection = new SqlConnection(builderSql.ConnectionString);
-                connection.Open();
-
-                using var createDbCmd = connection.CreateCommand();
-                createDbCmd.CommandText = $@"
+            using var createDbCmd = connection.CreateCommand();
+            createDbCmd.CommandText = $@"
 IF DB_ID(N'{dbName.Replace("'", "''")}') IS NULL
 BEGIN
     CREATE DATABASE [{dbName.Replace("]", "]]" )}];
 END";
-                createDbCmd.ExecuteNonQuery();
-            }
+            createDbCmd.ExecuteNonQuery();
         }
+    }
 
-        db.Database.ExecuteSqlRaw(@"
+    db.Database.ExecuteSqlRaw(@"
 IF OBJECT_ID(N'dbo.arreglo', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.arreglo (
@@ -81,7 +79,7 @@ BEGIN
     );
 END");
 
-        db.Database.ExecuteSqlRaw(@"
+    db.Database.ExecuteSqlRaw(@"
 IF OBJECT_ID(N'dbo.arreglo_flor', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.arreglo_flor (
@@ -102,7 +100,7 @@ BEGIN
     );
 END");
 
-        db.Database.ExecuteSqlRaw(@"
+    db.Database.ExecuteSqlRaw(@"
 IF OBJECT_ID(N'dbo.flor_inventario_color', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.flor_inventario_color (
@@ -120,7 +118,7 @@ BEGIN
     );
 END");
 
-        db.Database.ExecuteSqlRaw(@"
+    db.Database.ExecuteSqlRaw(@"
 INSERT INTO dbo.flor_inventario_color (flor_id, color, cantidad)
 SELECT f.flor_id, v.color, 0
 FROM dbo.flor f
@@ -130,7 +128,6 @@ WHERE NOT EXISTS (
     FROM dbo.flor_inventario_color fic
     WHERE fic.flor_id = f.flor_id AND fic.color = v.color
 );");
-    }
 }
 
 // Configure the HTTP request pipeline.

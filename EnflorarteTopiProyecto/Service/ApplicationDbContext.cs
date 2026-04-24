@@ -125,13 +125,10 @@ namespace EnflorarteTopiProyecto.Service
                       .IsUnicode(true);
 
                 // Datos del arreglo
-                entity.Property(e => e.ArregloId)
-                      .HasColumnName("arreglo_id");
-
-                entity.HasOne(e => e.Arreglo)
-                      .WithMany()
-                      .HasForeignKey(e => e.ArregloId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                entity.Property(e => e.NombreArreglo)
+                      .HasColumnName("nombre_arreglo")
+                      .IsRequired()
+                      .HasMaxLength(150);
 
                 entity.Property(e => e.PrecioArreglo)
                       .HasColumnName("precio_arreglo")
@@ -148,6 +145,10 @@ namespace EnflorarteTopiProyecto.Service
                 entity.Property(e => e.MensajeArreglo)
                       .HasColumnName("mensaje_arreglo")
                       .HasMaxLength(500);
+
+                entity.Property(e => e.FotoArregloRuta)
+                      .HasColumnName("foto_arreglo_ruta")
+                      .HasMaxLength(300);
 
                 // Estados y anticipos
                 entity.Property(e => e.Estado)
