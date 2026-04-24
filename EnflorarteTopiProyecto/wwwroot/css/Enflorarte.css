@@ -136,6 +136,51 @@ a {
         color: var(--color-texto-claro);
     }
 
+.btn-accion-redondo {
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-width: 1px;
+}
+
+.btn-accion-redondo svg {
+    width: 1rem;
+    height: 1rem;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+.btn-editar-redondo {
+    background-color: #fff;
+    border-color: #f4c64d;
+    color: #d2a32f;
+}
+
+.btn-editar-redondo:hover {
+    background-color: #fdf4dc;
+    border-color: #e7b93f;
+    color: #b88912;
+}
+
+.btn-eliminar-redondo {
+    background-color: #fff;
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-eliminar-redondo:hover {
+    background-color: #fdecef;
+    border-color: #bb2d3b;
+    color: #bb2d3b;
+}
+
 /* Estilo para el footer */
 footer.border-top {
     border-top-color: var(--color-secundario) !important;
@@ -179,6 +224,38 @@ footer.border-top {
         font-size: 1.2rem;
         border-bottom: 1px solid var(--color-secundario);
     }
+
+/* =========================================
+   TABS (CATÁLOGO Y USUARIOS)
+   ========================================= */
+.nav-tabs {
+    border-bottom: 1px solid var(--color-secundario);
+}
+
+.nav-tabs .nav-link {
+    color: var(--color-primario);
+    border: 1px solid transparent;
+    border-top-left-radius: .6rem;
+    border-top-right-radius: .6rem;
+    font-weight: 600;
+    letter-spacing: .3px;
+    transition: all .2s ease;
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+    color: var(--color-primario);
+    background-color: #fbe3e7;
+    border-color: #f3c6cd #f3c6cd var(--color-secundario);
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+    color: var(--color-primario);
+    background-color: var(--color-fondo-suave);
+    border-color: var(--color-secundario) var(--color-secundario) var(--color-fondo-suave);
+    box-shadow: inset 0 3px 0 0 var(--color-primario);
+}
 
 
 /* Estilos para el Modal */

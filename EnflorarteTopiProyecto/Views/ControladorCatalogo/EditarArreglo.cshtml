@@ -103,7 +103,15 @@
                                             </select>
                                         </td>
                                         <td class="text-end">
-                                            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-flor">Eliminar</button>
+                                            <button type="button" class="btn btn-accion-redondo btn-eliminar-redondo btn-eliminar-flor" title="Quitar flor" aria-label="Quitar flor">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                    <path d="M3 6h18" />
+                                                    <path d="M8 6V4h8v2" />
+                                                    <path d="M19 6l-1 14H6L5 6" />
+                                                    <path d="M10 11v6" />
+                                                    <path d="M14 11v6" />
+                                                </svg>
+                                            </button>
                                         </td>
                                     </tr>
                                 }
@@ -207,7 +215,7 @@
             '  </td>' +
             '  <td><input name="Flores[' + nuevoIndex + '].Cantidad" type="number" min="1" value="1" class="form-control form-control-sm" /></td>' +
             '  <td><select name="Flores[' + nuevoIndex + '].ColorSeleccionado" class="form-select form-select-sm">' + obtenerOpcionesColorHtml(florId, 'a elegir') + '</select></td>' +
-            '  <td class="text-end"><button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-flor">Eliminar</button></td>' +
+            '  <td class="text-end"><button type="button" class="btn btn-accion-redondo btn-eliminar-redondo btn-eliminar-flor" title="Quitar flor" aria-label="Quitar flor"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></td>' +
             '</tr>';
 
         $tbody.append(fila);
