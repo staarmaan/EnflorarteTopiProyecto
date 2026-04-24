@@ -8,7 +8,7 @@
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
 
-        <partial name="~/Views/Shared/_FormularioComanda.cshtml" model="Model" view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", true } }' />
+        <partial name="~/Views/Shared/_FormularioComandaV2.cshtml" model="Model" view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", true } }' />
 
         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>

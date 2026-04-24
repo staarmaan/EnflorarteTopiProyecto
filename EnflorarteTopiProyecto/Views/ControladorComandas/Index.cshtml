@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Gestión de Comandas";
     var esSupervisor = User?.Identity?.IsAuthenticated == true && (User.IsInRole("supervisor") || User.IsInRole("ventas"));
-    var arreglosList = Model.Select(c => c.Arreglo?.Nombre).Where(n => !string.IsNullOrEmpty(n)).Distinct().OrderBy(n => n).ToList();
+    var arreglosList = Model.Select(c => c.Arreglo?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => n!).Distinct().OrderBy(n => n).ToList();
 }
 
 <div class="container py-5">
@@ -120,6 +120,16 @@
                                 @if (esSupervisor)
                                 {
                                     <td class="text-end pe-4" style="white-space:nowrap">
+                                        <button onclick="cargarModal('@Url.Action("VistaPrevia", "ControladorComandas", new { id = comanda.Id })', 'Vista Previa de Comanda')"
+                                        class="btn btn-accion-redondo btn-outline-secondary me-1"
+                                        title="Vista previa de comanda"
+                                        aria-label="Vista previa de comanda">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                                                <circle cx="12" cy="12" r="3" />
+                                            </svg>
+                                        </button>
+
                                         <button onclick="cargarModal('@Url.Action("Editar", "ControladorComandas", new { id = comanda.Id })', 'Editar Comanda')"
                                         class="btn btn-accion-redondo btn-editar-redondo me-1"
                                         title="Editar comanda"

@@ -1,0 +1,14 @@
+﻿@model ComandaDto
+@{
+    Layout = null;
+}
+
+<div class="p-2">
+    <fieldset disabled>
+        <partial name="~/Views/Shared/_FormularioComandaV2.cshtml" model="Model" view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", false }, { "EsVistaPrevia", true } }' />
+    </fieldset>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+    </div>
+</div>

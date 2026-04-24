@@ -6,7 +6,7 @@
 <div class="p-2">
     <form asp-action="Crear" asp-controller="ControladorComandas" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
-        <partial name="~/Views/Shared/_FormularioComanda.cshtml" model="Model" view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", false } }' />
+        <partial name="~/Views/Shared/_FormularioComandaV2.cshtml" model="Model" view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", false } }' />
 
         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>

@@ -16,18 +16,17 @@
 
         <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Asignación de Personal</h6>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Usuario creador</label>
-            <div class="col-sm-8">
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label">Usuario creador</label>
                 <select class="form-select" asp-for="UsuarioId" asp-items="ViewBag.ListaUsuarios">
                     <option value="" disabled selected>Selecciona un usuario</option>
                 </select>
                 <span asp-validation-for="UsuarioId" class="text-danger"></span>
             </div>
-        </div>
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Estado de la comanda</label>
-            <div class="col-sm-8">
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label">Estado de la comanda</label>
                 <select class="form-select" asp-for="Estado">
                     <option value="solicitado">Solicitado</option>
                     <option value="cancelado">Cancelado</option>
@@ -38,208 +37,43 @@
                 </select>
                 <span asp-validation-for="Estado" class="text-danger"></span>
             </div>
-        </div>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Liquidado</label>
-            <div class="col-sm-8 d-flex align-items-center">
-                <input class="form-check-input me-2" type="checkbox" asp-for="Liquidado" />
-                <span asp-validation-for="Liquidado" class="text-danger"></span>
+            <div class="col-12 col-md-6 col-lg-4 d-flex flex-column justify-content-end">
+                <label class="form-label">Liquidado</label>
+                <div class="form-check pt-2">
+                    <input class="form-check-input" type="checkbox" asp-for="Liquidado" />
+                    <span asp-validation-for="Liquidado" class="text-danger ms-2"></span>
+                </div>
             </div>
         </div>
 
-        <hr class="text-muted opacity-25">
-
-        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Cliente y Entrega</h6>
-
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Nombre del cliente</label>
-            <div class="col-sm-8">
-                <input class="form-control" asp-for="ClienteNombre" />
-                <span asp-validation-for="ClienteNombre" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Teléfono del cliente</label>
-            <div class="col-sm-8">
-                <input class="form-control" asp-for="ClienteTelefono" />
-                <span asp-validation-for="ClienteTelefono" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Medio de la solicitud</label>
-            <div class="col-sm-8">
-                <select id="medioSolicitudSelect" class="form-select">
-                    <option value="" selected hidden>Selecciona un medio</option>
-                    <option value="Facebook">Facebook</option>
-                    <option value="Marketplace">Marketplace</option>
-                    <option value="WhatsApp">WhatsApp</option>
-                    <option value="Instagram">Instagram</option>
-                    <option value="Otro">Otro</option>
-                </select>
-                <input id="medioSolicitudOtro" class="form-control mt-2 d-none" type="text" placeholder="Especifica el medio" />
-                <input id="medioSolicitudValor" type="hidden" asp-for="MedioDeLaSolicitud" />
-                <span asp-validation-for="MedioDeLaSolicitud" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Número de ruta</label>
-            <div class="col-sm-8">
-                <input class="form-control" asp-for="NumeroRuta" type="number" min="1" step="1" />
-                <span asp-validation-for="NumeroRuta" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Número de pedido</label>
-            <div class="col-sm-8">
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-4">
+                <label class="form-label">Número de pedido</label>
                 <input class="form-control" asp-for="NumeroPedido" type="number" min="1" step="1" />
                 <span asp-validation-for="NumeroPedido" class="text-danger"></span>
             </div>
-        </div>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Tipo de entrega</label>
-            <div class="col-sm-8">
-                <select id="selectTipoEntrega" class="form-select" asp-for="TipoEntrega">
-                    <option value="" selected hidden>Selecciona un tipo</option>
-                    <option value="envio">Envío</option>
-                    <option value="recoger">Recoger</option>
-                </select>
-                <div id="receptorWarning" class="form-text text-danger d-none">
-                    Falta el nombre y/o teléfono del receptor para envíos.
-                </div>
-                <span asp-validation-for="TipoEntrega" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row mb-3" id="divDireccionEntrega">
-            <label class="col-sm-4 col-form-label">Dirección de entrega</label>
-            <div class="col-sm-8">
-                <input class="form-control" asp-for="DireccionEntrega" />
-                <span asp-validation-for="DireccionEntrega" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row mb-3 d-none" id="divNombreReceptorEnvio">
-            <label class="col-sm-4 col-form-label">Nombre del receptor</label>
-            <div class="col-sm-8">
-                <input id="inputNombreReceptorEnvio" class="form-control" asp-for="NombreReceptorEnvio" />
-                <span asp-validation-for="NombreReceptorEnvio" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row mb-3 d-none" id="divTelefonoReceptorEnvio">
-            <label class="col-sm-4 col-form-label">Teléfono del receptor</label>
-            <div class="col-sm-8">
-                <input id="inputTelefonoReceptorEnvio" class="form-control" asp-for="TelefonoReceptorEnvio" type="number" min="0" step="1" />
-                <span asp-validation-for="TelefonoReceptorEnvio" class="text-danger"></span>
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Fecha de entrega</label>
-            <div class="col-sm-8">
+            <div class="col-12 col-md-4">
+                <label class="form-label">Fecha de entrega</label>
                 <input class="form-control" asp-for="FechaEntrega" type="date" />
                 <span asp-validation-for="FechaEntrega" class="text-danger"></span>
             </div>
-        </div>
 
-        @* Seleccionar hora con un panelito *@
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Hora de entrega</label>
-            <div class="col-sm-8">
+            <div class="col-12 col-md-4">
+                <label class="form-label">Hora de entrega</label>
                 <input class="form-control" asp-for="HoraEntrega" type="time" />
                 <span asp-validation-for="HoraEntrega" class="text-danger"></span>
             </div>
         </div>
 
-        @* Ingresar la hora manalmente (comentado, porque me parece mas intuitivo la forma anterior, aunque no funcione bien con mi navegador, que es Opera)
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Hora de entrega</label>
-            <div class="col-sm-8">
-                <!-- Controles personalizados para permitir AM/PM -->
-                <div class="input-group">
-                    <input id="horaEntregaHora" class="form-control" type="number" min="1" max="12" placeholder="hh" />
-                    <span class="input-group-text">:</span>
-                    <input id="horaEntregaMinuto" class="form-control" type="number" min="0" max="59" placeholder="mm" />
-                    <select id="horaEntregaMeridiano" class="form-select" style="max-width: 7rem;">
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                    </select>
-                </div>
-                <!-- Campo oculto enlazado al modelo en formato 24h HH:mm -->
-                <input id="horaEntregaHidden" class="form-control" asp-for="HoraEntrega" type="hidden" />
-                <span asp-validation-for="HoraEntrega" class="text-danger"></span>
-                <script>
-                    (function () {
-                        function pad(n) { return n.toString().padStart(2, '0'); }
-                        function to24h(hour12, meridian) {
-                            var h = parseInt(hour12, 10);
-                            if (isNaN(h)) return null;
-                            if (meridian === 'AM') {
-                                return h === 12 ? 0 : h;
-                            } else {
-                                return h === 12 ? 12 : h + 12;
-                            }
-                        }
-
-                        var hInput = document.getElementById('horaEntregaHora');
-                        var mInput = document.getElementById('horaEntregaMinuto');
-                        var meridianSel = document.getElementById('horaEntregaMeridiano');
-                        var hidden = document.getElementById('horaEntregaHidden');
-
-                        function updateHidden() {
-                            var hour12 = hInput.value;
-                            var minute = mInput.value;
-                            var mer = meridianSel.value;
-                            var h24 = to24h(hour12, mer);
-                            var m = parseInt(minute, 10);
-                            if (h24 == null || isNaN(m)) return; // espera valores válidos
-                            hidden.value = pad(h24) + ':' + pad(m);
-                        }
-
-                        hInput.addEventListener('input', updateHidden);
-                        mInput.addEventListener('input', updateHidden);
-                        meridianSel.addEventListener('change', updateHidden);
-
-                        // Inicializa controles desde el valor actual del modelo si existe
-                        try {
-                            if (hidden.value) {
-                                var raw = hidden.value.trim();
-                                // acepta HH:mm o HH:mm:ss
-                                var parts = raw.split(':');
-                                if (parts.length >= 2) {
-                                    var h = parseInt(parts[0], 10);
-                                    var mm = parseInt(parts[1], 10);
-                                    if (!isNaN(h) && !isNaN(mm)) {
-                                        var mer = h >= 12 ? 'PM' : 'AM';
-                                        var hour12 = (h % 12) === 0 ? 12 : (h % 12);
-                                        hInput.value = pad(hour12);
-                                        mInput.value = pad(mm);
-                                        meridianSel.value = mer;
-                                    }
-                                }
-                            }
-                            // Asegura que el campo oculto esté sincronizado al cargar
-                            updateHidden();
-                        } catch (e) { /* noop */ }
-                    })();
-                </script>
-            </div>
-        </div>
-        *@
-
         <hr class="text-muted opacity-25">
 
         <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Detalles del Arreglo</h6>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Arreglo</label>
-            <div class="col-sm-8">
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <label class="form-label">Arreglo</label>
                 <select class="form-select" asp-for="ArregloId" asp-items="ViewBag.ListaArreglos">
                     <option value="" disabled selected>Selecciona un arreglo</option>
                 </select>
@@ -315,65 +149,180 @@
             </div>
         </div>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Precio del arreglo</label>
-            <div class="col-sm-8">
-                <div class="input-group">
-                    <span class="input-group-text">$</span>
-                    <input class="form-control" asp-for="PrecioArreglo" type="number" step="0.01" min="0" />
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-4">
+                <label class="form-label">Tipo de arreglo</label>
+                <input type="hidden" asp-for="TipoArreglo" />
+                <div class="form-check">
+                    <input id="tipoArregloBouquet" class="form-check-input" type="checkbox" value="bouquet" />
+                    <label class="form-check-label" for="tipoArregloBouquet">Bouquet</label>
                 </div>
-                <span asp-validation-for="PrecioArreglo" class="text-danger"></span>
+                <span asp-validation-for="TipoArreglo" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label class="form-label">Envoltura del arreglo</label>
+                <input type="hidden" asp-for="EvolturaArreglo" />
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaPapel" value="papel" />
+                        <label class="form-check-label" for="envolturaPapel">Papel</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaMalla" value="malla" />
+                        <label class="form-check-label" for="envolturaMalla">Malla</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaJarron" value="jarron" />
+                        <label class="form-check-label" for="envolturaJarron">Jarrón</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaTarjeta" value="tarjeta" />
+                        <label class="form-check-label" for="envolturaTarjeta">Tarjeta</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaYute" value="yute" />
+                        <label class="form-check-label" for="envolturaYute">Yute</label>
+                    </div>
+                </div>
+                <span asp-validation-for="EvolturaArreglo" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label class="form-label">Color de envoltura</label>
+                <input type="hidden" asp-for="ColorEvolturaArreglo" />
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorNegro" value="negro" />
+                        <label class="form-check-label" for="colorNegro">Negro</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorLila" value="lila" />
+                        <label class="form-check-label" for="colorLila">Lila</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorRosa" value="rosa" />
+                        <label class="form-check-label" for="colorRosa">Rosa</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorBlanco" value="blanco" />
+                        <label class="form-check-label" for="colorBlanco">Blanco</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorOtro" value="otro" />
+                        <label class="form-check-label" for="colorOtro">Otro</label>
+                    </div>
+                </div>
+                <div id="colorEvolturaManualWrapper" class="mt-2 d-none">
+                    <input id="colorEvolturaManual" class="form-control" type="text" placeholder="Especifica el color" />
+                </div>
+                <span asp-validation-for="ColorEvolturaArreglo" class="text-danger"></span>
             </div>
         </div>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Pago de envío</label>
-            <div class="col-sm-8">
-                <div class="input-group">
-                    <span class="input-group-text">$</span>
-                    <input class="form-control" asp-for="PagoEnvio" type="number" step="0.01" min="0" />
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
+                <label class="form-label">Tipo de caja</label>
+                <input type="hidden" asp-for="CajaTipoArreglo" />
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="CajaTipoArregloOpcion" id="cajaCorazon" value="corazon" />
+                        <label class="form-check-label" for="cajaCorazon">Caja Corazón</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="CajaTipoArregloOpcion" id="cajaCuadrado" value="cuadrado" />
+                        <label class="form-check-label" for="cajaCuadrado">Caja Cuadrado</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="CajaTipoArregloOpcion" id="cajaCirculo" value="circulo" />
+                        <label class="form-check-label" for="cajaCirculo">Caja Círculo</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="CajaTipoArregloOpcion" id="cajaNinguno" value="" />
+                        <label class="form-check-label" for="cajaNinguno">Ninguno</label>
+                    </div>
                 </div>
-                <span asp-validation-for="PagoEnvio" class="text-danger"></span>
+                <span asp-validation-for="CajaTipoArreglo" class="text-danger"></span>
             </div>
-        </div>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Accesorio del arreglo</label>
-            <div class="col-sm-8">
+            <div class="col-12 col-md-6">
+                <label class="form-label">Accesorio del arreglo</label>
                 <input class="form-control" asp-for="AccesorioArreglo" />
                 <span asp-validation-for="AccesorioArreglo" class="text-danger"></span>
             </div>
         </div>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Tipo de arreglo</label>
-            <div class="col-sm-8">
-                <input class="form-control" asp-for="TipoArreglo" />
-                <span asp-validation-for="TipoArreglo" class="text-danger"></span>
+        <hr class="text-muted opacity-25">
+
+        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Cliente y Entrega</h6>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Nombre del cliente</label>
+                <input class="form-control" asp-for="ClienteNombre" />
+                <span asp-validation-for="ClienteNombre" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Teléfono del cliente</label>
+                <input class="form-control" asp-for="ClienteTelefono" />
+                <span asp-validation-for="ClienteTelefono" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Medio de la solicitud</label>
+                <select id="medioSolicitudSelect" class="form-select">
+                    <option value="" selected hidden>Selecciona un medio</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Marketplace">Marketplace</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Otro">Otro</option>
+                </select>
+                <input id="medioSolicitudOtro" class="form-control mt-2 d-none" type="text" placeholder="Especifica el medio" />
+                <input id="medioSolicitudValor" type="hidden" asp-for="MedioDeLaSolicitud" />
+                <span asp-validation-for="MedioDeLaSolicitud" class="text-danger"></span>
             </div>
         </div>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Tipo de caja</label>
-            <div class="col-sm-8">
-                <input class="form-control" asp-for="CajaTipoArreglo" />
-                <span asp-validation-for="CajaTipoArreglo" class="text-danger"></span>
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Tipo de entrega</label>
+                <select id="selectTipoEntrega" class="form-select" asp-for="TipoEntrega">
+                    <option value="" selected hidden>Selecciona un tipo</option>
+                    <option value="envio">Envío</option>
+                    <option value="recoger">Recoger</option>
+                </select>
+                <div id="receptorWarning" class="form-text text-danger d-none">
+                    Falta el nombre y/o teléfono del receptor para envíos.
+                </div>
+                <span asp-validation-for="TipoEntrega" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-lg-5 d-none" id="divDireccionEntrega">
+                <label class="form-label">Dirección de entrega</label>
+                <input class="form-control" asp-for="DireccionEntrega" />
+                <span asp-validation-for="DireccionEntrega" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-lg-3 d-none" id="divNumeroRuta">
+                <label class="form-label">Número de ruta</label>
+                <input class="form-control" asp-for="NumeroRuta" type="number" min="1" step="1" />
+                <span asp-validation-for="NumeroRuta" class="text-danger"></span>
             </div>
         </div>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Envoltura del arreglo</label>
-            <div class="col-sm-8">
-                <input class="form-control" asp-for="EvolturaArreglo" />
-                <span asp-validation-for="EvolturaArreglo" class="text-danger"></span>
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6 d-none" id="divNombreReceptorEnvio">
+                <label class="form-label">Nombre del receptor</label>
+                <input id="inputNombreReceptorEnvio" class="form-control" asp-for="NombreReceptorEnvio" />
+                <span asp-validation-for="NombreReceptorEnvio" class="text-danger"></span>
             </div>
-        </div>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Color de envoltura</label>
-            <div class="col-sm-8">
-                <input class="form-control" asp-for="ColorEvolturaArreglo" />
-                <span asp-validation-for="ColorEvolturaArreglo" class="text-danger"></span>
+            <div class="col-12 col-md-6 d-none" id="divTelefonoReceptorEnvio">
+                <label class="form-label">Teléfono del receptor</label>
+                <input id="inputTelefonoReceptorEnvio" class="form-control" asp-for="TelefonoReceptorEnvio" type="number" min="0" step="1" />
+                <span asp-validation-for="TelefonoReceptorEnvio" class="text-danger"></span>
             </div>
         </div>
 
@@ -381,9 +330,27 @@
 
         <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Pago y Anticipo</h6>
 
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Tipo de anticipo</label>
-            <div class="col-sm-8">
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Precio del arreglo</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input class="form-control" asp-for="PrecioArreglo" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="PrecioArreglo" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Pago de envío</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input class="form-control" asp-for="PagoEnvio" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="PagoEnvio" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Tipo de anticipo</label>
                 <select id="selectTipoAnticipo" class="form-select" asp-for="AnticipoTipo">
                     <option value="" selected hidden>Selecciona un tipo</option>
                     <option value="porcentaje">Porcentaje</option>
@@ -392,11 +359,9 @@
                 </select>
                 <span asp-validation-for="AnticipoTipo" class="text-danger"></span>
             </div>
-        </div>
 
-        <div class="row mb-3">
-            <label id="labelAnticipoValor" class="col-sm-4 col-form-label">Anticipo total</label>
-            <div class="col-sm-8">
+            <div class="col-12 col-md-6 col-lg-3">
+                <label id="labelAnticipoValor" class="form-label">Anticipo total</label>
                 <input id="inputAnticipoValor" class="form-control" asp-for="AnticipoPagoTotal" type="number" step="0.01" min="0" />
                 <span asp-validation-for="AnticipoPagoTotal" class="text-danger"></span>
             </div>
@@ -749,6 +714,8 @@
         var tipoEntregaSelect = document.getElementById('selectTipoEntrega');
         var divNombre = document.getElementById('divNombreReceptorEnvio');
         var divTelefono = document.getElementById('divTelefonoReceptorEnvio');
+        var divDireccion = document.getElementById('divDireccionEntrega');
+        var divNumeroRuta = document.getElementById('divNumeroRuta');
         var inputNombre = document.getElementById('inputNombreReceptorEnvio');
         var inputTelefono = document.getElementById('inputTelefonoReceptorEnvio');
         var receptorWarning = document.getElementById('receptorWarning');
@@ -774,6 +741,12 @@
             var isEnvio = tipoEntregaSelect.value === 'envio';
             divNombre.classList.toggle('d-none', !isEnvio);
             divTelefono.classList.toggle('d-none', !isEnvio);
+            if (divDireccion) {
+                divDireccion.classList.toggle('d-none', !isEnvio);
+            }
+            if (divNumeroRuta) {
+                divNumeroRuta.classList.toggle('d-none', !isEnvio);
+            }
 
             if (inputNombre) {
                 inputNombre.required = isEnvio;
@@ -793,6 +766,82 @@
             }
 
             updateReceptorWarning(isEnvio);
+        }
+
+        // Sincronizar controles de TipoArreglo, Envoltura, Color y Caja con inputs hidden
+        var tipoArregloHidden = document.querySelector('input[name="TipoArreglo"]');
+        var tipoArregloCheckbox = document.getElementById('tipoArregloBouquet');
+        if (tipoArregloCheckbox && tipoArregloHidden) {
+            // Inicializar según valor actual
+            if (tipoArregloHidden.value === 'bouquet') {
+                tipoArregloCheckbox.checked = true;
+            }
+            tipoArregloCheckbox.addEventListener('change', function() {
+                tipoArregloHidden.value = this.checked ? 'bouquet' : '';
+            });
+        }
+
+        var envolturaHidden = document.querySelector('input[name="EvolturaArreglo"]');
+        var envolturaRadios = document.querySelectorAll('input[name="EvolturaArregloOpcion"]');
+        if (envolturaRadios.length && envolturaHidden) {
+            envolturaRadios.forEach(function(radio) {
+                if (radio.value === envolturaHidden.value) {
+                    radio.checked = true;
+                }
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        envolturaHidden.value = this.value;
+                    }
+                });
+            });
+        }
+
+        var colorEvolturaHidden = document.querySelector('input[name="ColorEvolturaArreglo"]');
+        var colorEvolturaRadios = document.querySelectorAll('input[name="ColorEvolturaArregloOpcion"]');
+        var colorEvolturaManualWrapper = document.getElementById('colorEvolturaManualWrapper');
+        var colorEvolturaManual = document.getElementById('colorEvolturaManual');
+        if (colorEvolturaRadios.length && colorEvolturaHidden) {
+            colorEvolturaRadios.forEach(function(radio) {
+                if (radio.value === colorEvolturaHidden.value) {
+                    radio.checked = true;
+                }
+                if (radio.value === 'otro' && radio.checked) {
+                    colorEvolturaManualWrapper.classList.remove('d-none');
+                }
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        if (this.value === 'otro') {
+                            colorEvolturaManualWrapper.classList.remove('d-none');
+                            colorEvolturaManual.required = true;
+                        } else {
+                            colorEvolturaManualWrapper.classList.add('d-none');
+                            colorEvolturaManual.required = false;
+                            colorEvolturaManual.value = '';
+                            colorEvolturaHidden.value = this.value;
+                        }
+                    }
+                });
+            });
+            if (colorEvolturaManual) {
+                colorEvolturaManual.addEventListener('input', function() {
+                    colorEvolturaHidden.value = this.value;
+                });
+            }
+        }
+
+        var cajaTipoHidden = document.querySelector('input[name="CajaTipoArreglo"]');
+        var cajaTipoRadios = document.querySelectorAll('input[name="CajaTipoArregloOpcion"]');
+        if (cajaTipoRadios.length && cajaTipoHidden) {
+            cajaTipoRadios.forEach(function(radio) {
+                if (radio.value === cajaTipoHidden.value) {
+                    radio.checked = true;
+                }
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        cajaTipoHidden.value = this.value;
+                    }
+                });
+            });
         }
 
         tipoEntregaSelect.addEventListener('change', toggleReceptorFields);

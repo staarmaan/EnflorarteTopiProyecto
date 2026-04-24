@@ -109,7 +109,11 @@ namespace EnflorarteTopiProyecto.Models
         public string? LinkDireccion { get; set; } // link de la dirección del cliente.
         public string? DomicilioReferencias { get; set; } // Detalles visuales de la ubicacion del  cliente.
         public int? NumeroRuta { get; set; }
+        public int? NumeroPedido { get; set; }
         public string? MedioDeLaSolicitud {get;set;} // El medio por el que el cliente solicitó el pedido, ej: Facebook, marketplace, whatsapp, Instagram, etc.
+    //num pedido
+    //papel checbox
+
 
 
 
@@ -160,9 +164,14 @@ namespace EnflorarteTopiProyecto.Models
         [Range(1, 100, ErrorMessage = "La máxima cantiad de arreglos debe estar entre 1 y 100.")]
         public int CantidadArreglo { get; set; } = 1;
 
-        public string? MensajeArreglo { get; set; }
+        public string? MensajeArreglo { get; set; } //especificacion o mensaje
+        public string? EvolturaArreglo { get; set; } // ej: papel, malla, jarron, tarjeta, yute.
+        public string? ColorEvolturaArreglo { get; set; } //ej: negro, lila, rosa, blanco.
 
         public string? AccesorioArreglo {get;set;} //ej: corona,globo,peluche, etc.
+        public string? TipoArreglo {get;set;} //ej: buquet o caja
+        public string? CajaTipoArreglo {get;set;} //ej: circulo, corazon, cuadrado
+
 
 
 

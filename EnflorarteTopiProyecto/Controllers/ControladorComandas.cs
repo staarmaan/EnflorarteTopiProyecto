@@ -98,6 +98,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 LinkDireccion = comandaDto.LinkDireccion,
                 DomicilioReferencias = comandaDto.DomicilioReferencias,
                 NumeroRuta = comandaDto.NumeroRuta,
+                NumeroPedido = comandaDto.NumeroPedido,
                 MedioDeLaSolicitud = comandaDto.MedioDeLaSolicitud,
                 TipoEntrega = comandaDto.TipoEntrega,
                 DireccionEntrega = comandaDto.DireccionEntrega,
@@ -111,6 +112,10 @@ namespace EnflorarteTopiProyecto.Controllers
                 CantidadArreglo = comandaDto.CantidadArreglo,
                 MensajeArreglo = comandaDto.MensajeArreglo,
                 AccesorioArreglo = comandaDto.AccesorioArreglo,
+                EvolturaArreglo = comandaDto.EvolturaArreglo,
+                ColorEvolturaArreglo = comandaDto.ColorEvolturaArreglo,
+                TipoArreglo = comandaDto.TipoArreglo,
+                CajaTipoArreglo = comandaDto.CajaTipoArreglo,
                 AnticipoTipo = comandaDto.AnticipoTipo,
                 AnticipoPagoTotal = comandaDto.AnticipoPagoTotal
             };
@@ -163,6 +168,67 @@ namespace EnflorarteTopiProyecto.Controllers
 
         }
 
+        public IActionResult VistaPrevia(int id)
+        {
+            var comanda = context.Comandas
+                .Include(c => c.Flores)
+                .ThenInclude(cf => cf.Flor)
+                .FirstOrDefault(c => c.Id == id);
+
+            if (comanda == null)
+            {
+                TempData["Toast.Message"] = "Comanda no encontrada.";
+                TempData["Toast.Type"] = "error";
+                return RedirectToAction("Index");
+            }
+
+            CargarListasViewBag();
+
+            var comandaDto = new ComandaDto
+            {
+                Id = comanda.Id,
+                UsuarioId = comanda.UsuarioId,
+                RepartidorId = comanda.RepartidorId,
+                Estado = comanda.Estado,
+                Liquidado = comanda.Liquidado,
+                Archivado = comanda.Archivado,
+                ClienteNombre = comanda.ClienteNombre,
+                ClienteTelefono = comanda.ClienteTelefono,
+                LinkDireccion = comanda.LinkDireccion,
+                DomicilioReferencias = comanda.DomicilioReferencias,
+                NumeroRuta = comanda.NumeroRuta,
+                NumeroPedido = comanda.NumeroPedido,
+                MedioDeLaSolicitud = comanda.MedioDeLaSolicitud,
+                TipoEntrega = comanda.TipoEntrega,
+                DireccionEntrega = comanda.DireccionEntrega,
+                NombreReceptorEnvio = comanda.NombreReceptorEnvio,
+                TelefonoReceptorEnvio = comanda.TelefonoReceptorEnvio,
+                FechaEntrega = comanda.FechaEntrega,
+                HoraEntrega = comanda.HoraEntrega,
+                ArregloId = comanda.ArregloId,
+                PrecioArreglo = comanda.PrecioArreglo,
+                PagoEnvio = comanda.PagoEnvio,
+                CantidadArreglo = comanda.CantidadArreglo,
+                MensajeArreglo = comanda.MensajeArreglo,
+                AccesorioArreglo = comanda.AccesorioArreglo,
+                EvolturaArreglo = comanda.EvolturaArreglo,
+                ColorEvolturaArreglo = comanda.ColorEvolturaArreglo,
+                TipoArreglo = comanda.TipoArreglo,
+                CajaTipoArreglo = comanda.CajaTipoArreglo,
+                AnticipoTipo = comanda.AnticipoTipo,
+                AnticipoPagoTotal = comanda.AnticipoPagoTotal,
+                Flores = comanda.Flores.Select(f => new ComandaFlorDto
+                {
+                    FlorId = f.FlorId,
+                    Nombre = f.Flor?.Nombre ?? string.Empty,
+                    Cantidad = f.Cantidad,
+                    ColorSeleccionado = f.ColorSeleccionado
+                }).ToList()
+            };
+
+            return View(comandaDto);
+        }
+
         [Authorize(Policy = "EsVentas")]
         public IActionResult Editar(int id)
         {
@@ -193,6 +259,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 LinkDireccion = comandaAEditar.LinkDireccion,
                 DomicilioReferencias = comandaAEditar.DomicilioReferencias,
                 NumeroRuta = comandaAEditar.NumeroRuta,
+                NumeroPedido = comandaAEditar.NumeroPedido,
                 MedioDeLaSolicitud = comandaAEditar.MedioDeLaSolicitud,
                 TipoEntrega = comandaAEditar.TipoEntrega,
                 DireccionEntrega = comandaAEditar.DireccionEntrega,
@@ -206,6 +273,10 @@ namespace EnflorarteTopiProyecto.Controllers
                 CantidadArreglo = comandaAEditar.CantidadArreglo,
                 MensajeArreglo = comandaAEditar.MensajeArreglo,
                 AccesorioArreglo = comandaAEditar.AccesorioArreglo,
+                EvolturaArreglo = comandaAEditar.EvolturaArreglo,
+                ColorEvolturaArreglo = comandaAEditar.ColorEvolturaArreglo,
+                TipoArreglo = comandaAEditar.TipoArreglo,
+                CajaTipoArreglo = comandaAEditar.CajaTipoArreglo,
                 AnticipoTipo = comandaAEditar.AnticipoTipo,
                 AnticipoPagoTotal = comandaAEditar.AnticipoPagoTotal,
                 Flores = comandaAEditar.Flores.Select(f => new ComandaFlorDto
@@ -296,6 +367,7 @@ namespace EnflorarteTopiProyecto.Controllers
             comandaExistente.LinkDireccion = comandaDto.LinkDireccion;
             comandaExistente.DomicilioReferencias = comandaDto.DomicilioReferencias;
             comandaExistente.NumeroRuta = comandaDto.NumeroRuta;
+            comandaExistente.NumeroPedido = comandaDto.NumeroPedido;
             comandaExistente.MedioDeLaSolicitud = comandaDto.MedioDeLaSolicitud;
             comandaExistente.TipoEntrega = comandaDto.TipoEntrega;
             comandaExistente.DireccionEntrega = comandaDto.DireccionEntrega;
@@ -384,6 +456,10 @@ namespace EnflorarteTopiProyecto.Controllers
             comandaExistente.CantidadArreglo = comandaDto.CantidadArreglo;
             comandaExistente.MensajeArreglo = comandaDto.MensajeArreglo;
             comandaExistente.AccesorioArreglo = comandaDto.AccesorioArreglo;
+            comandaExistente.EvolturaArreglo = comandaDto.EvolturaArreglo;
+            comandaExistente.ColorEvolturaArreglo = comandaDto.ColorEvolturaArreglo;
+            comandaExistente.TipoArreglo = comandaDto.TipoArreglo;
+            comandaExistente.CajaTipoArreglo = comandaDto.CajaTipoArreglo;
             comandaExistente.AnticipoTipo = comandaDto.AnticipoTipo;
             comandaExistente.AnticipoPagoTotal = comandaDto.AnticipoPagoTotal;
 

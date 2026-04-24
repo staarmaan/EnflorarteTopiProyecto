@@ -50,8 +50,14 @@ namespace EnflorarteTopiProyecto.Models
         public string? DomicilioReferencias { get; set; }
 
         [Display(Name = "número de ruta")]
+        [Required(ErrorMessage = "El {0} es obligatorio.")]
         [Range(1, int.MaxValue, ErrorMessage = "El {0} debe ser mayor a 0.")]
         public int? NumeroRuta { get; set; }
+
+        [Display(Name = "número de pedido")]
+        [Required(ErrorMessage = "El {0} es obligatorio.")]
+        [Range(1, int.MaxValue, ErrorMessage = "El {0} debe ser mayor a 0.")]
+        public int? NumeroPedido { get; set; }
 
         [Display(Name = "medio de la solicitud")]
         [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
@@ -112,6 +118,25 @@ namespace EnflorarteTopiProyecto.Models
         [Display(Name = "accesorio del arreglo")]
         [StringLength(150, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
         public string? AccesorioArreglo { get; set; }
+
+        [Display(Name = "envoltura del arreglo")]
+        [Required(ErrorMessage = "La {0} es obligatoria.")]
+        [StringLength(100, ErrorMessage = "La {0} no debe exceder {1} carácteres.")]
+        public string? EvolturaArreglo { get; set; }
+
+        [Display(Name = "color de envoltura")]
+        [Required(ErrorMessage = "El {0} es obligatorio.")]
+        [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
+        public string? ColorEvolturaArreglo { get; set; }
+
+        [Display(Name = "tipo de arreglo")]
+        [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
+        public string? TipoArreglo { get; set; }
+
+        [Display(Name = "tipo de caja")]
+        [Required(ErrorMessage = "El {0} es obligatorio.")]
+        [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
+        public string? CajaTipoArreglo { get; set; }
 
         // Flores por comanda (editable en el formulario)
         public System.Collections.Generic.List<ComandaFlorDto> Flores { get; set; } = new System.Collections.Generic.List<ComandaFlorDto>();
