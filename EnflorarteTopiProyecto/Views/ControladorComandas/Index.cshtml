@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Gestión de Comandas";
     var esSupervisor = User?.Identity?.IsAuthenticated == true && (User.IsInRole("supervisor") || User.IsInRole("ventas"));
+    var arreglosList = Model.Select(c => c.Arreglo?.Nombre).Where(n => !string.IsNullOrEmpty(n)).Distinct().OrderBy(n => n).ToList();
 }
 
 <div class="container py-5">
@@ -10,6 +11,50 @@
         <a href="javascript:void(0);" onclick="cargarModal('@Url.Action("Crear", "ControladorComandas")', 'Nueva Comanda')" class="btn btn-primary">
             + Nueva Comanda
         </a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body py-3 px-3 px-md-4" style="background: var(--color-fondo-suave); border-radius: 10px;">
+            <div class="row g-2 g-md-3 align-items-end">
+                <div class="col-12 col-md-4 col-lg-3">
+                    <label for="inputBuscarNombre" class="form-label text-muted small text-uppercase fw-bold mb-1">Buscar cliente / arreglo</label>
+                    <input id="inputBuscarNombre" type="search" class="form-control form-control-sm" placeholder="Nombre cliente o arreglo..." autocomplete="off" />
+                </div>
+                <div class="col-12 col-md-4 col-lg-3">
+                    <label for="inputBuscarTelefono" class="form-label text-muted small text-uppercase fw-bold mb-1">Teléfono</label>
+                    <input id="inputBuscarTelefono" type="search" class="form-control form-control-sm" placeholder="Teléfono..." autocomplete="off" />
+                </div>
+                <div class="col-12 col-md-4 col-lg-3">
+                    <label for="selectFiltroArreglo" class="form-label text-muted small text-uppercase fw-bold mb-1">Arreglo</label>
+                    <select id="selectFiltroArreglo" class="form-select form-select-sm text-capitalize">
+                        <option value="all" selected>Todos</option>
+                        @foreach (var nombre in arreglosList)
+                        {
+                            <option value="@nombre.ToLowerInvariant()">@nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label for="inputFecha" class="form-label text-muted small text-uppercase fw-bold mb-1">Fecha</label>
+                    <input id="inputFecha" type="date" class="form-control form-control-sm" />
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="selectFiltroEstado" class="form-label text-muted small text-uppercase fw-bold mb-1">Estado</label>
+                    <select id="selectFiltroEstado" class="form-select form-select-sm text-capitalize">
+                        <option value="all" selected>Todos</option>
+                        <option value="solicitado">Solicitado</option>
+                        <option value="cancelado">Cancelado</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_proceso">En proceso</option>
+                        <option value="listo">Listo</option>
+                        <option value="entregado">Entregado</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2 d-flex align-items-end">
+                    <button type="button" id="btnLimpiarFiltrosComandas" class="btn btn-outline-secondary btn-sm px-2 btn-limpiar-filtros">Limpiar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card shadow-sm border-0">
@@ -44,7 +89,13 @@
                             // Lógica visual extra para estados (opcional, puedes quitar las clases badge si prefieres texto plano)
                             string badgeClass = comanda.Estado.ToString() == "entregado" ? "bg-success" : "bg-secondary";
 
-                            <tr>
+                            <tr class="fila-comanda"
+                                data-id="@comanda.Id"
+                                data-cliente="@(comanda.ClienteNombre?.ToLowerInvariant() ?? "")"
+                                data-telefono="@(comanda.ClienteTelefono?.ToString()?.ToLowerInvariant() ?? "")"
+                                data-arreglo="@(comanda.Arreglo?.Nombre?.ToLowerInvariant() ?? "")"
+                                data-fecha="@comanda.FechaEntrega.ToString("yyyy-MM-dd")"
+                                data-estado="@(comanda.Estado.ToString().ToLowerInvariant())">
                                 <td class="ps-4 fw-bold text-muted">@comanda.Id</td>
                                 <td class="fw-bold">@comanda.ClienteNombre</td>
                                 <td>@comanda.ClienteTelefono</td>
@@ -147,5 +198,71 @@
                 }
             });
         });
+
+        function aplicarFiltroComandas() {
+            var nombreTerm = ($('#inputBuscarNombre').val() || '').toString().trim().toLowerCase();
+            var telefonoTerm = ($('#inputBuscarTelefono').val() || '').toString().trim().toLowerCase();
+            var fechaTerm = ($('#inputFecha').val() || '').toString(); // yyyy-mm-dd
+            var filtroEstado = ($('#selectFiltroEstado').val() || 'all').toString().toLowerCase();
+            var filtroArreglo = ($('#selectFiltroArreglo').val() || 'all').toString().toLowerCase();
+
+            var $tbody = $('.table-group-divider');
+            var $filas = $tbody.find('tr.fila-comanda');
+
+            $filas.each(function () {
+                var $fila = $(this);
+                var cliente = ($fila.data('cliente') || '').toString();
+                var telefono = ($fila.data('telefono') || '').toString();
+                var fecha = ($fila.data('fecha') || '').toString();
+                var estado = ($fila.data('estado') || '').toString();
+                var arreglo = ($fila.data('arreglo') || '').toString();
+
+                var coincideNombre = !nombreTerm || cliente.indexOf(nombreTerm) !== -1 || arreglo.indexOf(nombreTerm) !== -1;
+                var coincideTelefono = !telefonoTerm || telefono.indexOf(telefonoTerm) !== -1;
+                var coincideFecha = !fechaTerm || fecha === fechaTerm;
+                var coincideEstado = filtroEstado === 'all' || estado === filtroEstado;
+                var coincideArreglo = filtroArreglo === 'all' || arreglo === filtroArreglo;
+
+                if (coincideNombre && coincideTelefono && coincideFecha && coincideEstado && coincideArreglo) {
+                    $fila.show();
+                } else {
+                    $fila.hide();
+                }
+            });
+
+            var filasVisibles = $filas.filter(function () { return $(this).css('display') !== 'none'; }).get();
+            var todasLasFilas = $filas.get();
+
+            todasLasFilas.sort(function (a, b) {
+                var aId = parseInt($(a).data('id')) || 0;
+                var bId = parseInt($(b).data('id')) || 0;
+                return bId - aId; // últimos primero
+            });
+
+            todasLasFilas.forEach(function (fila) { $tbody.append(fila); });
+
+            $('#filaSinResultados').remove();
+            if (filasVisibles.length === 0) {
+                $tbody.append('<tr id="filaSinResultados"><td colspan="12" class="text-center text-muted py-4">No se encontraron comandas con los filtros seleccionados.</td></tr>');
+            }
+        }
+
+        $('#inputBuscarNombre').on('input', aplicarFiltroComandas);
+        $('#inputBuscarTelefono').on('input', aplicarFiltroComandas);
+        $('#inputFecha').on('change', aplicarFiltroComandas);
+        $('#selectFiltroEstado').on('change', aplicarFiltroComandas);
+        $('#selectFiltroArreglo').on('change', aplicarFiltroComandas);
+
+        $('#btnLimpiarFiltrosComandas').on('click', function () {
+            $('#inputBuscarNombre').val('');
+            $('#inputBuscarTelefono').val('');
+            $('#inputFecha').val('');
+            $('#selectFiltroEstado').val('all');
+            $('#selectFiltroArreglo').val('all');
+            aplicarFiltroComandas();
+        });
+
+        // Inicializar filtro al cargar la página
+        aplicarFiltroComandas();
     </script>
 }
