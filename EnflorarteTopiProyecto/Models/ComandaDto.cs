@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 
 namespace EnflorarteTopiProyecto.Models
 {
@@ -52,6 +51,10 @@ namespace EnflorarteTopiProyecto.Models
         [Range(1, int.MaxValue, ErrorMessage = "El {0} debe ser mayor a 0.")]
         public int? NumeroRuta { get; set; }
 
+        [Display(Name = "medio de la solicitud")]
+        [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
+        public string? MedioDeLaSolicitud { get; set; }
+
         [Display(Name = "tipo de entrega")]
         [Required(ErrorMessage = "El {0} es obligatorio.")]
         [EnumDataType(typeof(TipoEntrega), ErrorMessage = "El {0} seleccionado no es válido.")]
@@ -60,6 +63,14 @@ namespace EnflorarteTopiProyecto.Models
         [Display(Name = "dirección de entrega")]
         [StringLength(255, ErrorMessage = "La {0} no debe exceder {1} carácteres.")]
         public string? DireccionEntrega { get; set; }
+
+        [Display(Name = "nombre del receptor")]
+        [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
+        public string? NombreReceptorEnvio { get; set; }
+
+        [Display(Name = "teléfono del receptor")]
+        [Range(1, int.MaxValue, ErrorMessage = "El {0} debe ser mayor a 0.")]
+        public int? TelefonoReceptorEnvio { get; set; }
 
         [Display(Name = "fecha de entrega")]
         [Required(ErrorMessage = "La {0} es obligatoria.")]
@@ -73,10 +84,10 @@ namespace EnflorarteTopiProyecto.Models
 
 
         // Datos del arreglo
-        [Display(Name = "nombre del arreglo")]
+        [Display(Name = "arreglo")]
         [Required(ErrorMessage = "El {0} es obligatorio.")]
-        [StringLength(150, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
-        public string NombreArreglo { get; set; } = string.Empty;
+        public int ArregloId { get; set; }
+        public Arreglo? Arreglo { get; set; }
 
         [Display(Name = "precio del arreglo")]
         [Required(ErrorMessage = "El {0} es obligatorio.")]
@@ -96,17 +107,9 @@ namespace EnflorarteTopiProyecto.Models
         [StringLength(500, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
         public string? MensajeArreglo { get; set; }
 
-        [Display(Name = "ruta de foto del arreglo")]
-        [StringLength(300, ErrorMessage = "La {0} no debe exceder {1} carácteres.")]
-        public string? FotoArregloRuta { get; set; }
-
-        // Archivo de imagen subido desde el formulario
-        [Display(Name = "foto del arreglo (archivo)")]
-        public IFormFile? FotoArregloArchivo { get; set; }
-
-        // true para eliminar la foto existente
-        [Display(Name = "eliminar foto existente")]
-        public bool? EliminarFoto { get; set; } = false;
+        [Display(Name = "accesorio del arreglo")]
+        [StringLength(150, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
+        public string? AccesorioArreglo { get; set; }
 
         // Anticipo
         [Display(Name = "tipo de anticipo")]

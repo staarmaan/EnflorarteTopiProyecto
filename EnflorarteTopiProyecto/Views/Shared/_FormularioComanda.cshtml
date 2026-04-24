@@ -15,23 +15,7 @@
         <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Usuario creador</label>
             <div class="col-sm-8">
-                <select asp-for="UsuarioId" class="form-select" asp-items="ViewBag.ListaUsuarios">
-                    <option value="">Selecciona un usuario</option>
-                </select>
-                <span asp-validation-for="UsuarioId" class="text-danger"></span>
             </div>
-        </div>
-
-        <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Repartidor (opcional)</label>
-            <div class="col-sm-8">
-                <select asp-for="RepartidorId" class="form-select" asp-items="ViewBag.ListaRepartidores">
-                    <option value="">Selecciona un repartidor</option>
-                </select>
-                <span asp-validation-for="RepartidorId" class="text-danger"></span>
-            </div>
-        </div>
-
         <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Estado de la comanda</label>
             <div class="col-sm-8">
@@ -76,14 +60,33 @@
         </div>
 
         <div class="row mb-3">
+            <label class="col-sm-4 col-form-label">Medio de la solicitud</label>
+            <div class="col-sm-8">
+                <select id="medioSolicitudSelect" class="form-select">
+                    <option value="" selected hidden>Selecciona un medio</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Marketplace">Marketplace</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Otro">Otro</option>
+                </select>
+                <input id="medioSolicitudOtro" class="form-control mt-2 d-none" type="text" placeholder="Especifica el medio" />
+                <input id="medioSolicitudValor" type="hidden" asp-for="MedioDeLaSolicitud" />
+                <span asp-validation-for="MedioDeLaSolicitud" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Tipo de entrega</label>
             <div class="col-sm-8">
                 <select id="selectTipoEntrega" class="form-select" asp-for="TipoEntrega">
                     <option value="" selected hidden>Selecciona un tipo</option>
                     <option value="envio">Envío</option>
                     <option value="recoger">Recoger</option>
-                    <option value="otro">Otro</option>
                 </select>
+                <div id="receptorWarning" class="form-text text-danger d-none">
+                    Falta el nombre y/o teléfono del receptor para envíos.
+                </div>
                 <span asp-validation-for="TipoEntrega" class="text-danger"></span>
             </div>
         </div>
@@ -93,6 +96,22 @@
             <div class="col-sm-8">
                 <input class="form-control" asp-for="DireccionEntrega" />
                 <span asp-validation-for="DireccionEntrega" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3 d-none" id="divNombreReceptorEnvio">
+            <label class="col-sm-4 col-form-label">Nombre del receptor</label>
+            <div class="col-sm-8">
+                <input id="inputNombreReceptorEnvio" class="form-control" asp-for="NombreReceptorEnvio" />
+                <span asp-validation-for="NombreReceptorEnvio" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mb-3 d-none" id="divTelefonoReceptorEnvio">
+            <label class="col-sm-4 col-form-label">Teléfono del receptor</label>
+            <div class="col-sm-8">
+                <input id="inputTelefonoReceptorEnvio" class="form-control" asp-for="TelefonoReceptorEnvio" type="number" min="0" step="1" />
+                <span asp-validation-for="TelefonoReceptorEnvio" class="text-danger"></span>
             </div>
         </div>
 
@@ -194,10 +213,12 @@
         <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Detalles del Arreglo</h6>
 
         <div class="row mb-3">
-            <label class="col-sm-4 col-form-label">Nombre del arreglo</label>
+            <label class="col-sm-4 col-form-label">Arreglo</label>
             <div class="col-sm-8">
-                <input class="form-control" asp-for="NombreArreglo" />
-                <span asp-validation-for="NombreArreglo" class="text-danger"></span>
+                <select class="form-select" asp-for="ArregloId" asp-items="ViewBag.ListaArreglos">
+                    <option value="" disabled selected>Selecciona un arreglo</option>
+                </select>
+                <span asp-validation-for="ArregloId" class="text-danger"></span>
             </div>
         </div>
 
@@ -223,69 +244,11 @@
             </div>
         </div>
 
-        <div class="row mb-4">
-            <label class="col-sm-4 col-form-label">Foto del arreglo</label>
+        <div class="row mb-3">
+            <label class="col-sm-4 col-form-label">Accesorio del arreglo</label>
             <div class="col-sm-8">
-                <input id="fotoArregloInput" class="form-control" asp-for="FotoArregloArchivo" type="file" accept="image/*" />
-                <span asp-validation-for="FotoArregloArchivo" class="text-danger"></span>
-
-                <div id="fotoArregloPreviewContainer" class="mt-3 text-center p-2 border rounded bg-light" style="display:@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "none" : "block");">
-                    <img id="fotoArregloPreview" src="@(string.IsNullOrWhiteSpace(Model?.FotoArregloRuta) ? "" : Model.FotoArregloRuta)" alt="Vista previa" class="img-fluid rounded shadow-sm" style="max-height: 200px;" />
-
-                    <div class="mt-2">
-                        <input type="hidden" asp-for="EliminarFoto" />
-                        <button type="button" id="btnEliminarFoto" class="btn btn-outline-danger btn-sm">
-                            Eliminar imagen
-                        </button>
-                    </div>
-                </div>
-
-                <script>
-                    (function () {
-                        var input = document.getElementById('fotoArregloInput');
-                        var previewImg = document.getElementById('fotoArregloPreview');
-                        var previewContainer = document.getElementById('fotoArregloPreviewContainer');
-                        var btnEliminar = document.getElementById('btnEliminarFoto');
-                        var eliminarFotoField = document.getElementById('EliminarFoto');
-
-                        function clearPreview() {
-                            if (previewImg) previewImg.src = '';
-                            if (previewContainer) previewContainer.style.display = 'none';
-                        }
-
-                        function showPreview(url) {
-                            if (!previewImg || !previewContainer) return;
-                            previewImg.src = url;
-                            previewContainer.style.display = 'block';
-                        }
-
-                        if (input) {
-                            input.addEventListener('change', function (e) {
-                                var file = e.target.files && e.target.files[0];
-                                if (!file) return;
-
-                                if (file.type && file.type.indexOf('image/') === 0) {
-                                    var url = URL.createObjectURL(file);
-                                    showPreview(url);
-
-                                    input.addEventListener('blur', function () {
-                                        try { URL.revokeObjectURL(url); } catch (_) { }
-                                    }, { once: true });
-
-                                    if(eliminarFotoField) eliminarFotoField.value = 'false';
-                                }
-                            });
-                        }
-
-                        if (btnEliminar) {
-                            btnEliminar.addEventListener('click', function () {
-                                if (eliminarFotoField) eliminarFotoField.value = 'true';
-                                clearPreview();
-                                if (input) input.value = '';
-                            });
-                        }
-                    })();
-                </script>
+                <input class="form-control" asp-for="AccesorioArreglo" />
+                <span asp-validation-for="AccesorioArreglo" class="text-danger"></span>
             </div>
         </div>
 
@@ -316,3 +279,137 @@
 
     </div>
 </div>
+
+<script>
+    (function () {
+        var select = document.getElementById('medioSolicitudSelect');
+        var otroInput = document.getElementById('medioSolicitudOtro');
+        var hidden = document.getElementById('medioSolicitudValor');
+
+        if (!select || !otroInput || !hidden) {
+            return;
+        }
+
+        var presets = {
+            facebook: 'Facebook',
+            marketplace: 'Marketplace',
+            whatsapp: 'WhatsApp',
+            instagram: 'Instagram'
+        };
+
+        function setFromValue(rawValue) {
+            var value = (rawValue || '').trim();
+            var normalized = value.toLowerCase();
+
+            if (value && presets[normalized]) {
+                select.value = presets[normalized];
+                otroInput.classList.add('d-none');
+                otroInput.value = '';
+                hidden.value = presets[normalized];
+                return;
+            }
+
+            if (value) {
+                select.value = 'Otro';
+                otroInput.classList.remove('d-none');
+                otroInput.value = value;
+                hidden.value = value;
+                return;
+            }
+
+            select.value = '';
+            otroInput.classList.add('d-none');
+            otroInput.value = '';
+            hidden.value = '';
+        }
+
+        function onSelectChange() {
+            if (select.value === 'Otro') {
+                otroInput.classList.remove('d-none');
+                otroInput.focus();
+                hidden.value = otroInput.value.trim();
+                return;
+            }
+
+            otroInput.classList.add('d-none');
+            otroInput.value = '';
+            hidden.value = select.value;
+        }
+
+        function onOtroInputChange() {
+            if (select.value === 'Otro') {
+                hidden.value = otroInput.value.trim();
+            }
+        }
+
+        setFromValue(hidden.value);
+        select.addEventListener('change', onSelectChange);
+        otroInput.addEventListener('input', onOtroInputChange);
+    })();
+</script>
+
+<script>
+    (function () {
+        var tipoEntregaSelect = document.getElementById('selectTipoEntrega');
+        var divNombre = document.getElementById('divNombreReceptorEnvio');
+        var divTelefono = document.getElementById('divTelefonoReceptorEnvio');
+        var inputNombre = document.getElementById('inputNombreReceptorEnvio');
+        var inputTelefono = document.getElementById('inputTelefonoReceptorEnvio');
+        var receptorWarning = document.getElementById('receptorWarning');
+
+        if (!tipoEntregaSelect || !divNombre || !divTelefono) {
+            return;
+        }
+
+        function updateReceptorWarning(isEnvio) {
+            if (!receptorWarning || !isEnvio) {
+                if (receptorWarning) {
+                    receptorWarning.classList.add('d-none');
+                }
+                return;
+            }
+
+            var nombreOk = inputNombre && inputNombre.value.trim().length > 0;
+            var telefonoOk = inputTelefono && inputTelefono.value.trim().length > 0;
+            receptorWarning.classList.toggle('d-none', nombreOk && telefonoOk);
+        }
+
+        function toggleReceptorFields() {
+            var isEnvio = tipoEntregaSelect.value === 'envio';
+            divNombre.classList.toggle('d-none', !isEnvio);
+            divTelefono.classList.toggle('d-none', !isEnvio);
+
+            if (inputNombre) {
+                inputNombre.required = isEnvio;
+            }
+
+            if (inputTelefono) {
+                inputTelefono.required = isEnvio;
+            }
+
+            if (!isEnvio) {
+                if (inputNombre) {
+                    inputNombre.value = '';
+                }
+                if (inputTelefono) {
+                    inputTelefono.value = '';
+                }
+            }
+
+            updateReceptorWarning(isEnvio);
+        }
+
+        tipoEntregaSelect.addEventListener('change', toggleReceptorFields);
+        if (inputNombre) {
+            inputNombre.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        if (inputTelefono) {
+            inputTelefono.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        toggleReceptorFields();
+    })();
+</script>

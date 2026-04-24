@@ -108,17 +108,43 @@ namespace EnflorarteTopiProyecto.Models
         public string? LinkDireccion { get; set; } // link de la dirección del cliente.
         public string? DomicilioReferencias { get; set; } // Detalles visuales de la ubicacion del  cliente.
         public int? NumeroRuta { get; set; }
+        public string? MedioDeLaSolicitud {get;set;} // El medio por el que el cliente solicitó el pedido, ej: Facebook, marketplace, whatsapp, Instagram, etc.
 
-        public TipoEntrega TipoEntrega { get; set; }
+
+
+        public TipoEntrega TipoEntrega { get; set; } // Puede ser envio, recoger u otro.
         public string? DireccionEntrega { get; set; } // No seria obligatorio si el tipo de entrega es "recoger".
         public DateTime FechaEntrega { get; set; }
         public TimeSpan HoraEntrega { get; set; } // No estoy seguro de si deberia ser opcional u obligatorio.
 
+        // Si el tipo de entrega es a domiciolio (osea envio), estos campos se deben de llenar.
+        // Por eso tienen al final "Envio".
+        public string? NombreReceptorEnvio {get;set;}
+        public int? TelefonoReceptorEnvio {get;set;}
+
+
+
         // Datos del arreglo.
-        public string NombreArreglo { get; set; } = string.Empty;
+        /* 
+        Ahora que existe la calse de arreglo, se debe guardar la clave foranea de este, PERO, estos campos tienen que permanecer porque:
+        1. Si un arreglo cambia de precion, se vera afectado en las comandas con el precio antiguo, lo cual seria grave.
+        2. El mensaje es personalizado por comanda, pues cada cliente va a quere su propio mensaje.
+        3. Cada cliente va a quere cierta cantidad tambien.
+        */
+        
+        //Estos dos campos ya no son requeridos porque la clase de Arreglo ya los tiene. Los podria eliminar, pero los dejare comentados por si acaso.
+        //public string NombreArreglo { get; set; } = string.Empty;
+        //public string? FotoArregloRuta { get; set; }
+        
+        public int ArregloId {get; set;}
+        
+        [ForeignKey(nameof(ArregloId))]
+        public Arreglo? Arreglo {get; set;}
+
         [Precision(7, 2)] // 7 digitos en total y dos decimales. Entonces, el valor maximo permitido seria 99,999.99
         [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El precio del arreglo debe ser entre 0 y 99,999.99.")]
         public decimal PrecioArreglo { get; set; }
+        
         [Precision(7, 2)] // lo mismo que en NombreArreglo.
         [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El pago del envío debe ser entre 0 y 99,999.99.")]
         public decimal PagoEnvio { get; set; }
@@ -128,16 +154,8 @@ namespace EnflorarteTopiProyecto.Models
 
         public string? MensajeArreglo { get; set; }
 
+        public string? AccesorioArreglo {get;set;} //ej: corona,globo,peluche, etc.
 
-        /*
-        No se guarda la foto como tal en la bd, sino la ruta donde se encuentra almacenada. Si se guardara la foto en la bd, esta podria crecer mucho en tamaño y hacer las consultas muy lentas.
-        Entonces, cuando se cargue una foto, se guarda una copia en alguna carpeta del sistema, y esta puede ser cargada despues.
-        Que sea una copia es lo ideal, porque si se mueve o elimina la foto original, la foto de la comanda no se veria afectada.
-
-        Como por ahora la app es solo local, la ruta puede ser una ruta relativa en el sistema de archivos local.
-        Pero si se quisiera hacer una version web, habria que cambiar la logica para que las fotos se guarden en un servidor o servicio de almacenamiento en la nube, donde se puedan cargar las imagenes en cualquier dispositivo.
-         */
-        public string? FotoArregloRuta { get; set; }
 
 
         // Datos de anticipo.

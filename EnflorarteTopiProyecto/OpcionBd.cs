@@ -14,16 +14,18 @@ namespace OpcionesBd
     public static void UsarBD(DbContextOptionsBuilder options, string tipo, WebApplicationBuilder builder)
     {
         string connectionString;
-        
-        switch (tipo.ToLower())
+        var tipoNormalizado = (tipo ?? "sql").Trim().ToLowerInvariant();
+
+        switch (tipoNormalizado)
         {
             case "postgres":
-                connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                    ?? throw new InvalidOperationException("DefaultConnection not found in configuration");
+                connectionString = builder.Configuration.GetConnectionString("PostgresConnection")
+                    ?? builder.Configuration.GetConnectionString("DefaultConnection")
+                    ?? throw new InvalidOperationException("PostgresConnection or DefaultConnection not found in configuration");
                 options.UseNpgsql(connectionString);
                 break;
             default:
-                connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                     ?? throw new InvalidOperationException("DefaultConnection not found in configuration");
                 options.UseSqlServer(connectionString);
                 break;

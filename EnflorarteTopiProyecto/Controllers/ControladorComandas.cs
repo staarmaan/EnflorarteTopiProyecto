@@ -3,14 +3,13 @@ using EnflorarteTopiProyecto.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
     [Authorize]
     public class ControladorComandas : Controller
     {
-        const int MAX_IMAGEN_BYTES = 20 * 1024 * 1024; // Tamaño máximo de imagen permitida.
-
         private readonly ApplicationDbContext context;
 
         public ControladorComandas(ApplicationDbContext context)
@@ -18,55 +17,12 @@ namespace EnflorarteTopiProyecto.Controllers
             this.context = context;
         }
 
-        private (bool ok, string? rutaPublica, string? error) ProcesarImagen(IFormFile archivo, int maxBytes)
-        {
-            if (archivo == null || archivo.Length <= 0)
-            {
-                return (false, null, "No se proporcionó archivo.");
-            }
-
-            var permittedContentTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
-            var permittedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
-            var ext = Path.GetExtension(archivo.FileName).ToLowerInvariant();
-            var contentTypeOk = archivo.ContentType != null && permittedContentTypes.Contains(archivo.ContentType);
-            var extensionOk = permittedExtensions.Contains(ext);
-
-            if (!contentTypeOk && !extensionOk)
-            {
-                return (false, null, "Solo se permiten imágenes (jpg, jpeg, png, webp, gif).");
-            }
-
-            if (archivo.Length > maxBytes)
-            {
-                return (false, null, "La imagen supera el tamaño permitido (20 MB).");
-            }
-
-            var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            if (!Directory.Exists(uploadsRoot))
-            {
-                Directory.CreateDirectory(uploadsRoot);
-            }
-
-            var fileName = $"{Guid.NewGuid():N}{ext}";
-            var filePath = Path.Combine(uploadsRoot, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                archivo.CopyTo(stream);
-            }
-
-            var rutaPublica = $"/uploads/{fileName}";
-            return (true, rutaPublica, null);
-        }
-
-        private bool ComprobarImagenSubida(ComandaDto comandaDto)
-        {
-            return (comandaDto.FotoArregloArchivo != null && comandaDto.FotoArregloArchivo.Length > 0);
-        }
-
         public IActionResult Index()
         {
-            var comandas = context.Comandas.OrderByDescending(comanda => comanda.Id).ToList();
+            var comandas = context.Comandas
+                .Include(c => c.Arreglo)
+                .OrderByDescending(comanda => comanda.Id)
+                .ToList();
             return View(comandas);
         }
 
@@ -113,19 +69,15 @@ namespace EnflorarteTopiProyecto.Controllers
                 }
             }
 
-            if (ComprobarImagenSubida(comandaDto))
+            // Validar que el arreglo exista
+            var arregloExiste = context.Arreglos.Any(a => a.Id == comandaDto.ArregloId);
+            if (!arregloExiste)
             {
-                var res = ProcesarImagen(comandaDto.FotoArregloArchivo, MAX_IMAGEN_BYTES);
-                if (!res.ok)
-                {
-                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), res.error!);
-                    TempData["Toast.Message"] = res.error!;
-                    TempData["Toast.Type"] = "warning";
-                    CargarListasViewBag();
-                    return View(comandaDto);
-                }
-
-                comandaDto.FotoArregloRuta = res.rutaPublica;
+                ModelState.AddModelError(nameof(comandaDto.ArregloId), "El arreglo especificado no existe.");
+                TempData["Toast.Message"] = "Arreglo especificado no existe.";
+                TempData["Toast.Type"] = "warning";
+                CargarListasViewBag();
+                return View(comandaDto);
             }
 
             ProcesarAnticipoParaGuardar(comandaDto); //JENNY: Si es porcentaje, calcula el dinero $ antes de guardar en la BD.
@@ -142,16 +94,19 @@ namespace EnflorarteTopiProyecto.Controllers
                 LinkDireccion = comandaDto.LinkDireccion,
                 DomicilioReferencias = comandaDto.DomicilioReferencias,
                 NumeroRuta = comandaDto.NumeroRuta,
+                MedioDeLaSolicitud = comandaDto.MedioDeLaSolicitud,
                 TipoEntrega = comandaDto.TipoEntrega,
                 DireccionEntrega = comandaDto.DireccionEntrega,
+                NombreReceptorEnvio = comandaDto.NombreReceptorEnvio,
+                TelefonoReceptorEnvio = comandaDto.TelefonoReceptorEnvio,
                 FechaEntrega = comandaDto.FechaEntrega,
                 HoraEntrega = comandaDto.HoraEntrega,
-                NombreArreglo = comandaDto.NombreArreglo,
+                ArregloId = comandaDto.ArregloId,
                 PrecioArreglo = comandaDto.PrecioArreglo,
                 PagoEnvio = comandaDto.PagoEnvio,
                 CantidadArreglo = comandaDto.CantidadArreglo,
                 MensajeArreglo = comandaDto.MensajeArreglo,
-                FotoArregloRuta = comandaDto.FotoArregloRuta,
+                AccesorioArreglo = comandaDto.AccesorioArreglo,
                 AnticipoTipo = comandaDto.AnticipoTipo,
                 AnticipoPagoTotal = comandaDto.AnticipoPagoTotal
             };
@@ -191,16 +146,19 @@ namespace EnflorarteTopiProyecto.Controllers
                 LinkDireccion = comandaAEditar.LinkDireccion,
                 DomicilioReferencias = comandaAEditar.DomicilioReferencias,
                 NumeroRuta = comandaAEditar.NumeroRuta,
+                MedioDeLaSolicitud = comandaAEditar.MedioDeLaSolicitud,
                 TipoEntrega = comandaAEditar.TipoEntrega,
                 DireccionEntrega = comandaAEditar.DireccionEntrega,
+                NombreReceptorEnvio = comandaAEditar.NombreReceptorEnvio,
+                TelefonoReceptorEnvio = comandaAEditar.TelefonoReceptorEnvio,
                 FechaEntrega = comandaAEditar.FechaEntrega,
                 HoraEntrega = comandaAEditar.HoraEntrega,
-                NombreArreglo = comandaAEditar.NombreArreglo,
+                ArregloId = comandaAEditar.ArregloId,
                 PrecioArreglo = comandaAEditar.PrecioArreglo,
                 PagoEnvio = comandaAEditar.PagoEnvio,
                 CantidadArreglo = comandaAEditar.CantidadArreglo,
                 MensajeArreglo = comandaAEditar.MensajeArreglo,
-                FotoArregloRuta = comandaAEditar.FotoArregloRuta,
+                AccesorioArreglo = comandaAEditar.AccesorioArreglo,
                 AnticipoTipo = comandaAEditar.AnticipoTipo,
                 AnticipoPagoTotal = comandaAEditar.AnticipoPagoTotal
             };
@@ -222,6 +180,8 @@ namespace EnflorarteTopiProyecto.Controllers
                 TempData["Toast.Type"] = "error";
                 return RedirectToAction("Index");
             }
+
+            ValidarReglasNegocio(comandaDto); //JENNY: Validación personalizada de Lógica de Negocio
 
             if (!ModelState.IsValid)
             {
@@ -254,28 +214,15 @@ namespace EnflorarteTopiProyecto.Controllers
                 }
             }
 
-            if (ComprobarImagenSubida(comandaDto))
+            // Validar que el arreglo exista
+            var arregloExiste = context.Arreglos.Any(a => a.Id == comandaDto.ArregloId);
+            if (!arregloExiste)
             {
-                var res = ProcesarImagen(comandaDto.FotoArregloArchivo, MAX_IMAGEN_BYTES);
-                if (!res.ok)
-                {
-                    ModelState.AddModelError(nameof(comandaDto.FotoArregloArchivo), res.error!);
-                    CargarListasViewBag();
-                    return View(comandaDto);
-                }
-
-                comandaDto.FotoArregloRuta = res.rutaPublica;
-            }
-            else
-            {
-                if (comandaDto.EliminarFoto == true)
-                {
-                    comandaDto.FotoArregloRuta = null;
-                }
-                else
-                {
-                    comandaDto.FotoArregloRuta = comandaExistente.FotoArregloRuta;
-                }
+                ModelState.AddModelError(nameof(comandaDto.ArregloId), "El arreglo especificado no existe.");
+                TempData["Toast.Message"] = "Arreglo especificado no existe.";
+                TempData["Toast.Type"] = "warning";
+                CargarListasViewBag();
+                return View(comandaDto);
             }
 
                 ProcesarAnticipoParaGuardar(comandaDto); //JENNY: Si cambiaron el anticipo a porcentaje, recalculamos el dinero $ antes de actualizar la BD.
@@ -290,16 +237,19 @@ namespace EnflorarteTopiProyecto.Controllers
             comandaExistente.LinkDireccion = comandaDto.LinkDireccion;
             comandaExistente.DomicilioReferencias = comandaDto.DomicilioReferencias;
             comandaExistente.NumeroRuta = comandaDto.NumeroRuta;
+            comandaExistente.MedioDeLaSolicitud = comandaDto.MedioDeLaSolicitud;
             comandaExistente.TipoEntrega = comandaDto.TipoEntrega;
             comandaExistente.DireccionEntrega = comandaDto.DireccionEntrega;
+            comandaExistente.NombreReceptorEnvio = comandaDto.NombreReceptorEnvio;
+            comandaExistente.TelefonoReceptorEnvio = comandaDto.TelefonoReceptorEnvio;
             comandaExistente.FechaEntrega = comandaDto.FechaEntrega;
             comandaExistente.HoraEntrega = comandaDto.HoraEntrega;
-            comandaExistente.NombreArreglo = comandaDto.NombreArreglo;
+            comandaExistente.ArregloId = comandaDto.ArregloId;
             comandaExistente.PrecioArreglo = comandaDto.PrecioArreglo;
             comandaExistente.PagoEnvio = comandaDto.PagoEnvio;
             comandaExistente.CantidadArreglo = comandaDto.CantidadArreglo;
             comandaExistente.MensajeArreglo = comandaDto.MensajeArreglo;
-            comandaExistente.FotoArregloRuta = comandaDto.FotoArregloRuta;
+            comandaExistente.AccesorioArreglo = comandaDto.AccesorioArreglo;
             comandaExistente.AnticipoTipo = comandaDto.AnticipoTipo;
             comandaExistente.AnticipoPagoTotal = comandaDto.AnticipoPagoTotal;
 
@@ -342,6 +292,9 @@ namespace EnflorarteTopiProyecto.Controllers
                 .ToList();
 
             ViewBag.ListaRepartidores = new SelectList(repartidores, "Id", "Nombre"); //Para los repartidores (rep y sup)
+            
+            // Cargar lista de arreglos disponibles
+            ViewBag.ListaArreglos = new SelectList(context.Arreglos, "Id", "Nombre");
         }
 
         private void ValidarReglasNegocio(ComandaDto dto) //JENNY: Validaciones
@@ -350,6 +303,19 @@ namespace EnflorarteTopiProyecto.Controllers
             if (dto.TipoEntrega == TipoEntrega.envio && string.IsNullOrWhiteSpace(dto.DireccionEntrega))
             {
                 ModelState.AddModelError("DireccionEntrega", "La dirección es obligatoria para envíos a domicilio.");
+            }
+
+            if (dto.TipoEntrega == TipoEntrega.envio)
+            {
+                if (string.IsNullOrWhiteSpace(dto.NombreReceptorEnvio))
+                {
+                    ModelState.AddModelError("NombreReceptorEnvio", "El nombre del receptor es obligatorio para envíos a domicilio.");
+                }
+
+                if (!dto.TelefonoReceptorEnvio.HasValue || dto.TelefonoReceptorEnvio.Value <= 0)
+                {
+                    ModelState.AddModelError("TelefonoReceptorEnvio", "El teléfono del receptor es obligatorio para envíos a domicilio.");
+                }
             }
 
             // Validación de Anticipos
