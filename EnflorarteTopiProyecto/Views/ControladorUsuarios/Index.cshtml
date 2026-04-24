@@ -61,8 +61,15 @@
                     </div>
                 </div>
                 <div class="col-6 col-md-3 col-lg-1 d-flex align-items-end">
-                    <button type="button" id="btnLimpiarFiltros" class="btn btn-outline-secondary btn-sm px-2 btn-limpiar-filtros">
-                        Limpiar
+                    <button type="button"
+                            id="btnLimpiarFiltros"
+                            class="btn btn-accion-redondo btn-limpiar-redondo btn-limpiar-filtros"
+                            title="Limpiar filtros"
+                            aria-label="Limpiar filtros">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M5 5l14 14" />
+                            <path d="M19 5L5 19" />
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -206,9 +213,10 @@
         }
 
         .btn-limpiar-filtros {
-            height: 31px;
             white-space: nowrap;
-            width: 100%;
+            width: 2.2rem;
+            height: 2.2rem;
+            padding: 0;
         }
 
         .campo-antiautofill {
@@ -224,6 +232,28 @@
 
     <script>
         let usuarioAEliminarId = 0;
+        const modalUsuarioElement = document.getElementById('modalUsuario');
+        let modalUsuarioInstance = null;
+
+        function obtenerModalUsuario() {
+            if (!modalUsuarioInstance) {
+                modalUsuarioInstance = bootstrap.Modal.getOrCreateInstance(modalUsuarioElement);
+            }
+
+            return modalUsuarioInstance;
+        }
+
+        function limpiarFondosModalResiduos() {
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+            document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
+                backdrop.remove();
+            });
+        }
+
+        modalUsuarioElement.addEventListener('hidden.bs.modal', function () {
+            limpiarFondosModalResiduos();
+        });
 
         function abrirDialogoEliminarUsuario(id, nombre) {
             usuarioAEliminarId = id;
@@ -251,8 +281,10 @@
         function cargarModal(url, titulo) {
             $("#modalTitulo").text(titulo);
             $("#contenidoModal").html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
-            var myModal = new bootstrap.Modal(document.getElementById('modalUsuario'));
-            myModal.show();
+            if (!modalUsuarioElement.classList.contains('show')) {
+                obtenerModalUsuario().show();
+            }
+
             $.get(url, function(data) {
                 $("#contenidoModal").html(data);
             });

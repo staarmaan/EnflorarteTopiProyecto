@@ -38,9 +38,9 @@
                 }
                 else
                 {
-                    <div class="table-responsive border rounded mb-3">
-                        <table class="table table-sm align-middle mb-0">
-                            <thead class="table-light">
+                    <div class="table-responsive tabla-enflorarte-wrap mb-3">
+                        <table class="table table-sm table-hover align-middle mb-0 tabla-enflorarte-catalogo">
+                            <thead>
                                 <tr>
                                     <th>Color</th>
                                     <th style="width:120px;">Actual</th>
@@ -72,11 +72,11 @@
                     </div>
                 }
 
-                <div class="border rounded p-3 bg-light-subtle">
+                <div class="border rounded p-3 bg-white" style="border-color: rgba(46, 79, 57, 0.35) !important;">
                     <label asp-for="NuevoColor" class="form-label text-muted small text-uppercase fw-bold mb-1">Otro color</label>
                     <div class="input-group input-group-sm">
                         <input asp-for="NuevoColor" class="form-control" maxlength="50" placeholder="Ej. Amarillo" />
-                        <button type="submit" class="btn btn-outline-primary" name="accion" value="agregar-color">Agregar color</button>
+                        <button type="submit" class="btn btn-outline-secondary-flower" name="accion" value="agregar-color">Agregar color</button>
                     </div>
                     <span asp-validation-for="NuevoColor" class="text-danger small"></span>
                     <div class="form-text">Se agrega para esta flor con cantidad inicial 0.</div>

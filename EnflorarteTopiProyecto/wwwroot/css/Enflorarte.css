@@ -181,6 +181,30 @@ a {
     color: #bb2d3b;
 }
 
+.btn-limpiar-redondo {
+    background-color: #fff;
+    border-color: var(--color-secundario);
+    color: var(--color-primario);
+}
+
+.btn-limpiar-redondo:hover {
+    background-color: rgba(46, 79, 57, 0.08);
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+}
+
+.btn-inventario-redondo {
+    background-color: #fff;
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+}
+
+.btn-inventario-redondo:hover {
+    background-color: rgba(46, 79, 57, 0.08);
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+}
+
 /* Estilo para el footer */
 footer.border-top {
     border-top-color: var(--color-secundario) !important;
@@ -224,6 +248,69 @@ footer.border-top {
         font-size: 1.2rem;
         border-bottom: 1px solid var(--color-secundario);
     }
+
+/* =========================================
+   TABLAS DEL CATÁLOGO
+   ========================================= */
+.tabla-enflorarte-wrap {
+    border: 1px solid rgba(46, 79, 57, 0.35) !important;
+    border-radius: 0.85rem;
+    background: #fff;
+    overflow: hidden;
+}
+
+.tabla-enflorarte-catalogo {
+    margin-bottom: 0;
+    background-color: #fff;
+}
+
+.tabla-enflorarte-catalogo thead th {
+    background: var(--color-primario);
+    color: var(--color-texto-claro);
+    font-family: var(--fuente-sans-moderna);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: .76rem;
+    padding-top: .85rem;
+    padding-bottom: .85rem;
+    border-bottom: none;
+}
+
+.tabla-enflorarte-catalogo tbody tr {
+    transition: background-color .2s ease, box-shadow .2s ease;
+}
+
+.tabla-enflorarte-catalogo tbody tr:hover {
+    background-color: rgba(46, 79, 57, 0.05);
+}
+
+.tabla-enflorarte-catalogo tbody td {
+    border-color: rgba(224, 163, 168, 0.2);
+    vertical-align: middle;
+}
+
+.tabla-enflorarte-catalogo .form-control,
+.tabla-enflorarte-catalogo .form-select {
+    border-color: rgba(46, 79, 57, 0.35);
+    background-color: #fff;
+}
+
+.tabla-enflorarte-catalogo .form-control:focus,
+.tabla-enflorarte-catalogo .form-select:focus {
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 0.2rem rgba(46, 79, 57, 0.15);
+}
+
+.tabla-enflorarte-catalogo .input-group-text {
+    background-color: rgba(46, 79, 57, 0.06);
+    border-color: rgba(46, 79, 57, 0.35);
+    color: var(--color-primario);
+}
+
+.tabla-enflorarte-catalogo .text-muted {
+    color: var(--color-texto-oscuro) !important;
+}
 
 /* =========================================
    TABS (CATÁLOGO Y USUARIOS)
