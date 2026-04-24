@@ -15,7 +15,12 @@
         <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Usuario creador</label>
             <div class="col-sm-8">
+                <select class="form-select" asp-for="UsuarioId" asp-items="ViewBag.ListaUsuarios">
+                    <option value="" disabled selected>Selecciona un usuario</option>
+                </select>
+                <span asp-validation-for="UsuarioId" class="text-danger"></span>
             </div>
+        </div>
         <div class="row mb-3">
             <label class="col-sm-4 col-form-label">Estado de la comanda</label>
             <div class="col-sm-8">
@@ -219,6 +224,14 @@
                     <option value="" disabled selected>Selecciona un arreglo</option>
                 </select>
                 <span asp-validation-for="ArregloId" class="text-danger"></span>
+                <div id="arregloPreviewWrapper" class="mt-3 d-none">
+                    <div class="text-muted small mb-1">Vista previa</div>
+                    <img id="arregloPreviewImg"
+                         class="img-fluid rounded border d-none"
+                         style="max-height: 220px; object-fit: cover;"
+                         alt="Vista previa del arreglo" />
+                    <div id="arregloPreviewEmpty" class="text-muted small d-none">Sin imagen</div>
+                </div>
             </div>
         </div>
 
@@ -279,6 +292,48 @@
 
     </div>
 </div>
+
+<script>
+    (function () {
+        var select = document.getElementById('ArregloId');
+        var previewWrapper = document.getElementById('arregloPreviewWrapper');
+        var previewImg = document.getElementById('arregloPreviewImg');
+        var previewEmpty = document.getElementById('arregloPreviewEmpty');
+        var arregloFotos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ArreglosFotoMap ?? new System.Collections.Generic.Dictionary<int, string>()));
+
+        if (!select || !previewWrapper || !previewImg || !previewEmpty) {
+            return;
+        }
+
+        function updatePreview() {
+            var id = select.value;
+
+            if (!id) {
+                previewWrapper.classList.add('d-none');
+                previewImg.classList.add('d-none');
+                previewEmpty.classList.add('d-none');
+                previewImg.removeAttribute('src');
+                return;
+            }
+
+            previewWrapper.classList.remove('d-none');
+            var foto = arregloFotos[id];
+
+            if (foto) {
+                previewImg.src = foto;
+                previewImg.classList.remove('d-none');
+                previewEmpty.classList.add('d-none');
+            } else {
+                previewImg.removeAttribute('src');
+                previewImg.classList.add('d-none');
+                previewEmpty.classList.remove('d-none');
+            }
+        }
+
+        select.addEventListener('change', updatePreview);
+        updatePreview();
+    })();
+</script>
 
 <script>
     (function () {

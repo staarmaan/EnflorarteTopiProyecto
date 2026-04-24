@@ -294,7 +294,9 @@ namespace EnflorarteTopiProyecto.Controllers
             ViewBag.ListaRepartidores = new SelectList(repartidores, "Id", "Nombre"); //Para los repartidores (rep y sup)
             
             // Cargar lista de arreglos disponibles
-            ViewBag.ListaArreglos = new SelectList(context.Arreglos, "Id", "Nombre");
+            var arreglos = context.Arreglos.ToList();
+            ViewBag.ListaArreglos = new SelectList(arreglos, "Id", "Nombre");
+            ViewBag.ArreglosFotoMap = arreglos.ToDictionary(a => a.Id, a => a.FotoRuta ?? string.Empty);
         }
 
         private void ValidarReglasNegocio(ComandaDto dto) //JENNY: Validaciones
