@@ -101,6 +101,7 @@ namespace EnflorarteTopiProyecto.Models
         // Datos de estados.
         public EstadoComanda Estado { get; set; } = EstadoComanda.solicitado; // Por defecto, las comandas estan en solicitud.
         public bool Liquidado { get; set; } = false; // Por defecto, las comandas no estan liquidadas.
+        public bool Archivado {get;set;} = false; //si es true, ya no se mostrara en la consulta (a menos que se use un filtro).
 
         // Datos del cliente y entrega.
         public string ClienteNombre { get; set; } = string.Empty;

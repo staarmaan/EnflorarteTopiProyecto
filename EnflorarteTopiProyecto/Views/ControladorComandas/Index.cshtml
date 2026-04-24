@@ -17,12 +17,8 @@
         <div class="card-body py-3 px-3 px-md-4" style="background: var(--color-fondo-suave); border-radius: 10px;">
             <div class="row g-2 g-md-3 align-items-end">
                 <div class="col-12 col-md-4 col-lg-3">
-                    <label for="inputBuscarNombre" class="form-label text-muted small text-uppercase fw-bold mb-1">Buscar cliente / arreglo</label>
+                    <label for="inputBuscarNombre" class="form-label text-muted small text-uppercase fw-bold mb-1">Buscar cliente / arreglo / teléfono</label>
                     <input id="inputBuscarNombre" type="search" class="form-control form-control-sm" placeholder="Nombre cliente o arreglo..." autocomplete="off" />
-                </div>
-                <div class="col-12 col-md-4 col-lg-3">
-                    <label for="inputBuscarTelefono" class="form-label text-muted small text-uppercase fw-bold mb-1">Teléfono</label>
-                    <input id="inputBuscarTelefono" type="search" class="form-control form-control-sm" placeholder="Teléfono..." autocomplete="off" />
                 </div>
                 <div class="col-12 col-md-4 col-lg-3">
                     <label for="selectFiltroArreglo" class="form-label text-muted small text-uppercase fw-bold mb-1">Arreglo</label>
@@ -201,7 +197,6 @@
 
         function aplicarFiltroComandas() {
             var nombreTerm = ($('#inputBuscarNombre').val() || '').toString().trim().toLowerCase();
-            var telefonoTerm = ($('#inputBuscarTelefono').val() || '').toString().trim().toLowerCase();
             var fechaTerm = ($('#inputFecha').val() || '').toString(); // yyyy-mm-dd
             var filtroEstado = ($('#selectFiltroEstado').val() || 'all').toString().toLowerCase();
             var filtroArreglo = ($('#selectFiltroArreglo').val() || 'all').toString().toLowerCase();
@@ -212,18 +207,17 @@
             $filas.each(function () {
                 var $fila = $(this);
                 var cliente = ($fila.data('cliente') || '').toString();
-                var telefono = ($fila.data('telefono') || '').toString();
+                // Nota: no hay filtro separado de teléfono; la búsqueda por nombre también buscará coincidencias en la columna de arreglo
                 var fecha = ($fila.data('fecha') || '').toString();
                 var estado = ($fila.data('estado') || '').toString();
                 var arreglo = ($fila.data('arreglo') || '').toString();
 
-                var coincideNombre = !nombreTerm || cliente.indexOf(nombreTerm) !== -1 || arreglo.indexOf(nombreTerm) !== -1;
-                var coincideTelefono = !telefonoTerm || telefono.indexOf(telefonoTerm) !== -1;
+                var coincideNombre = !nombreTerm || cliente.indexOf(nombreTerm) !== -1 || arreglo.indexOf(nombreTerm) !== -1 || ($fila.data('telefono') || '').toString().indexOf(nombreTerm) !== -1;
                 var coincideFecha = !fechaTerm || fecha === fechaTerm;
                 var coincideEstado = filtroEstado === 'all' || estado === filtroEstado;
                 var coincideArreglo = filtroArreglo === 'all' || arreglo === filtroArreglo;
 
-                if (coincideNombre && coincideTelefono && coincideFecha && coincideEstado && coincideArreglo) {
+                if (coincideNombre && coincideFecha && coincideEstado && coincideArreglo) {
                     $fila.show();
                 } else {
                     $fila.hide();
@@ -248,14 +242,14 @@
         }
 
         $('#inputBuscarNombre').on('input', aplicarFiltroComandas);
-        $('#inputBuscarTelefono').on('input', aplicarFiltroComandas);
+        // El filtro de teléfono fue fusionado con la búsqueda por nombre; no se registra evento separado.
         $('#inputFecha').on('change', aplicarFiltroComandas);
         $('#selectFiltroEstado').on('change', aplicarFiltroComandas);
         $('#selectFiltroArreglo').on('change', aplicarFiltroComandas);
 
         $('#btnLimpiarFiltrosComandas').on('click', function () {
             $('#inputBuscarNombre').val('');
-            $('#inputBuscarTelefono').val('');
+            // No hay campo de teléfono independiente para limpiar.
             $('#inputFecha').val('');
             $('#selectFiltroEstado').val('all');
             $('#selectFiltroArreglo').val('all');

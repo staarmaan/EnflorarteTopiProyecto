@@ -21,6 +21,7 @@ namespace EnflorarteTopiProyecto.Controllers
         {
             var comandas = context.Comandas
                 .Include(c => c.Arreglo)
+                .Where(c => !c.Archivado)
                 .OrderByDescending(comanda => comanda.Id)
                 .ToList();
             return View(comandas);
@@ -89,6 +90,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 RepartidorId = comandaDto.RepartidorId,
                 Estado = comandaDto.Estado,
                 Liquidado = comandaDto.Liquidado,
+                Archivado = comandaDto.Archivado,
                 ClienteNombre = comandaDto.ClienteNombre,
                 ClienteTelefono = comandaDto.ClienteTelefono,
                 LinkDireccion = comandaDto.LinkDireccion,
@@ -141,6 +143,7 @@ namespace EnflorarteTopiProyecto.Controllers
                 RepartidorId = comandaAEditar.RepartidorId,
                 Estado = comandaAEditar.Estado,
                 Liquidado = comandaAEditar.Liquidado,
+                Archivado = comandaAEditar.Archivado,
                 ClienteNombre = comandaAEditar.ClienteNombre,
                 ClienteTelefono = comandaAEditar.ClienteTelefono,
                 LinkDireccion = comandaAEditar.LinkDireccion,
@@ -232,6 +235,7 @@ namespace EnflorarteTopiProyecto.Controllers
             comandaExistente.RepartidorId = comandaDto.RepartidorId;
             comandaExistente.Estado = comandaDto.Estado;
             comandaExistente.Liquidado = comandaDto.Liquidado;
+            comandaExistente.Archivado = comandaDto.Archivado;
             comandaExistente.ClienteNombre = comandaDto.ClienteNombre;
             comandaExistente.ClienteTelefono = comandaDto.ClienteTelefono;
             comandaExistente.LinkDireccion = comandaDto.LinkDireccion;

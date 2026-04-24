@@ -25,6 +25,8 @@ namespace EnflorarteTopiProyecto.Models
         [EnumDataType(typeof(EstadoComanda), ErrorMessage = "El {0} seleccionado no es válido.")]
         public EstadoComanda Estado { get; set; }
         public bool Liquidado { get; set; }
+        [Display(Name = "archivada")]
+        public bool Archivado { get; set; }
 
         // Datos del cliente y entrega
         [Display(Name = "nombre del cliente")]
