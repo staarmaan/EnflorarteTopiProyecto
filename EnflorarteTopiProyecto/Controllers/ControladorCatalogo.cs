@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "supervisor")] // Solo los supervisores pueden manejan el catalogo.
     public class ControladorCatalogo : Controller
     {
         private const int MAX_IMAGEN_BYTES = 10 * 1024 * 1024;
@@ -521,12 +521,12 @@ namespace EnflorarteTopiProyecto.Controllers
             {
                 if (ajuste.AgregarCantidad.HasValue && (ajuste.AgregarCantidad.Value < 1 || ajuste.AgregarCantidad.Value > 999))
                 {
-                    ModelState.AddModelError(string.Empty, $"La cantidad a agregar para '{ajuste.Color}' no es válida.");
+                    ModelState.AddModelError(string.Empty, $"La cantidad a agregar para '{ajuste.Color}' no es vï¿½lida.");
                 }
 
                 if (ajuste.QuitarCantidad.HasValue && (ajuste.QuitarCantidad.Value < 1 || ajuste.QuitarCantidad.Value > 999))
                 {
-                    ModelState.AddModelError(string.Empty, $"La cantidad a quitar para '{ajuste.Color}' no es válida.");
+                    ModelState.AddModelError(string.Empty, $"La cantidad a quitar para '{ajuste.Color}' no es vï¿½lida.");
                 }
             }
 
@@ -664,7 +664,7 @@ namespace EnflorarteTopiProyecto.Controllers
         {
             if (string.IsNullOrWhiteSpace(contrasenaSupervisor) || !ValidarContrasenaSupervisor(contrasenaSupervisor))
             {
-                TempData["Toast.Message"] = "Contraseña de supervisor incorrecta.";
+                TempData["Toast.Message"] = "Contraseï¿½a de supervisor incorrecta.";
                 TempData["Toast.Type"] = "warning";
                 return RedirectToAction("Index");
             }
@@ -700,12 +700,12 @@ namespace EnflorarteTopiProyecto.Controllers
 
             if (!contentTypeOk && !extensionOk)
             {
-                return (false, null, "Solo se permiten imágenes (jpg, jpeg, png, webp, gif).");
+                return (false, null, "Solo se permiten imï¿½genes (jpg, jpeg, png, webp, gif).");
             }
 
             if (archivo.Length > MAX_IMAGEN_BYTES)
             {
-                return (false, null, "La imagen supera el tamaño permitido (10 MB).");
+                return (false, null, "La imagen supera el tamaï¿½o permitido (10 MB).");
             }
 
             var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "flores");
