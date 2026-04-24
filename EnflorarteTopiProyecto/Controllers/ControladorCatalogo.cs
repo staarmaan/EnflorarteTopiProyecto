@@ -9,7 +9,9 @@ using System.Security.Claims;
 
 namespace EnflorarteTopiProyecto.Controllers
 {
-    [Authorize(Roles = "supervisor")] // Solo los supervisores pueden manejan el catalogo.
+    [Authorize]
+    //[Authorize(Roles = "supervisor")] // Solo los supervisores pueden manejan el catalogo.
+
     public class ControladorCatalogo : Controller
     {
         private const int MAX_IMAGEN_BYTES = 10 * 1024 * 1024;
