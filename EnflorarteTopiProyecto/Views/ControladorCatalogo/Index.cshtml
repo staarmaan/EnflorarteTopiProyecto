@@ -40,13 +40,40 @@
                     </select>
                 </div>
                 <div class="col-6 col-md-2 col-lg-2 d-flex align-items-end">
-                    <button type="button" id="btnLimpiarFiltrosFlores" class="btn btn-outline-secondary btn-sm px-2 btn-limpiar-filtros">
-                        Limpiar
+                    <button type="button"
+                            id="btnLimpiarFiltrosFlores"
+                            class="btn btn-accion-redondo btn-limpiar-redondo btn-limpiar-filtros"
+                            title="Limpiar filtros"
+                            aria-label="Limpiar filtros">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M5 5l14 14" />
+                            <path d="M19 5L5 19" />
+                        </svg>
                     </button>
                 </div>
                 <div class="col-12 col-md-2 col-lg-4 d-flex justify-content-md-end align-items-end">
-                    <button class="btn btn-outline-primary me-2" onclick="cargarModalCatalogo('@Url.Action("InventarioGeneral", "ControladorCatalogo")', 'Inventario General')">Inventario</button>
-                    <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearFlor", "ControladorCatalogo")', 'Registrar Flor')">+ Agregar Flor</button>
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-inventario-redondo me-2"
+                            onclick="cargarModalCatalogo('@Url.Action("InventarioGeneral", "ControladorCatalogo")', 'Inventario General')"
+                            title="Inventario general"
+                            aria-label="Inventario general">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M4 7l8-4 8 4-8 4-8-4z" />
+                            <path d="M4 7v10l8 4 8-4V7" />
+                            <path d="M12 11v10" />
+                            <path d="M20 7l-8 4-8-4" />
+                        </svg>
+                    </button>
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-agregar-redondo me-2"
+                            onclick="cargarModalCatalogo('@Url.Action("CrearFlor", "ControladorCatalogo")', 'Registrar Flor')"
+                            title="Agregar flor"
+                            aria-label="Agregar flor">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -143,13 +170,41 @@
                 </div>
 
                 <div class="col-6 col-md-1 col-lg-1 d-flex align-items-end">
-                    <button type="button" id="btnLimpiarFiltrosArreglos" class="btn btn-outline-secondary btn-sm px-2 btn-limpiar-filtros">
-                        Limpiar
+                    <button type="button"
+                            id="btnLimpiarFiltrosArreglos"
+                            class="btn btn-accion-redondo btn-limpiar-redondo btn-limpiar-filtros"
+                            title="Limpiar filtros"
+                            aria-label="Limpiar filtros">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M5 5l14 14" />
+                            <path d="M19 5L5 19" />
+                        </svg>
                     </button>
                 </div>
 
                 <div class="col-12 col-md-auto ms-md-auto d-flex justify-content-md-end align-items-end">
-                    <button class="btn btn-primary" onclick="cargarModalCatalogo('@Url.Action("CrearArreglo", "ControladorCatalogo")', 'Registrar Arreglo')">+ Agregar Arreglo</button>
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-inventario-redondo me-2"
+                            onclick="cargarModalCatalogo('@Url.Action("InventarioGeneral", "ControladorCatalogo")', 'Inventario General')"
+                            title="Inventario general"
+                            aria-label="Inventario general">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M4 7l8-4 8 4-8 4-8-4z" />
+                            <path d="M4 7v10l8 4 8-4V7" />
+                            <path d="M12 11v10" />
+                            <path d="M20 7l-8 4-8-4" />
+                        </svg>
+                    </button>
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-agregar-redondo"
+                            onclick="cargarModalCatalogo('@Url.Action("CrearArreglo", "ControladorCatalogo")', 'Registrar Arreglo')"
+                            title="Agregar arreglo"
+                            aria-label="Agregar arreglo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -227,9 +282,10 @@
 @section Scripts {
     <style>
         .btn-limpiar-filtros {
-            height: 31px;
             white-space: nowrap;
-            width: 100%;
+            width: 2.2rem;
+            height: 2.2rem;
+            padding: 0;
         }
 
         .card-catalogo-cuadrada {
@@ -307,6 +363,28 @@
 
     <script>
         var claveTabCatalogo = 'catalogo.tab.activa';
+        var modalCatalogoElement = document.getElementById('modalCatalogo');
+        var modalCatalogoInstance = null;
+
+        function obtenerModalCatalogo() {
+            if (!modalCatalogoInstance) {
+                modalCatalogoInstance = bootstrap.Modal.getOrCreateInstance(modalCatalogoElement);
+            }
+
+            return modalCatalogoInstance;
+        }
+
+        function limpiarFondosModalResiduos() {
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+            document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
+                backdrop.remove();
+            });
+        }
+
+        modalCatalogoElement.addEventListener('hidden.bs.modal', function () {
+            limpiarFondosModalResiduos();
+        });
 
         function guardarTabActivaCatalogo(tabId) {
             try {
@@ -335,8 +413,10 @@
         function cargarModalCatalogo(url, titulo) {
             $('#modalCatalogoTitulo').text(titulo);
             $('#modalCatalogoContenido').html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
-            var modal = new bootstrap.Modal(document.getElementById('modalCatalogo'));
-            modal.show();
+            if (!modalCatalogoElement.classList.contains('show')) {
+                obtenerModalCatalogo().show();
+            }
+
             $.get(url, function (data) {
                 $('#modalCatalogoContenido').html(data);
             });
