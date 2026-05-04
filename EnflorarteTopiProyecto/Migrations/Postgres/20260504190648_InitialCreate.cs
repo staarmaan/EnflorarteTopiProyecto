@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace EnflorarteTopiProyecto.Migrations
+namespace EnflorarteTopiProyecto.Migrations.Postgres
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
