@@ -2,6 +2,8 @@ using EnflorarteTopiProyecto.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 using OpcionesBd;
 
@@ -39,6 +41,17 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("EsRepartidor", p => p.RequireRole("repartidor", "supervisor"));
 });
 
+var mexicoCulture = new CultureInfo("es-MX");
+CultureInfo.DefaultThreadCurrentCulture = mexicoCulture;
+CultureInfo.DefaultThreadCurrentUICulture = mexicoCulture;
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture(mexicoCulture);
+    options.SupportedCultures = new[] { mexicoCulture };
+    options.SupportedUICultures = new[] { mexicoCulture };
+});
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -62,10 +75,10 @@ using (var scope = app.Services.CreateScope())
 
                 using var createDbCmd = connection.CreateCommand();
                 createDbCmd.CommandText = $@"
-IF DB_ID(N'{dbName.Replace("'", "''")}') IS NULL
-BEGIN
-    CREATE DATABASE [{dbName.Replace("]", "]]" )}];
-END";
+                IF DB_ID(N'{dbName.Replace("'", "''")}') IS NULL
+                BEGIN
+                    CREATE DATABASE [{dbName.Replace("]", "]]" )}];
+                END";
                 createDbCmd.ExecuteNonQuery();
             }
         }
@@ -83,6 +96,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRequestLocalization();
 app.UseRouting();
 
 app.UseAuthentication();

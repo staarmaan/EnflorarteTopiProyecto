@@ -35,7 +35,6 @@ namespace EnflorarteTopiProyecto.Models
         public string ClienteNombre { get; set; } = string.Empty;
 
         [Display(Name = "teléfono del cliente")]
-        [Required(ErrorMessage = "El {0} es obligatorio.")]
         [StringLength(20, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
         [Phone(ErrorMessage = "El {0} no tiene un formato válido.")]
         public string? ClienteTelefono { get; set; }
@@ -50,14 +49,12 @@ namespace EnflorarteTopiProyecto.Models
         public string? DomicilioReferencias { get; set; }
 
         [Display(Name = "número de ruta")]
-        [Required(ErrorMessage = "El {0} es obligatorio.")]
-        [Range(1, int.MaxValue, ErrorMessage = "El {0} debe ser mayor a 0.")]
+        [Range(0, int.MaxValue, ErrorMessage = "El {0} debe ser mayor o igual a 0.")]
         public int? NumeroRuta { get; set; }
 
         [Display(Name = "número de pedido")]
-        [Required(ErrorMessage = "El {0} es obligatorio.")]
         [Range(1, int.MaxValue, ErrorMessage = "El {0} debe ser mayor a 0.")]
-        public int? NumeroPedido { get; set; }
+        public int NumeroPedido { get; set; }
 
         [Display(Name = "medio de la solicitud")]
         [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
@@ -119,13 +116,12 @@ namespace EnflorarteTopiProyecto.Models
         [StringLength(150, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
         public string? AccesorioArreglo { get; set; }
 
+        //[Required(ErrorMessage = "La {0} es obligatoria.")]
         [Display(Name = "envoltura del arreglo")]
-        [Required(ErrorMessage = "La {0} es obligatoria.")]
         [StringLength(100, ErrorMessage = "La {0} no debe exceder {1} carácteres.")]
         public string? EvolturaArreglo { get; set; }
 
         [Display(Name = "color de envoltura")]
-        [Required(ErrorMessage = "El {0} es obligatorio.")]
         [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
         public string? ColorEvolturaArreglo { get; set; }
 
@@ -133,8 +129,8 @@ namespace EnflorarteTopiProyecto.Models
         [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
         public string? TipoArreglo { get; set; }
 
+        //[Required(ErrorMessage = "El {0} es obligatorio.")]
         [Display(Name = "tipo de caja")]
-        [Required(ErrorMessage = "El {0} es obligatorio.")]
         [StringLength(100, ErrorMessage = "El {0} no debe exceder {1} carácteres.")]
         public string? CajaTipoArreglo { get; set; }
 

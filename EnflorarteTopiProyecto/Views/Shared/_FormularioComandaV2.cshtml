@@ -70,7 +70,6 @@
         <hr class="text-muted opacity-25">
 
         <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Detalles del Arreglo</h6>
-
         <div class="row g-3 mb-3">
             <div class="col-12">
                 <label class="form-label">Arreglo</label>
@@ -147,6 +146,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div id="inventarioWarningComanda" class="alert alert-warning d-none" role="alert">
+            Advertencia: No hay suficientes flores en el inventario del sistema para este arreglo. Proceda con caución.
         </div>
 
         <div class="row g-3 mb-3">
@@ -326,6 +329,10 @@
             </div>
         </div>
 
+        <div class="row g-3 mb-3">
+            <button type="button" id="btnCopiarDatosClienteAReceptor" class="btn btn-outline-secondary btn-sm mt-2">Copiar datos del cliente</button>
+        </div>
+
         <hr class="text-muted opacity-25">
 
         <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Pago y Anticipo</h6>
@@ -378,8 +385,10 @@
         var previewEmpty = document.getElementById('arregloPreviewEmpty');
         var arregloFotos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ArreglosFotoMap ?? new System.Collections.Generic.Dictionary<int, string>()));
         var arreglosFlores = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ArreglosFloresMap ?? new System.Collections.Generic.Dictionary<int, object>()));
+        var inventarioFlores = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.InventarioFloresMap ?? new System.Collections.Generic.Dictionary<int, object>()));
         var modelFlores = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.Flores ?? new System.Collections.Generic.List<EnflorarteTopiProyecto.Models.ComandaFlorDto>()));
         var esVistaPreviaJs = @Html.Raw(esVistaPrevia ? "true" : "false");
+        var inventarioWarning = document.getElementById('inventarioWarningComanda');
 
         if (!select || !previewWrapper || !previewImg || !previewEmpty) {
             return;
@@ -401,6 +410,62 @@
             } else {
                 $('#mensajeSinFloresSeleccionadasComanda').addClass('d-none');
             }
+        }
+
+        function normalizarColorInventario(valor) {
+            return (valor || '').toString().trim().toLowerCase();
+        }
+
+        function obtenerInventarioFlor(florId) {
+            return inventarioFlores[florId] || inventarioFlores[String(florId)] || null;
+        }
+
+        function obtenerCantidadDisponible(florId, colorSeleccionado) {
+            var inventario = obtenerInventarioFlor(florId);
+            if (!inventario) return 0;
+
+            var colores = inventario.Colores || inventario.colores || {};
+            var total = inventario.Total || inventario.total || 0;
+            var colorNormalizado = normalizarColorInventario(colorSeleccionado);
+
+            if (!colorNormalizado || colorNormalizado === 'a elegir') {
+                return total;
+            }
+
+            for (var key in colores) {
+                if (Object.prototype.hasOwnProperty.call(colores, key)) {
+                    if (normalizarColorInventario(key) === colorNormalizado) {
+                        return colores[key];
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        function evaluarInventarioComanda() {
+            if (!inventarioWarning) return;
+            if (!inventarioFlores || Object.keys(inventarioFlores).length === 0) {
+                inventarioWarning.classList.add('d-none');
+                return;
+            }
+
+            var inventarioInsuficiente = false;
+            $('#tbodyFloresComanda tr').each(function () {
+                var florId = $(this).data('flor-id');
+                var cantidadSolicitada = parseInt($(this).find('input[name$=".Cantidad"]').val()) || 0;
+                if (!florId || cantidadSolicitada <= 0) return;
+
+                var colorSeleccionado = $(this).find('select[name$=".ColorSeleccionado"]').val() || '';
+                var disponible = obtenerCantidadDisponible(florId, colorSeleccionado);
+
+                if (cantidadSolicitada > disponible) {
+                    inventarioInsuficiente = true;
+                    return false;
+                }
+            });
+
+            inventarioWarning.classList.toggle('d-none', !inventarioInsuficiente);
         }
 
         function obtenerNombreFlorSeleccionadaComanda() {
@@ -464,6 +529,7 @@
             $tbody.append(fila);
             actualizarIndicesFloresComanda();
             actualizarMensajeSinFloresComanda();
+            evaluarInventarioComanda();
         }
 
         function renderComandaRowsFromArray(flores) {
@@ -476,11 +542,21 @@
                 var florId = f.FlorId || f.florId || '';
                 var nombre = f.Nombre || f.nombre || '';
                 var cantidad = f.Cantidad || f.cantidad || 0;
-                var color = f.ColorSeleccionado || f.colorSeleccionado || 'a elegir';
+                var color = f.ColorSeleccionado || f.colorSeleccionado || '';
+                var colorNormalizado = (color || '').toString().trim().toLowerCase();
+                var colorDisplay = (!colorNormalizado || colorNormalizado === 'a elegir') ? '' : color;
                 var celdaAccion = '';
                 if (!esVistaPreviaJs) {
                     celdaAccion = '  <td class="text-end"><button type="button" class="btn btn-accion-redondo btn-eliminar-redondo btn-eliminar-flor" title="Quitar flor" aria-label="Quitar flor">' +
                     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></td>';
+                }
+
+                var celdaColor = '';
+                if (esVistaPreviaJs) {
+                    celdaColor = '  <td class="text-end">' + (colorDisplay || '') + '</td>';
+                } else {
+                    var colorParaSelect = colorDisplay || 'a elegir';
+                    celdaColor = '  <td><select name="Flores[' + i + '].ColorSeleccionado" class="form-select form-select-sm">' + obtenerOpcionesColorHtmlComanda(florId, colorParaSelect) + '</select></td>';
                 }
 
                 var row = '' +
@@ -490,7 +566,7 @@
                     '    <input type="hidden" name="Flores[' + i + '].Nombre" value="' + nombre + '" />' +
                     '  </td>' +
                     '  <td><input name="Flores[' + i + '].Cantidad" type="number" min="0" value="' + cantidad + '" class="form-control form-control-sm" /></td>' +
-                    '  <td><select name="Flores[' + i + '].ColorSeleccionado" class="form-select form-select-sm">' + obtenerOpcionesColorHtmlComanda(florId, color) + '</select></td>' +
+                    celdaColor +
                     celdaAccion +
                     '</tr>';
 
@@ -499,6 +575,7 @@
 
             actualizarIndicesFloresComanda();
             actualizarMensajeSinFloresComanda();
+            evaluarInventarioComanda();
         }
 
         function copiarFloresDesdeArregloSeleccionado(opciones) {
@@ -529,6 +606,7 @@
 
             renderComandaRowsFromArray(editableFlores);
             $('#CopiarDesdeArreglo').val('true');
+            evaluarInventarioComanda();
             return true;
         }
 
@@ -632,12 +710,23 @@
                 $fila.remove();
                 actualizarIndicesFloresComanda();
                 actualizarMensajeSinFloresComanda();
+                evaluarInventarioComanda();
             });
 
             $('#btnCopiarDesdeArregloComanda').on('click', function () {
                 copiarFloresDesdeArregloSeleccionado();
             });
+
+            $(document).on('input', '#tbodyFloresComanda input[name$=".Cantidad"]', function () {
+                evaluarInventarioComanda();
+            });
+
+            $(document).on('change', '#tbodyFloresComanda select[name$=".ColorSeleccionado"]', function () {
+                evaluarInventarioComanda();
+            });
         } catch (e) { /* noop */ }
+
+        evaluarInventarioComanda();
     })();
 </script>
 
@@ -771,13 +860,30 @@
         // Sincronizar controles de TipoArreglo, Envoltura, Color y Caja con inputs hidden
         var tipoArregloHidden = document.querySelector('input[name="TipoArreglo"]');
         var tipoArregloCheckbox = document.getElementById('tipoArregloBouquet');
+        var cajaTipoHidden = document.querySelector('input[name="CajaTipoArreglo"]');
+        var cajaTipoRadios = document.querySelectorAll('input[name="CajaTipoArregloOpcion"]');
+        function toggleCajaPorBouquet(isBouquet) {
+            if (!cajaTipoRadios.length) return;
+            cajaTipoRadios.forEach(function (radio) {
+                radio.disabled = isBouquet;
+                if (isBouquet) {
+                    radio.checked = false;
+                }
+            });
+            if (isBouquet && cajaTipoHidden) {
+                cajaTipoHidden.value = '';
+            }
+        }
+
         if (tipoArregloCheckbox && tipoArregloHidden) {
             // Inicializar según valor actual
             if (tipoArregloHidden.value === 'bouquet') {
                 tipoArregloCheckbox.checked = true;
             }
+            toggleCajaPorBouquet(tipoArregloCheckbox.checked);
             tipoArregloCheckbox.addEventListener('change', function() {
                 tipoArregloHidden.value = this.checked ? 'bouquet' : '';
+                toggleCajaPorBouquet(this.checked);
             });
         }
 
@@ -829,8 +935,6 @@
             }
         }
 
-        var cajaTipoHidden = document.querySelector('input[name="CajaTipoArreglo"]');
-        var cajaTipoRadios = document.querySelectorAll('input[name="CajaTipoArregloOpcion"]');
         if (cajaTipoRadios.length && cajaTipoHidden) {
             cajaTipoRadios.forEach(function(radio) {
                 if (radio.value === cajaTipoHidden.value) {
@@ -841,6 +945,106 @@
                         cajaTipoHidden.value = this.value;
                     }
                 });
+            });
+        }
+
+        tipoEntregaSelect.addEventListener('change', toggleReceptorFields);
+        if (inputNombre) {
+            inputNombre.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        if (inputTelefono) {
+            inputTelefono.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        toggleReceptorFields();
+    })();
+</script>
+
+<script>
+    (function () {
+        var tipoEntregaSelect = document.getElementById('selectTipoEntrega');
+        var divNombre = document.getElementById('divNombreReceptorEnvio');
+        var divTelefono = document.getElementById('divTelefonoReceptorEnvio');
+        var divDireccion = document.getElementById('divDireccionEntrega');
+        var divNumeroRuta = document.getElementById('divNumeroRuta');
+        var inputNombre = document.getElementById('inputNombreReceptorEnvio');
+        var inputTelefono = document.getElementById('inputTelefonoReceptorEnvio');
+        var receptorWarning = document.getElementById('receptorWarning');
+
+        // NUEVO: referencias para copiar datos del cliente
+        var btnCopiar = document.getElementById('btnCopiarDatosClienteAReceptor');
+        var inputClienteNombre = document.getElementById('ClienteNombre');
+        var inputClienteTelefono = document.getElementById('ClienteTelefono');
+
+        if (!tipoEntregaSelect || !divNombre || !divTelefono) {
+            return;
+        }
+
+        function updateReceptorWarning(isEnvio) {
+            if (!receptorWarning || !isEnvio) {
+                if (receptorWarning) {
+                    receptorWarning.classList.add('d-none');
+                }
+                return;
+            }
+
+            var nombreOk = inputNombre && inputNombre.value.trim().length > 0;
+            var telefonoOk = inputTelefono && inputTelefono.value.trim().length > 0;
+            receptorWarning.classList.toggle('d-none', nombreOk && telefonoOk);
+        }
+
+        function toggleReceptorFields() {
+            var isEnvio = tipoEntregaSelect.value === 'envio';
+            divNombre.classList.toggle('d-none', !isEnvio);
+            divTelefono.classList.toggle('d-none', !isEnvio);
+            if (divDireccion) {
+                divDireccion.classList.toggle('d-none', !isEnvio);
+            }
+            if (divNumeroRuta) {
+                divNumeroRuta.classList.toggle('d-none', !isEnvio);
+            }
+
+            if (inputNombre) {
+                inputNombre.required = isEnvio;
+            }
+
+            if (inputTelefono) {
+                inputTelefono.required = isEnvio;
+            }
+
+            if (!isEnvio) {
+                if (inputNombre) {
+                    inputNombre.value = '';
+                }
+                if (inputTelefono) {
+                    inputTelefono.value = '';
+                }
+            }
+
+            updateReceptorWarning(isEnvio);
+        }
+
+        // NUEVO: copia datos del cliente al receptor
+        function copiarDatosClienteAReceptor() {
+            var nombreCliente = inputClienteNombre ? inputClienteNombre.value.trim() : '';
+            var telefonoCliente = inputClienteTelefono ? inputClienteTelefono.value.trim() : '';
+
+            if (nombreCliente && inputNombre) {
+                inputNombre.value = nombreCliente;
+            }
+            if (telefonoCliente && inputTelefono) {
+                inputTelefono.value = telefonoCliente;
+            }
+
+            updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+        }
+
+        if (btnCopiar) {
+            btnCopiar.addEventListener('click', function () {
+                copiarDatosClienteAReceptor();
             });
         }
 

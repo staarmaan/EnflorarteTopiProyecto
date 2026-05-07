@@ -105,11 +105,11 @@ namespace EnflorarteTopiProyecto.Models
 
         // Datos del cliente y entrega.
         public string ClienteNombre { get; set; } = string.Empty;
-        public string? ClienteTelefono { get; set; } // No se si deberia ser obligatorio u opcional.
+        public string ClienteTelefono { get; set; } // No se si deberia ser obligatorio u opcional.
         public string? LinkDireccion { get; set; } // link de la dirección del cliente.
         public string? DomicilioReferencias { get; set; } // Detalles visuales de la ubicacion del  cliente.
         public int? NumeroRuta { get; set; }
-        public int? NumeroPedido { get; set; }
+        public int NumeroPedido { get; set; }
         public string? MedioDeLaSolicitud {get;set;} // El medio por el que el cliente solicitó el pedido, ej: Facebook, marketplace, whatsapp, Instagram, etc.
     //num pedido
     //papel checbox
@@ -169,7 +169,7 @@ namespace EnflorarteTopiProyecto.Models
         public string? ColorEvolturaArreglo { get; set; } //ej: negro, lila, rosa, blanco.
 
         public string? AccesorioArreglo {get;set;} //ej: corona,globo,peluche, etc.
-        public string? TipoArreglo {get;set;} //ej: buquet o caja
+        public string? TipoArreglo {get;set;} //ej: buquet o caja. Esto no esta bien la verdad. Deberia ser un enum en vez de un simple string opcional.
         public string? CajaTipoArreglo {get;set;} //ej: circulo, corazon, cuadrado
 
 

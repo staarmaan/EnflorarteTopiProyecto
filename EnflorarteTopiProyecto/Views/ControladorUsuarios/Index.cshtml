@@ -273,7 +273,7 @@
         }
 
         $('#btnConfirmarEliminarUsuario').on('click', function () {
-            var contrasena = ($('#inputContrasenaEliminar').val() || '').trim();
+            var contrasena = ($('#inputContrasenaEliminar').val() || '');
             if (!contrasena) {
                 $('#errorContrasenaEliminar').removeClass('d-none');
                 return;

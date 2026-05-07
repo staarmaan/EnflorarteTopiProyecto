@@ -22,8 +22,8 @@ namespace EnflorarteTopiProyecto.Controllers
             var haceUnaSemana = DateTime.Now.AddDays(-7);
             var comandas = context.Comandas
                 .Include(c => c.Arreglo)
-                .Where(c => !c.Archivado && 
-                    !(c.Estado == Models.EstadoComanda.entregado && c.FechaEntrega < haceUnaSemana))
+                .Where(c => !c.Archivado &&
+                    !(c.Liquidado && c.FechaEntrega < haceUnaSemana))
                 .OrderByDescending(comanda => comanda.Id)
                 .ToList();
             return View(comandas);
@@ -81,6 +81,11 @@ namespace EnflorarteTopiProyecto.Controllers
                 TempData["Toast.Type"] = "warning";
                 CargarListasViewBag();
                 return View(comandaDto);
+            }
+
+            if (comandaDto.TipoArreglo == "bouquet")
+            {
+                comandaDto.CajaTipoArreglo = null;
             }
 
             ProcesarAnticipoParaGuardar(comandaDto); //JENNY: Si es porcentaje, calcula el dinero $ antes de guardar en la BD.
@@ -352,6 +357,11 @@ namespace EnflorarteTopiProyecto.Controllers
                 return View(comandaDto);
             }
 
+            if (comandaDto.TipoArreglo == "bouquet")
+            {
+                comandaDto.CajaTipoArreglo = null;
+            }
+
                 ProcesarAnticipoParaGuardar(comandaDto); //JENNY: Si cambiaron el anticipo a porcentaje, recalculamos el dinero $ antes de actualizar la BD.
 
             // Actualizar los campos de la comanda existente.
@@ -524,18 +534,27 @@ namespace EnflorarteTopiProyecto.Controllers
             );
 
             // Lista de flores para que el formulario de comanda permita agregar/editar flores (incluye colores disponibles)
-            var floresCatalogo = context.Flores
+            var flores = context.Flores
                 .Include(f => f.InventarioColores)
                 .OrderBy(f => f.Nombre)
-                .Select(f => new
-                {
-                    FlorId = f.Id,
-                    FlorNombre = f.Nombre,
-                    Colores = f.InventarioColores.Select(ic => ic.Color).ToList()
-                })
                 .ToList();
 
-            ViewBag.FloresCatalogo = floresCatalogo;
+            ViewBag.FloresCatalogo = flores.Select(f => new
+            {
+                FlorId = f.Id,
+                FlorNombre = f.Nombre,
+                Colores = f.InventarioColores.Select(ic => ic.Color).ToList()
+            }).ToList();
+
+            ViewBag.InventarioFloresMap = flores.ToDictionary(
+                f => f.Id,
+                f => new
+                {
+                    Total = f.InventarioColores.Sum(ic => ic.Cantidad),
+                    Colores = f.InventarioColores.ToDictionary(
+                        ic => ic.Color ?? string.Empty,
+                        ic => ic.Cantidad)
+                });
         }
 
         private void ValidarReglasNegocio(ComandaDto dto) //JENNY: Validaciones

@@ -36,7 +36,7 @@
             {
                 if (u.Activo)
                 {
-                    // Agregamos un atributo 'data-nombre' para buscar más fácil con JS
+                    // Agregamos un atributo 'data-nombre' para buscar mï¿½s fï¿½cil con JS
                     <button type="button"
                             class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4 border-bottom-0 usuario-item"
                             data-nombre="@u.Nombre.ToLower()"
@@ -87,7 +87,7 @@
     <script>
         // 1. Script de Filtrado (El buscador)
         function filtrarUsuarios() {
-            // Obtener texto del buscador en minúsculas
+            // Obtener texto del buscador en minï¿½sculas
             var input = document.getElementById("inputBuscador");
             var filtro = input.value.toLowerCase();
 
@@ -111,7 +111,7 @@
                 }
             }
 
-            // Mostrar/Ocultar mensaje de vacío
+            // Mostrar/Ocultar mensaje de vacï¿½o
             var mensaje = document.getElementById("mensajeNoResultados");
             if (hayResultados) {
                 mensaje.classList.add("d-none");
@@ -127,7 +127,7 @@
             var myModal = new bootstrap.Modal(document.getElementById('modalLogin'));
             myModal.show();
 
-            // Opcional: Dar foco al campo de contraseña automáticamente
+            // Opcional: Dar foco al campo de contraseï¿½a automï¿½ticamente
             var modalEl = document.getElementById('modalLogin')
             modalEl.addEventListener('shown.bs.modal', function () {
                 document.querySelector('input[name="Password"]').focus();
