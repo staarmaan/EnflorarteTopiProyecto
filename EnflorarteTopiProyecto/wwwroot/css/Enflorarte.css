@@ -1,0 +1,404 @@
+﻿/* wwwroot/css/Enflorarte.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;700&display=swap');
+
+:root {
+    /* --- PALETA DE COLORES ACTUALIZADA (CON ROSAS SUAVES) --- */
+    /* Mantenemos el verde elegante para el contraste (hojas/tallos) */
+    --color-primario: #2E4F39;
+    /* NUEVO: Rosa Suave / Palo de Rosa (Para botones, bordes, detalles) */
+    /* Este tono combina muy bien con verdes oscuros */
+    --color-secundario: #E0A3A8;
+    /* NUEVO: Un rosa muy pálido para fondos (en lugar de beige) */
+    --color-fondo-suave: #FFF0F3;
+    /* Texto */
+    --color-texto-oscuro: #4A3B39; /* Un marrón grisáceo suave */
+    --color-texto-claro: #FFFFFF;
+    /* --- TIPOGRAFÍA --- */
+    --fuente-serif-elegante: 'Cormorant Garamond', serif;
+    --fuente-sans-moderna: 'Montserrat', sans-serif;
+}
+
+/* =========================================
+   ESTILOS BASE
+   ========================================= */
+body {
+    /* Usamos el nuevo fondo rosado muy sutil */
+    background-color: var(--color-fondo-suave);
+    color: var(--color-texto-oscuro);
+    font-family: var(--fuente-sans-moderna);
+}
+
+/* Ajustamos los enlaces para que usen el rosa al pasar el mouse */
+a {
+    color: var(--color-primario);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+    a:hover {
+        color: var(--color-secundario); /* Ahora cambia a rosa */
+    }
+
+/* ... (Mantén el resto de estilos de h1, h2, etc. igual) ... */
+/* =========================================
+   BARRA DE NAVEGACIÓN PERSONALIZADA
+   ========================================= */
+.navbar-enflorarte {
+    background-color: #ffffff !important;
+    /* La línea inferior ahora será rosa */
+    border-bottom: 3px solid var(--color-secundario) !important;
+}
+
+.navbar-enflorarte.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1020; /* Asegura que esté por encima de todo */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Sombra suave para separarla del fondo al bajar */
+}
+
+.navbar-enflorarte .nav-link.active {
+    color: var(--color-primario) !important; /* Texto verde fuerte */
+    font-weight: 700 !important; /* Texto en negrita */
+    border-bottom: 2px solid var(--color-primario); /* Subrayado verde */
+    background-color: var(--color-fondo-suave); /* Un fondo sutil rosado */
+    border-radius: 5px; /* Bordes redondeados */
+}
+
+.navbar-collapse {
+    justify-content: center; /* Esto ayuda a centrar los elementos flexibles */
+}
+
+/* Estilo para el texto "Enflorarte" al lado del logo */
+.brand-text {
+    font-family: var(--fuente-serif-elegante);
+    color: var(--color-primario);
+    font-size: 1.8rem; /* Más grande */
+    font-weight: 700;
+    letter-spacing: 1px; /* Espaciado entre letras más elegante */
+}
+
+/* Enlaces del menú de navegación */
+.navbar-enflorarte .nav-link {
+    color: var(--color-texto-oscuro) !important;
+    font-family: var(--fuente-sans-moderna);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+    .navbar-enflorarte .nav-link:hover,
+    .navbar-enflorarte .nav-link.active {
+        color: var(--color-primario) !important;
+        /* Opcional: un subrayado sutil al pasar el mouse */
+        /* border-bottom: 1px solid var(--color-secundario); */
+    }
+
+/* =========================================
+   BOTONES Y COMPONENTES
+   ========================================= */
+
+/* Redefinir el botón primario de Bootstrap (btn-primary) */
+.btn-primary {
+    background-color: var(--color-primario);
+    border-color: var(--color-primario);
+    color: var(--color-texto-claro);
+    font-family: var(--fuente-sans-moderna);
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border-radius: 0; /* Botones cuadrados son más elegantes, o usa 4px para sutil */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background-color: var(--color-secundario);
+        border-color: var(--color-secundario);
+        color: var(--color-primario); /* Texto oscuro sobre fondo claro al pasar el mouse */
+    }
+
+/* Un estilo de botón "outline" secundario */
+.btn-outline-secondary-flower {
+    color: var(--color-primario);
+    border: 2px solid var(--color-primario);
+    font-family: var(--fuente-sans-moderna);
+    font-weight: 600;
+    border-radius: 0;
+    text-transform: uppercase;
+}
+
+    .btn-outline-secondary-flower:hover {
+        background-color: var(--color-primario);
+        color: var(--color-texto-claro);
+    }
+
+.btn-accion-redondo {
+    width: 2.2rem;
+    height: 2.2rem;
+    padding: 0;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-width: 1px;
+}
+
+.btn-accion-redondo svg {
+    width: 1rem;
+    height: 1rem;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+.btn-editar-redondo {
+    background-color: #fff;
+    border-color: #f4c64d;
+    color: #d2a32f;
+}
+
+.btn-editar-redondo:hover {
+    background-color: #fdf4dc;
+    border-color: #e7b93f;
+    color: #b88912;
+}
+
+.btn-eliminar-redondo {
+    background-color: #fff;
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-eliminar-redondo:hover {
+    background-color: #fdecef;
+    border-color: #bb2d3b;
+    color: #bb2d3b;
+}
+
+.btn-limpiar-redondo {
+    background-color: #fff;
+    border-color: var(--color-secundario);
+    color: var(--color-primario);
+}
+
+.btn-limpiar-redondo:hover {
+    background-color: rgba(46, 79, 57, 0.08);
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+}
+
+.btn-inventario-redondo {
+    background-color: #fff;
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+}
+
+.btn-inventario-redondo:hover {
+    background-color: rgba(46, 79, 57, 0.08);
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+}
+
+.btn-agregar-redondo {
+    background-color: var(--color-primario);
+    border-color: var(--color-primario);
+    color: #fff;
+}
+
+.btn-agregar-redondo:hover {
+    background-color: #25422f;
+    border-color: var(--color-primario);
+    color: #fff;
+}
+
+/* Estilo para el footer */
+footer.border-top {
+    border-top-color: var(--color-secundario) !important;
+    background-color: #fff;
+}
+
+/* =========================================
+   TABLAS Y TARJETAS (MÓDULO DE USUARIOS)
+   ========================================= */
+
+/* Estilo de la Tabla */
+.table-enflorarte thead th {
+    background-color: var(--color-primario);
+    color: var(--color-texto-claro);
+    font-family: var(--fuente-sans-moderna);
+    font-weight: 500;
+    text-transform: uppercase;
+    border: none;
+}
+
+.table-enflorarte tbody tr {
+    transition: background-color 0.2s;
+}
+
+    .table-enflorarte tbody tr:hover {
+        background-color: var(--color-fondo-suave); /* Efecto hover rosado suave */
+    }
+
+/* Estilo de las Tarjetas (Formularios) */
+.card-enflorarte {
+    border: 1px solid var(--color-secundario); /* Borde rosa suave */
+    border-radius: 8px;
+    overflow: hidden; /* Para que la cabecera respete el borde redondeado */
+}
+
+    .card-enflorarte .card-header {
+        background-color: var(--color-fondo-suave); /* Fondo rosado/crema */
+        color: var(--color-primario);
+        font-family: var(--fuente-serif-elegante);
+        font-weight: 700;
+        font-size: 1.2rem;
+        border-bottom: 1px solid var(--color-secundario);
+    }
+
+/* =========================================
+   TABLAS DEL CATÁLOGO
+   ========================================= */
+.tabla-enflorarte-wrap {
+    border: 1px solid rgba(46, 79, 57, 0.35) !important;
+    border-radius: 0.85rem;
+    background: #fff;
+    overflow: hidden;
+}
+
+.tabla-enflorarte-catalogo {
+    margin-bottom: 0;
+    background-color: #fff;
+}
+
+.tabla-enflorarte-catalogo thead th {
+    background: var(--color-primario);
+    color: var(--color-texto-claro);
+    font-family: var(--fuente-sans-moderna);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: .76rem;
+    padding-top: .85rem;
+    padding-bottom: .85rem;
+    border-bottom: none;
+}
+
+.tabla-enflorarte-catalogo tbody tr {
+    transition: background-color .2s ease, box-shadow .2s ease;
+}
+
+.tabla-enflorarte-catalogo tbody tr:hover {
+    background-color: rgba(46, 79, 57, 0.05);
+}
+
+.tabla-enflorarte-catalogo tbody td {
+    border-color: rgba(224, 163, 168, 0.2);
+    vertical-align: middle;
+}
+
+.tabla-enflorarte-catalogo .form-control,
+.tabla-enflorarte-catalogo .form-select {
+    border-color: rgba(46, 79, 57, 0.35);
+    background-color: #fff;
+}
+
+.tabla-enflorarte-catalogo .form-control:focus,
+.tabla-enflorarte-catalogo .form-select:focus {
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 0.2rem rgba(46, 79, 57, 0.15);
+}
+
+.tabla-enflorarte-catalogo .input-group-text {
+    background-color: rgba(46, 79, 57, 0.06);
+    border-color: rgba(46, 79, 57, 0.35);
+    color: var(--color-primario);
+}
+
+.tabla-enflorarte-catalogo .text-muted {
+    color: var(--color-texto-oscuro) !important;
+}
+
+/* =========================================
+   TABS (CATÁLOGO Y USUARIOS)
+   ========================================= */
+.nav-tabs {
+    border-bottom: 1px solid var(--color-secundario);
+}
+
+.nav-tabs .nav-link {
+    color: var(--color-primario);
+    border: 1px solid transparent;
+    border-top-left-radius: .6rem;
+    border-top-right-radius: .6rem;
+    font-weight: 600;
+    letter-spacing: .3px;
+    transition: all .2s ease;
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+    color: var(--color-primario);
+    background-color: #fbe3e7;
+    border-color: #f3c6cd #f3c6cd var(--color-secundario);
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+    color: var(--color-primario);
+    background-color: var(--color-fondo-suave);
+    border-color: var(--color-secundario) var(--color-secundario) var(--color-fondo-suave);
+    box-shadow: inset 0 3px 0 0 var(--color-primario);
+}
+
+
+/* Estilos para el Modal */
+.modal-content {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+    /* Aseguramos que use el verde de tu marca */
+    background-color: var(--color-primario) !important;
+    border-bottom: 3px solid var(--color-secundario);
+}
+
+.modal-title {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* =========================================
+   SWITCHES (ESTILO GLOBAL)
+   ========================================= */
+.form-switch .form-check-input {
+    cursor: pointer;
+    border-color: var(--color-secundario);
+    background-color: #fff;
+    transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.form-switch .form-check-input:hover {
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 0.15rem rgba(46, 79, 57, 0.15);
+}
+
+.form-switch .form-check-input:focus {
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 0.2rem rgba(46, 79, 57, 0.25);
+}
+
+.form-switch .form-check-input:checked {
+    background-color: var(--color-primario);
+    border-color: var(--color-primario);
+}
+
+.form-switch .form-check-input:checked:hover {
+    background-color: #25422f;
+    border-color: #25422f;
+}

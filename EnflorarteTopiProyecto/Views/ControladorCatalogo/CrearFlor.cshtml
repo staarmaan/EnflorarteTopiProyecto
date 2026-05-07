@@ -1,0 +1,40 @@
+@model FlorDto
+@{
+    Layout = null;
+}
+
+<div class="p-2">
+    <form asp-action="CrearFlor" asp-controller="ControladorCatalogo" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="card card-enflorarte h-100 shadow-sm">
+            <div class="card-header text-center py-3">
+                Registrar Flor
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <label asp-for="Nombre" class="form-label text-muted small text-uppercase fw-bold"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="FotoArchivo" class="form-label text-muted small text-uppercase fw-bold"></label>
+                    <input asp-for="FotoArchivo" class="form-control" type="file" accept="image/*" />
+                    <span asp-validation-for="FotoArchivo" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Descripcion" class="form-label text-muted small text-uppercase fw-bold"></label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary px-4">Guardar Flor</button>
+        </div>
+    </form>
+</div>

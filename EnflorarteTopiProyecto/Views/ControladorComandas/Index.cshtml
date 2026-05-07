@@ -1,0 +1,354 @@
+﻿@model List<Comanda>
+@{
+    ViewData["Title"] = "Gestión de Comandas";
+    var esSupervisor = User?.Identity?.IsAuthenticated == true && (User.IsInRole("supervisor") || User.IsInRole("ventas"));
+    var arreglosList = Model.Select(c => c.Arreglo?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => n!).Distinct().OrderBy(n => n).ToList();
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-6 m-0">Lista de Comandas</h1>
+        <button type="button"
+                class="btn btn-accion-redondo btn-agregar-redondo"
+                onclick="cargarModal('@Url.Action("Crear", "ControladorComandas")', 'Nueva Comanda')"
+                title="Nueva comanda"
+                aria-label="Nueva comanda">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 5v14" />
+                <path d="M5 12h14" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body py-3 px-3 px-md-4" style="background: var(--color-fondo-suave); border-radius: 10px;">
+            <div class="row g-2 g-md-3 align-items-end">
+                <div class="col-12 col-md-4 col-lg-3">
+                    <label for="inputBuscarNombre" class="form-label text-muted small text-uppercase fw-bold mb-1">Buscar cliente / arreglo / teléfono</label>
+                    <input id="inputBuscarNombre" type="search" class="form-control form-control-sm" placeholder="Nombre cliente o arreglo..." autocomplete="off" />
+                </div>
+                <div class="col-12 col-md-4 col-lg-3">
+                    <label for="selectFiltroArreglo" class="form-label text-muted small text-uppercase fw-bold mb-1">Arreglo</label>
+                    <select id="selectFiltroArreglo" class="form-select form-select-sm text-capitalize">
+                        <option value="all" selected>Todos</option>
+                        @foreach (var nombre in arreglosList)
+                        {
+                            <option value="@nombre.ToLowerInvariant()">@nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="selectFiltroEstado" class="form-label text-muted small text-uppercase fw-bold mb-1">Estado</label>
+                    <select id="selectFiltroEstado" class="form-select form-select-sm text-capitalize">
+                        <option value="all" selected>Todos</option>
+                        <option value="solicitado">Solicitado</option>
+                        <option value="cancelado">Cancelado</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_proceso">En proceso</option>
+                        <option value="listo">Listo</option>
+                        <option value="entregado">Entregado</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label text-muted small text-uppercase fw-bold mb-1 d-block text-center">Liquidadas ocultas</label>
+                    <div class="filtro-activos-wrap d-flex align-items-center justify-content-center">
+                        <div class="form-check form-switch d-flex align-items-center justify-content-center m-0">
+                            <input class="form-check-input switch-activos" type="checkbox" id="switchMostrarLiquidadas" aria-label="Mostrar comandas liquidadas ocultas">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2 d-flex align-items-end">
+                    <button type="button" id="btnLimpiarFiltrosComandas" class="btn btn-outline-secondary btn-sm px-2 btn-limpiar-filtros">Limpiar</button>
+                </div>
+            </div>
+            <div class="row g-2 g-md-3 mt-1">
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label for="inputFechaDesde" class="form-label text-muted small text-uppercase fw-bold mb-1">Fecha desde</label>
+                    <input id="inputFechaDesde" type="date" class="form-control form-control-sm" />
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label for="inputFechaHasta" class="form-label text-muted small text-uppercase fw-bold mb-1">Fecha hasta</label>
+                    <input id="inputFechaHasta" type="date" class="form-control form-control-sm" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-enflorarte table-hover mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Cliente</th>
+                            <th>Teléfono</th>
+                            <th>Arreglo</th>
+                            <th>Precio</th>
+                            <th>Anticipo</th>
+                            <th>Envío</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                            <th>Liquidado</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        @foreach (var comanda in Model)
+                        {
+                            // TU LÓGICA ORIGINAL
+                            var liquidadoStr = comanda.Liquidado ? "Sí" : "No";
+                            var fechaStr = comanda.FechaEntrega.ToString("dd/MM/yyyy");
+                            var horaStr = $"{(((comanda.HoraEntrega.Hours % 12) == 0) ? 12 : (comanda.HoraEntrega.Hours % 12)):00}:{comanda.HoraEntrega.Minutes:00} {(comanda.HoraEntrega.Hours >= 12 ? "PM" : "AM")}";
+                            var fechaEntregaData = comanda.FechaEntrega.ToString("yyyy-MM-dd");
+
+                            // Lógica visual extra para estados (opcional, puedes quitar las clases badge si prefieres texto plano)
+                            string badgeClass = comanda.Estado.ToString() == "entregado" ? "bg-success" : "bg-secondary";
+
+                            <tr class="fila-comanda"
+                                data-id="@comanda.Id"
+                                data-cliente="@(comanda.ClienteNombre?.ToLowerInvariant() ?? "")"
+                                data-telefono="@(comanda.ClienteTelefono?.ToString()?.ToLowerInvariant() ?? "")"
+                                data-arreglo="@(comanda.Arreglo?.Nombre?.ToLowerInvariant() ?? "")"
+                                data-fecha="@fechaEntregaData"
+                                data-estado="@(comanda.Estado.ToString().ToLowerInvariant())"
+                                data-liquidado="@(comanda.Liquidado.ToString().ToLowerInvariant())">
+                                <td class="ps-4 fw-bold text-muted">@comanda.Id</td>
+                                <td class="fw-bold">@comanda.ClienteNombre</td>
+                                <td>@comanda.ClienteTelefono</td>
+                                <td>@comanda.Arreglo?.Nombre</td>
+                                <td>@comanda.PrecioArreglo.ToString("C")</td>
+                                <td>@comanda.AnticipoPagoTotal.ToString("C")</td>
+                                <td>@comanda.PagoEnvio.ToString("C")</td>
+                                <td class="text-capitalize">@comanda.TipoEntrega</td>
+                                <td>@fechaStr</td>
+                                <td>@horaStr</td>
+                                <td>
+                                    <span class="badge @badgeClass rounded-pill fw-normal text-capitalize">@comanda.Estado</span>
+                                </td>
+
+                                <td>
+                                    <span class="@(comanda.Liquidado ? "text-success fw-bold" : "text-muted")">@liquidadoStr</span>
+                                </td>
+
+                                    <td class="text-end pe-4" style="white-space:nowrap">
+                                        <button onclick="cargarModal('@Url.Action("VistaPrevia", "ControladorComandas", new { id = comanda.Id })', 'Vista Previa de Comanda')"
+                                        class="btn btn-accion-redondo btn-outline-secondary me-1"
+                                        title="Vista previa de comanda"
+                                        aria-label="Vista previa de comanda">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                                                <circle cx="12" cy="12" r="3" />
+                                            </svg>
+                                        </button>
+
+                                        @if (esSupervisor){
+                                            <button onclick="cargarModal('@Url.Action("Editar", "ControladorComandas", new { id = comanda.Id })', 'Editar Comanda')"
+                                            class="btn btn-accion-redondo btn-editar-redondo me-1"
+                                            title="Editar comanda"
+                                            aria-label="Editar comanda">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                    <path d="M12 20h9" />
+                                                    <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L8 18l-4 1 1-4 11.5-11.5z" />
+                                                </svg>
+                                            </button>
+
+                                            <a class="btn btn-accion-redondo btn-eliminar-redondo" asp-controller="ControladorComandas" asp-action="Eliminar" asp-route-id="@comanda.Id" title="Eliminar comanda" aria-label="Eliminar comanda">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                    <path d="M3 6h18" />
+                                                    <path d="M8 6V4h8v2" />
+                                                    <path d="M19 6l-1 14H6L5 6" />
+                                                    <path d="M10 11v6" />
+                                                    <path d="M14 11v6" />
+                                                </svg>
+                                            </a>
+                                        }
+                                    </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalUniversal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border: none; border-radius: 10px; overflow: hidden;">
+            <div class="modal-header" style="background-color: var(--color-primario); color: white;">
+                <h5 class="modal-title" id="modalTitulo" style="font-family: var(--fuente-serif-elegante);">Título</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="contenidoModal">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .filtro-activos-wrap {
+            min-height: 31px;
+            padding: .2rem .4rem;
+            border: 1px solid var(--color-secundario);
+            border-radius: .5rem;
+            background-color: #fff;
+        }
+
+        .switch-activos {
+            width: 2.2rem;
+            height: 1.1rem;
+            cursor: pointer;
+        }
+
+        .switch-activos:checked {
+            background-color: var(--color-primario);
+            border-color: var(--color-primario);
+        }
+
+        .switch-activos:focus {
+            box-shadow: 0 0 0 0.2rem rgba(46, 79, 57, 0.25);
+            border-color: var(--color-primario);
+        }
+
+        .btn-limpiar-filtros {
+            white-space: nowrap;
+        }
+    </style>
+    <script>
+        function isoDateFromLocalDate(date) {
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+
+        function daysBetweenLocalDates(fromDate, toDate) {
+            var from = isoDateFromLocalDate(fromDate).getTime();
+            var to = isoDateFromLocalDate(toDate).getTime();
+            return Math.floor((to - from) / (1000 * 60 * 60 * 24));
+        }
+
+        function cargarModal(url, titulo) {
+            $("#modalTitulo").text(titulo);
+            $("#contenidoModal").html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
+            var myModal = new bootstrap.Modal(document.getElementById('modalUniversal'));
+            myModal.show();
+            $.get(url, function(data) { $("#contenidoModal").html(data); });
+        }
+
+        $(document).on('submit', '#contenidoModal form', function(e) {
+            e.preventDefault();
+
+            // Usar FormData es OBLIGATORIO para enviar archivos por AJAX
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.indexOf('<!DOCTYPE html>') > -1) {
+                        location.reload();
+                    } else {
+                        $("#contenidoModal").html(response);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error al guardar comanda', xhr);
+                    alert('No se pudo guardar la comanda. Revisa los datos e inténtalo de nuevo.');
+                }
+            });
+        });
+
+        function aplicarFiltroComandas() {
+            var nombreTerm = ($('#inputBuscarNombre').val() || '').toString().trim().toLowerCase();
+            var fechaDesde = ($('#inputFechaDesde').val() || '').toString(); // yyyy-mm-dd
+            var fechaHasta = ($('#inputFechaHasta').val() || '').toString(); // yyyy-mm-dd
+            var filtroEstado = ($('#selectFiltroEstado').val() || 'all').toString().toLowerCase();
+            var filtroArreglo = ($('#selectFiltroArreglo').val() || 'all').toString().toLowerCase();
+            var mostrarLiquidadasOcultas = $('#switchMostrarLiquidadas').is(':checked');
+
+            var $tbody = $('.table-group-divider');
+            var $filas = $tbody.find('tr.fila-comanda');
+
+            $filas.each(function () {
+                var $fila = $(this);
+                var cliente = ($fila.data('cliente') || '').toString();
+                // Nota: no hay filtro separado de teléfono; la búsqueda por nombre también buscará coincidencias en la columna de arreglo
+                var fecha = ($fila.data('fecha') || '').toString();
+                var estado = ($fila.data('estado') || '').toString();
+                var arreglo = ($fila.data('arreglo') || '').toString();
+                var liquidado = ($fila.data('liquidado') || '').toString() === 'true';
+
+                var coincideNombre = !nombreTerm || cliente.indexOf(nombreTerm) !== -1 || arreglo.indexOf(nombreTerm) !== -1 || ($fila.data('telefono') || '').toString().indexOf(nombreTerm) !== -1;
+                var coincideFecha = true;
+                if (fechaDesde && fechaHasta) {
+                    coincideFecha = fecha >= fechaDesde && fecha <= fechaHasta;
+                } else if (fechaDesde) {
+                    coincideFecha = fecha === fechaDesde;
+                } else if (fechaHasta) {
+                    coincideFecha = fecha === fechaHasta;
+                }
+                var coincideEstado = filtroEstado === 'all' || estado === filtroEstado;
+                var coincideArreglo = filtroArreglo === 'all' || arreglo === filtroArreglo;
+                var ocultarPorLiquidadoAntiguo = false;
+
+                if (!mostrarLiquidadasOcultas && liquidado && fecha) {
+                    var fechaEntrega = new Date(fecha + 'T00:00:00');
+                    var hoy = new Date();
+                    ocultarPorLiquidadoAntiguo = daysBetweenLocalDates(fechaEntrega, hoy) >= 0;
+                }
+
+                if (coincideNombre && coincideFecha && coincideEstado && coincideArreglo && !ocultarPorLiquidadoAntiguo) {
+                    $fila.show();
+                } else {
+                    $fila.hide();
+                }
+            });
+
+            var filasVisibles = $filas.filter(function () { return $(this).css('display') !== 'none'; }).get();
+            var todasLasFilas = $filas.get();
+
+            todasLasFilas.sort(function (a, b) {
+                var aId = parseInt($(a).data('id')) || 0;
+                var bId = parseInt($(b).data('id')) || 0;
+                return bId - aId; // últimos primero
+            });
+
+            todasLasFilas.forEach(function (fila) { $tbody.append(fila); });
+
+            $('#filaSinResultados').remove();
+            if (filasVisibles.length === 0) {
+                $tbody.append('<tr id="filaSinResultados"><td colspan="12" class="text-center text-muted py-4">No se encontraron comandas con los filtros seleccionados.</td></tr>');
+            }
+        }
+
+        $('#inputBuscarNombre').on('input', aplicarFiltroComandas);
+        // El filtro de teléfono fue fusionado con la búsqueda por nombre; no se registra evento separado.
+        $('#inputFechaDesde').on('change', aplicarFiltroComandas);
+        $('#inputFechaHasta').on('change', aplicarFiltroComandas);
+        $('#selectFiltroEstado').on('change', aplicarFiltroComandas);
+        $('#selectFiltroArreglo').on('change', aplicarFiltroComandas);
+        $('#switchMostrarLiquidadas').on('change', aplicarFiltroComandas);
+
+        $('#btnLimpiarFiltrosComandas').on('click', function () {
+            $('#inputBuscarNombre').val('');
+            // No hay campo de teléfono independiente para limpiar.
+            $('#inputFechaDesde').val('');
+            $('#inputFechaHasta').val('');
+            $('#selectFiltroEstado').val('all');
+            $('#selectFiltroArreglo').val('all');
+            $('#switchMostrarLiquidadas').prop('checked', false);
+            aplicarFiltroComandas();
+        });
+
+        // Inicializar filtro al cargar la página
+        aplicarFiltroComandas();
+    </script>
+}

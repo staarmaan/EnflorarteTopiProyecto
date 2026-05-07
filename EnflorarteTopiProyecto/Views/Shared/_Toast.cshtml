@@ -1,6 +1,8 @@
 @{
     var message = TempData["Toast.Message"] as string;
     var type = TempData["Toast.Type"] as string ?? "info"; // success | info | warning | danger
+    var undoAction = TempData["Toast.UndoAction"] as string;
+    var undoText = TempData["Toast.UndoText"] as string ?? "Deshacer";
     var bgClass = type switch
     {
         "success" => "bg-success text-white",
@@ -21,7 +23,15 @@
                 <button type="button" class="btn-close btn-close-white ms-2 mb-1" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
             <div class="toast-body">
-                @message
+                <span>@message</span>
+
+                @if (!string.IsNullOrWhiteSpace(undoAction))
+                {
+                    <form asp-action="DeshacerEliminacion" asp-controller="ControladorUsuarios" method="post" class="d-inline ms-2">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-link p-0 align-baseline">@undoText</button>
+                    </form>
+                }
             </div>
         </div>
     </div>

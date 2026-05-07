@@ -1,0 +1,36 @@
+﻿@{
+    /* 
+    No necesitamos un modelo complejo por ahora, ya que el JS rellenará los datos
+    Este es el panelito que sale cuando le das click a un usuario en el Index.cshtml de Views/ControladorSesion.
+    */
+}
+
+<div class="text-center mb-4">
+    <div style="width: 80px; height: 80px; background-color: var(--color-fondo-suave); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="var(--color-primario)" class="bi bi-person-circle" viewBox="0 0 16 16">
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+        </svg>
+    </div>
+
+    <h5 class="fw-bold" style="color: var(--color-texto-oscuro);">Iniciar sesión como:</h5>
+    <h4 id="lblNombreUsuario" style="font-family: var(--fuente-serif-elegante); color: var(--color-primario);">
+        Usuario
+    </h4>
+</div>
+
+<form asp-action="Ingresar" asp-controller="ControladorSesion" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="inputUsuarioId" name="UsuarioId" />
+
+    <div class="mb-4 text-start">
+        <label class="form-label text-muted small text-uppercase fw-bold">Contraseña</label>
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span> <input type="password" class="form-control border-start-0 ps-0" name="contrasenaIngresada" placeholder="••••••••" required />
+        </div>
+    </div>
+
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-lg">Entrar</button>
+    </div>
+</form>

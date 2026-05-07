@@ -14,11 +14,19 @@ namespace EnflorarteTopiProyecto.Utils
             return hasher.HashPassword(null, contrasenaSinHashear);
         }
 
+        // Recordar que contrasenaIngresada no está hasheada, es la que el usuario ingresa en algun campo de texto.
         public static bool VerificarContrasena(string contrasenaHasheada, string contrasenaIngresada)
         {
+            bool ignorarHash = false; //Para debug. Solo activar si estas haciendo una cuenta por primera vez.
+
+            if (ignorarHash) {
+                return contrasenaHasheada == contrasenaIngresada;
+            }
+
             var hasher = new PasswordHasher<string>();
             var resultado = hasher.VerifyHashedPassword(null, contrasenaHasheada, contrasenaIngresada);
-            return resultado == PasswordVerificationResult.Success;
+            return resultado == PasswordVerificationResult.Success
+                || resultado == PasswordVerificationResult.SuccessRehashNeeded;
         }
     }
 }

@@ -1,0 +1,568 @@
+@model CatalogoIndexViewModel
+@{
+    ViewData["Title"] = "Catálogo";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-6 m-0">Catálogo</h1>
+    </div>
+
+    <ul class="nav nav-tabs tabs-enflorarte mb-4" id="tabsCatalogo" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-flores" data-bs-toggle="tab" data-bs-target="#panel-flores" type="button" role="tab">Flores</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-arreglos" data-bs-toggle="tab" data-bs-target="#panel-arreglos" type="button" role="tab">Arreglos</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="contenidoTabsCatalogo">
+        <div class="tab-pane fade show active" id="panel-flores" role="tabpanel" aria-labelledby="tab-flores">
+            <div class="row g-2 g-md-3 align-items-end mb-3">
+                <div class="col-12 col-md-5 col-lg-4">
+                    <label for="inputBuscarFlores" class="form-label text-muted small text-uppercase fw-bold mb-1">Buscar</label>
+                    <input id="inputBuscarFlores"
+                           type="search"
+                           class="form-control form-control-sm"
+                           placeholder="Nombre o descripción..."
+                           autocomplete="off"
+                           autocapitalize="off"
+                           autocorrect="off"
+                           spellcheck="false" />
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="selectOrdenFlores" class="form-label text-muted small text-uppercase fw-bold mb-1">Nombre</label>
+                    <select id="selectOrdenFlores" class="form-select form-select-sm">
+                        <option value="none" selected>Sin orden</option>
+                        <option value="asc">A-Z</option>
+                        <option value="desc">Z-A</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-2 d-flex align-items-end">
+                    <button type="button"
+                            id="btnLimpiarFiltrosFlores"
+                            class="btn btn-accion-redondo btn-limpiar-redondo btn-limpiar-filtros"
+                            title="Limpiar filtros"
+                            aria-label="Limpiar filtros">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M5 5l14 14" />
+                            <path d="M19 5L5 19" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="col-12 col-md-2 col-lg-4 d-flex justify-content-md-end align-items-end">
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-inventario-redondo me-2"
+                            onclick="cargarModalCatalogo('@Url.Action("InventarioGeneral", "ControladorCatalogo")', 'Inventario General')"
+                            title="Inventario general"
+                            aria-label="Inventario general">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M4 7l8-4 8 4-8 4-8-4z" />
+                            <path d="M4 7v10l8 4 8-4V7" />
+                            <path d="M12 11v10" />
+                            <path d="M20 7l-8 4-8-4" />
+                        </svg>
+                    </button>
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-agregar-redondo me-2"
+                            onclick="cargarModalCatalogo('@Url.Action("CrearFlor", "ControladorCatalogo")', 'Registrar Flor')"
+                            title="Agregar flor"
+                            aria-label="Agregar flor">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-3" id="contenedorFlores">
+                @if (Model.Flores.Count == 0)
+                {
+                    <div class="col-12">
+                        <div class="alert alert-light border text-muted mb-0">Aún no hay flores registradas.</div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var flor in Model.Flores)
+                    {
+                        <div class="col-12 col-sm-6 col-lg-3 tarjeta-flor"
+                             data-id="@flor.Id"
+                             data-nombre="@flor.Nombre.ToLowerInvariant()"
+                             data-descripcion="@((flor.Descripcion ?? string.Empty).ToLowerInvariant())">
+                            <button type="button"
+                                    class="card shadow-sm border-0 w-100 text-start card-catalogo-cuadrada card-catalogo-flor"
+                                    onclick="cargarModalCatalogo('@Url.Action("DetalleFlor", "ControladorCatalogo", new { id = flor.Id })', 'Detalle de Flor')">
+                                @if (!string.IsNullOrWhiteSpace(flor.FotoRuta))
+                                {
+                                    <img src="@flor.FotoRuta" class="card-img-top card-catalogo-flor-img" alt="@flor.Nombre" />
+                                }
+                                else
+                                {
+                                    <div class="card-catalogo-flor-img d-flex align-items-center justify-content-center text-muted">Sin imagen</div>
+                                }
+                                <div class="card-body py-2 d-flex align-items-center justify-content-center">
+                                    <h5 class="card-title mb-0 text-center">@flor.Nombre</h5>
+                                </div>
+                            </button>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="panel-arreglos" role="tabpanel" aria-labelledby="tab-arreglos">
+            @{
+                var inventarioPorFlor = Model.Flores.ToDictionary(
+                    f => f.Id,
+                    f => new
+                    {
+                        Total = f.InventarioColores.Sum(i => i.Cantidad),
+                        PorColor = f.InventarioColores.ToDictionary(i => i.Color, i => i.Cantidad, StringComparer.OrdinalIgnoreCase)
+                    });
+            }
+
+            <div class="row g-2 g-md-3 align-items-end mb-3">
+                <div class="col-12 col-md-5 col-lg-4">
+                    <label for="inputBuscarArreglos" class="form-label text-muted small text-uppercase fw-bold mb-1">Buscar</label>
+                    <input id="inputBuscarArreglos"
+                           type="search"
+                           class="form-control form-control-sm"
+                           placeholder="Nombre del arreglo..."
+                           autocomplete="off"
+                           autocapitalize="off"
+                           autocorrect="off"
+                           spellcheck="false" />
+                </div>
+
+                <div class="col-12 col-md-2 col-lg-2">
+                    <label class="form-label text-muted small text-uppercase fw-bold mb-1">Flores</label>
+                    <div class="dropdown w-100">
+                        <button class="btn btn-sm w-100 text-start d-flex justify-content-between align-items-center btn-filtro-flores"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside"
+                                aria-expanded="false">
+                            <span>Filtrar por flores</span>
+                            <span class="ms-2">?</span>
+                        </button>
+                        <div class="dropdown-menu p-2 w-100" style="max-height: 260px; overflow:auto;">
+                            @foreach (var florFiltro in Model.Flores.OrderBy(f => f.Nombre))
+                            {
+                                <div class="form-check mb-1">
+                                    <input class="form-check-input chk-filtro-flor-arreglo" type="checkbox" value="@florFiltro.Nombre.ToLowerInvariant()" id="chkFiltroArregloFlor_@florFiltro.Id">
+                                    <label class="form-check-label small" for="chkFiltroArregloFlor_@florFiltro.Id">@florFiltro.Nombre</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-2 col-lg-2">
+                    <label class="form-label text-muted small text-uppercase fw-bold mb-1 d-block text-center">Con inventario</label>
+                    <div class="filtro-inventario-wrap d-flex align-items-center justify-content-center">
+                        <div class="form-check form-switch d-flex align-items-center justify-content-center m-0">
+                            <input class="form-check-input switch-inventario" type="checkbox" id="switchArreglosConInventario" aria-label="Mostrar solo arreglos con inventario suficiente">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-1 col-lg-1 d-flex align-items-end">
+                    <button type="button"
+                            id="btnLimpiarFiltrosArreglos"
+                            class="btn btn-accion-redondo btn-limpiar-redondo btn-limpiar-filtros"
+                            title="Limpiar filtros"
+                            aria-label="Limpiar filtros">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M5 5l14 14" />
+                            <path d="M19 5L5 19" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="col-12 col-md-auto ms-md-auto d-flex justify-content-md-end align-items-end">
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-inventario-redondo me-2"
+                            onclick="cargarModalCatalogo('@Url.Action("InventarioGeneral", "ControladorCatalogo")', 'Inventario General')"
+                            title="Inventario general"
+                            aria-label="Inventario general">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M4 7l8-4 8 4-8 4-8-4z" />
+                            <path d="M4 7v10l8 4 8-4V7" />
+                            <path d="M12 11v10" />
+                            <path d="M20 7l-8 4-8-4" />
+                        </svg>
+                    </button>
+                    <button type="button"
+                            class="btn btn-accion-redondo btn-agregar-redondo"
+                            onclick="cargarModalCatalogo('@Url.Action("CrearArreglo", "ControladorCatalogo")', 'Registrar Arreglo')"
+                            title="Agregar arreglo"
+                            aria-label="Agregar arreglo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-3" id="contenedorArreglos">
+                @if (Model.Arreglos.Count == 0)
+                {
+                    <div class="col-12">
+                        <div class="alert alert-light border text-muted mb-0">Aún no hay arreglos registrados.</div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var arreglo in Model.Arreglos)
+                    {
+                        var cumpleInventario = arreglo.Flores.All(af =>
+                        {
+                            if (!inventarioPorFlor.TryGetValue(af.FlorId, out var inv))
+                            {
+                                return false;
+                            }
+
+                            if (string.Equals(af.ColorSeleccionado, "a elegir", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return inv.Total >= af.Cantidad;
+                            }
+
+                            var disponibleColor = inv.PorColor.TryGetValue(af.ColorSeleccionado, out var cantColor) ? cantColor : 0;
+                            return disponibleColor >= af.Cantidad;
+                        });
+
+                        <div class="col-12 col-sm-6 col-lg-3 tarjeta-arreglo"
+                             data-id="@arreglo.Id"
+                             data-nombre="@arreglo.Nombre.ToLowerInvariant()"
+                             data-flores="@string.Join("|", arreglo.Flores.Select(f => f.Flor.Nombre.ToLowerInvariant()).Distinct())"
+                             data-inventario-ok="@cumpleInventario.ToString().ToLowerInvariant()">
+                            <button type="button"
+                                    class="card shadow-sm border-0 w-100 text-start card-catalogo-cuadrada card-catalogo-arreglo"
+                                    onclick="cargarModalCatalogo('@Url.Action("DetalleArreglo", "ControladorCatalogo", new { id = arreglo.Id })', 'Detalle de Arreglo')">
+                                @if (!string.IsNullOrWhiteSpace(arreglo.FotoRuta))
+                                {
+                                    <img src="@arreglo.FotoRuta" class="card-img-top card-catalogo-flor-img" alt="@arreglo.Nombre" />
+                                }
+                                else
+                                {
+                                    <div class="card-catalogo-flor-img d-flex align-items-center justify-content-center text-muted">Sin imagen</div>
+                                }
+                                <div class="card-body py-2 d-flex align-items-center justify-content-center">
+                                    <h5 class="card-title mb-0 text-center">@arreglo.Nombre</h5>
+                                </div>
+                            </button>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCatalogo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border: none; border-radius: 10px; overflow: hidden;">
+            <div class="modal-header" style="background-color: var(--color-primario); color: white;">
+                <h5 class="modal-title" id="modalCatalogoTitulo" style="font-family: var(--fuente-serif-elegante);">Título</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalCatalogoContenido">
+                <div class="text-center p-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .btn-limpiar-filtros {
+            white-space: nowrap;
+            width: 2.2rem;
+            height: 2.2rem;
+            padding: 0;
+        }
+
+        .card-catalogo-cuadrada {
+            min-height: 220px;
+            border-radius: 12px;
+            background: #fff;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .card-catalogo-cuadrada:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12) !important;
+        }
+
+        .card-catalogo-cuadrada .card-title {
+            color: var(--color-primario);
+            font-weight: 600;
+        }
+
+        .card-catalogo-flor {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .card-catalogo-arreglo {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .card-catalogo-flor-img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            background-color: #f8f9fa;
+        }
+
+        .btn-filtro-flores {
+            background-color: #fff;
+            border: 1px solid var(--color-secundario);
+            color: #212529;
+        }
+
+        .btn-filtro-flores:hover,
+        .btn-filtro-flores:focus,
+        .btn-filtro-flores:active {
+            background-color: #fff;
+            color: #212529;
+            border-color: var(--color-secundario);
+        }
+
+        .filtro-inventario-wrap {
+            min-height: 31px;
+            padding: .2rem .4rem;
+            border: 1px solid var(--color-secundario);
+            border-radius: .5rem;
+            background-color: #fff;
+        }
+
+        .switch-inventario {
+            width: 2.2rem;
+            height: 1.1rem;
+            cursor: pointer;
+        }
+
+        .switch-inventario:checked {
+            background-color: var(--color-primario);
+            border-color: var(--color-primario);
+        }
+
+        .switch-inventario:focus {
+            box-shadow: 0 0 0 0.2rem rgba(46, 79, 57, 0.25);
+            border-color: var(--color-primario);
+        }
+    </style>
+
+    <script>
+        var claveTabCatalogo = 'catalogo.tab.activa';
+        var modalCatalogoElement = document.getElementById('modalCatalogo');
+        var modalCatalogoInstance = null;
+
+        function obtenerModalCatalogo() {
+            if (!modalCatalogoInstance) {
+                modalCatalogoInstance = bootstrap.Modal.getOrCreateInstance(modalCatalogoElement);
+            }
+
+            return modalCatalogoInstance;
+        }
+
+        function limpiarFondosModalResiduos() {
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+            document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
+                backdrop.remove();
+            });
+        }
+
+        modalCatalogoElement.addEventListener('hidden.bs.modal', function () {
+            limpiarFondosModalResiduos();
+        });
+
+        function guardarTabActivaCatalogo(tabId) {
+            try {
+                sessionStorage.setItem(claveTabCatalogo, tabId || 'tab-flores');
+            } catch (e) { }
+        }
+
+        function restaurarTabActivaCatalogo() {
+            try {
+                var tabIdGuardada = sessionStorage.getItem(claveTabCatalogo) || 'tab-flores';
+                var tabBtn = document.getElementById(tabIdGuardada);
+                if (tabBtn) {
+                    bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+                }
+            } catch (e) { }
+        }
+
+        document.querySelectorAll('#tabsCatalogo [data-bs-toggle="tab"]').forEach(function (tab) {
+            tab.addEventListener('shown.bs.tab', function (e) {
+                guardarTabActivaCatalogo(e.target.id);
+            });
+        });
+
+        restaurarTabActivaCatalogo();
+
+        function cargarModalCatalogo(url, titulo) {
+            $('#modalCatalogoTitulo').text(titulo);
+            $('#modalCatalogoContenido').html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
+            if (!modalCatalogoElement.classList.contains('show')) {
+                obtenerModalCatalogo().show();
+            }
+
+            $.get(url, function (data) {
+                $('#modalCatalogoContenido').html(data);
+            });
+        }
+
+        $(document).on('submit', '#modalCatalogoContenido form', function (e) {
+            e.preventDefault();
+            var form = this;
+            var formData = new FormData(form);
+            var $btnSubmit = $(form).find('button[type="submit"]');
+            $btnSubmit.prop('disabled', true);
+
+            $.ajax({
+                url: $(form).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    var html = (response || '').toString();
+                    var htmlLower = html.toLowerCase();
+                    var esPaginaCompleta = htmlLower.indexOf('<!doctype html') > -1 || htmlLower.indexOf('<html') > -1;
+
+                    if (esPaginaCompleta) {
+                        location.reload();
+                    } else {
+                        $('#modalCatalogoContenido').html(html);
+                    }
+                },
+                error: function () {
+                    $('#modalCatalogoContenido').prepend('<div class="alert alert-danger mb-3">No se pudo guardar. Intenta de nuevo.</div>');
+                },
+                complete: function () {
+                    $btnSubmit.prop('disabled', false);
+                }
+            });
+        });
+
+        function aplicarFiltroYOrdenFlores() {
+            var termino = ($('#inputBuscarFlores').val() || '').toString().trim().toLowerCase();
+            var ordenNombre = $('#selectOrdenFlores').val();
+
+            var $contenedor = $('#contenedorFlores');
+            var $tarjetas = $contenedor.find('.tarjeta-flor');
+
+            $tarjetas.each(function () {
+                var $tarjeta = $(this);
+                var nombre = ($tarjeta.data('nombre') || '').toString();
+                var descripcion = ($tarjeta.data('descripcion') || '').toString();
+
+                var coincideBusqueda = !termino || nombre.includes(termino) || descripcion.includes(termino);
+
+                if (coincideBusqueda) {
+                    $tarjeta.show();
+                } else {
+                    $tarjeta.hide();
+                }
+            });
+
+            var todasLasTarjetas = $tarjetas.get();
+            todasLasTarjetas.sort(function (a, b) {
+                var aNombre = ($(a).data('nombre') || '').toString();
+                var bNombre = ($(b).data('nombre') || '').toString();
+                var aId = parseInt($(a).data('id')) || 0;
+                var bId = parseInt($(b).data('id')) || 0;
+
+                if (ordenNombre && ordenNombre !== 'none') {
+                    var cmpNombre = aNombre.localeCompare(bNombre, 'es', { sensitivity: 'base' });
+                    if (cmpNombre !== 0) {
+                        return ordenNombre === 'asc' ? cmpNombre : -cmpNombre;
+                    }
+                }
+
+                return bId - aId;
+            });
+
+            todasLasTarjetas.forEach(function (tarjeta) {
+                $contenedor.append(tarjeta);
+            });
+
+            $('#filaSinResultadosFlores').remove();
+            var visibles = $tarjetas.filter(function () { return $(this).css('display') !== 'none'; }).length;
+            if (visibles === 0 && $tarjetas.length > 0) {
+                $contenedor.append('<div class="col-12" id="filaSinResultadosFlores"><div class="alert alert-light border text-muted mb-0">No se encontraron flores con los filtros seleccionados.</div></div>');
+            }
+        }
+
+        $('#inputBuscarFlores').on('input', aplicarFiltroYOrdenFlores);
+        $('#selectOrdenFlores').on('change', aplicarFiltroYOrdenFlores);
+
+        $('#btnLimpiarFiltrosFlores').on('click', function () {
+            $('#inputBuscarFlores').val('');
+            $('#selectOrdenFlores').val('none');
+            aplicarFiltroYOrdenFlores();
+        });
+
+        function aplicarFiltrosArreglos() {
+            var termino = ($('#inputBuscarArreglos').val() || '').toString().trim().toLowerCase();
+            var soloConInventario = $('#switchArreglosConInventario').is(':checked');
+            var floresSeleccionadas = $('.chk-filtro-flor-arreglo:checked').map(function () {
+                return ($(this).val() || '').toString().toLowerCase();
+            }).get();
+
+            var $contenedor = $('#contenedorArreglos');
+            var $tarjetas = $contenedor.find('.tarjeta-arreglo');
+
+            $tarjetas.each(function () {
+                var $tarjeta = $(this);
+                var nombre = ($tarjeta.data('nombre') || '').toString();
+                var floresTexto = ($tarjeta.data('flores') || '').toString();
+                var floresArreglo = floresTexto ? floresTexto.split('|') : [];
+                var inventarioOkRaw = $tarjeta.data('inventario-ok');
+                var inventarioOk = inventarioOkRaw === true || inventarioOkRaw === 'true';
+
+                var coincideBusqueda = !termino || nombre.includes(termino);
+                var coincideFlores = floresSeleccionadas.length === 0 || floresSeleccionadas.every(function (florSel) {
+                    return floresArreglo.includes(florSel);
+                });
+                var coincideInventario = !soloConInventario || inventarioOk;
+
+                if (coincideBusqueda && coincideFlores && coincideInventario) {
+                    $tarjeta.show();
+                } else {
+                    $tarjeta.hide();
+                }
+            });
+
+            $('#filaSinResultadosArreglos').remove();
+            var visibles = $tarjetas.filter(function () { return $(this).css('display') !== 'none'; }).length;
+            if (visibles === 0 && $tarjetas.length > 0) {
+                $contenedor.append('<div class="col-12" id="filaSinResultadosArreglos"><div class="alert alert-light border text-muted mb-0">No se encontraron arreglos con los filtros seleccionados.</div></div>');
+            }
+        }
+
+        $('#inputBuscarArreglos').on('input', aplicarFiltrosArreglos);
+        $(document).on('change', '.chk-filtro-flor-arreglo', aplicarFiltrosArreglos);
+        $('#switchArreglosConInventario').on('change', aplicarFiltrosArreglos);
+
+        $('#btnLimpiarFiltrosArreglos').on('click', function () {
+            $('#inputBuscarArreglos').val('');
+            $('.chk-filtro-flor-arreglo').prop('checked', false);
+            $('#switchArreglosConInventario').prop('checked', false);
+            aplicarFiltrosArreglos();
+        });
+
+        aplicarFiltroYOrdenFlores();
+        aplicarFiltrosArreglos();
+    </script>
+}

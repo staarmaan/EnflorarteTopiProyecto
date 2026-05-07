@@ -1,0 +1,1064 @@
+﻿@model ComandaDto
+@{
+    var esEdicion = (ViewData["EsEdicion"] as bool?) ?? (Model != null && Model.Id > 0);
+    var esVistaPrevia = (ViewData["EsVistaPrevia"] as bool?) ?? false;
+}
+
+<div class="card card-enflorarte h-100 shadow-sm">
+    <div class="card-header text-center py-3">
+        @(esVistaPrevia ? 
+            "Vista previa de la comanda" :
+            (esEdicion ? "Actualiza los datos de la comanda" : "Ingrese los datos de la comanda")
+        )
+    </div>
+
+    <div class="card-body p-4">
+
+        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Asignación de Personal</h6>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label">Usuario creador</label>
+                <select class="form-select" asp-for="UsuarioId" asp-items="ViewBag.ListaUsuarios">
+                    <option value="" disabled selected>Selecciona un usuario</option>
+                </select>
+                <span asp-validation-for="UsuarioId" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label">Estado de la comanda</label>
+                <select class="form-select" asp-for="Estado">
+                    <option value="solicitado">Solicitado</option>
+                    <option value="cancelado">Cancelado</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_proceso">En proceso</option>
+                    <option value="listo">Listo</option>
+                    <option value="entregado">Entregado</option>
+                </select>
+                <span asp-validation-for="Estado" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4 d-flex flex-column justify-content-end">
+                <label class="form-label">Liquidado</label>
+                <div class="form-check pt-2">
+                    <input class="form-check-input" type="checkbox" asp-for="Liquidado" />
+                    <span asp-validation-for="Liquidado" class="text-danger ms-2"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-4">
+                <label class="form-label">Número de pedido</label>
+                <input class="form-control" asp-for="NumeroPedido" type="number" min="1" step="1" />
+                <span asp-validation-for="NumeroPedido" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label class="form-label">Fecha de entrega</label>
+                <input class="form-control" asp-for="FechaEntrega" type="date" />
+                <span asp-validation-for="FechaEntrega" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label class="form-label">Hora de entrega</label>
+                <input class="form-control" asp-for="HoraEntrega" type="time" />
+                <span asp-validation-for="HoraEntrega" class="text-danger"></span>
+            </div>
+        </div>
+
+        <hr class="text-muted opacity-25">
+
+        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Detalles del Arreglo</h6>
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <label class="form-label">Arreglo</label>
+                <select class="form-select" asp-for="ArregloId" asp-items="ViewBag.ListaArreglos">
+                    <option value="" disabled selected>Selecciona un arreglo</option>
+                </select>
+                <span asp-validation-for="ArregloId" class="text-danger"></span>
+                <div id="arregloPreviewWrapper" class="mt-3 d-none">
+                    <img id="arregloPreviewImg"
+                         class="img-fluid rounded border d-none"
+                         style="max-height: 220px; object-fit: cover;"
+                         alt="Vista previa del arreglo" />
+                    <div id="arregloPreviewEmpty" class="text-muted small d-none">Sin imagen</div>
+                </div>
+                <div id="arregloFloresWrapper" class="mt-2 d-none">
+                    <div class="small text-muted mb-1">Flores originales del arreglo</div>
+                    <ul id="arregloFloresList" class="mb-3 list-unstyled"></ul>
+                </div>
+
+                <div id="arregloFloresEditorWrapper" class="mt-2 d-none">
+                    <div id="floresEditorCatalog" class="mb-3">
+                        @if (ViewBag.FloresCatalogo == null || !((System.Collections.IEnumerable)ViewBag.FloresCatalogo).GetEnumerator().MoveNext())
+                        {
+                            <div class="alert alert-warning mb-0">No hay flores registradas en el catálogo.</div>
+                        }
+                        else
+                        {
+                            @if (!esVistaPrevia)
+                            {
+                                <div class="row g-2 mb-2">
+                                    <div class="col-12 col-md-8">
+                                        <label for="selectFlorCatalogoComanda" class="form-label text-muted small text-uppercase fw-bold mb-1">Lista de flores</label>
+                                        <select id="selectFlorCatalogoComanda" class="form-select form-select-sm">
+                                            <option value="">Selecciona una flor...</option>
+                                            @foreach (var flor in (System.Collections.Generic.IEnumerable<dynamic>)ViewBag.FloresCatalogo)
+                                            {
+                                                var colores = (System.Collections.Generic.List<string>)flor.Colores;
+                                                <option value="@flor.FlorId" data-nombre="@flor.FlorNombre" data-colores="@string.Join("|", colores)">@flor.FlorNombre</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-4 d-flex align-items-end">
+                                        <button type="button" id="btnAgregarFlorComanda" class="btn btn-outline-primary btn-sm w-100">Agregar flor</button>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="table-responsive border rounded">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Flor</th>
+                                            <th style="width: 140px;">Cantidad</th>
+                                            <th style="width: 120px;" class="text-end">Color</th>
+                                            @if (!esVistaPrevia)
+                                            {
+                                                <th class="text-end">Acción</th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyFloresComanda"></tbody>
+                                </table>
+                            </div>
+
+                            <input type="hidden" id="CopiarDesdeArreglo" name="CopiarDesdeArreglo" value="false" />
+                            @if (!esVistaPrevia)
+                            {
+                                <button type="button" id="btnCopiarDesdeArregloComanda" class="btn btn-outline-secondary btn-sm mt-2">Copiar desde arreglo</button>
+                            }
+
+                            <div id="mensajeSinFloresSeleccionadasComanda" class="text-muted small mt-2">Aún no agregas flores a la comanda.</div>
+                            <span asp-validation-for="Flores" class="text-danger small"></span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="inventarioWarningComanda" class="alert alert-warning d-none" role="alert">
+            Advertencia: No hay suficientes flores en el inventario del sistema para este arreglo. Proceda con caución.
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-4">
+                <label class="form-label">Tipo de arreglo</label>
+                <input type="hidden" asp-for="TipoArreglo" />
+                <div class="form-check">
+                    <input id="tipoArregloBouquet" class="form-check-input" type="checkbox" value="bouquet" />
+                    <label class="form-check-label" for="tipoArregloBouquet">Bouquet</label>
+                </div>
+                <span asp-validation-for="TipoArreglo" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label class="form-label">Envoltura del arreglo</label>
+                <input type="hidden" asp-for="EvolturaArreglo" />
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaPapel" value="papel" />
+                        <label class="form-check-label" for="envolturaPapel">Papel</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaMalla" value="malla" />
+                        <label class="form-check-label" for="envolturaMalla">Malla</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaJarron" value="jarron" />
+                        <label class="form-check-label" for="envolturaJarron">Jarrón</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaTarjeta" value="tarjeta" />
+                        <label class="form-check-label" for="envolturaTarjeta">Tarjeta</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="EvolturaArregloOpcion" id="envolturaYute" value="yute" />
+                        <label class="form-check-label" for="envolturaYute">Yute</label>
+                    </div>
+                </div>
+                <span asp-validation-for="EvolturaArreglo" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label class="form-label">Color de envoltura</label>
+                <input type="hidden" asp-for="ColorEvolturaArreglo" />
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorNegro" value="negro" />
+                        <label class="form-check-label" for="colorNegro">Negro</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorLila" value="lila" />
+                        <label class="form-check-label" for="colorLila">Lila</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorRosa" value="rosa" />
+                        <label class="form-check-label" for="colorRosa">Rosa</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorBlanco" value="blanco" />
+                        <label class="form-check-label" for="colorBlanco">Blanco</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ColorEvolturaArregloOpcion" id="colorOtro" value="otro" />
+                        <label class="form-check-label" for="colorOtro">Otro</label>
+                    </div>
+                </div>
+                <div id="colorEvolturaManualWrapper" class="mt-2 d-none">
+                    <input id="colorEvolturaManual" class="form-control" type="text" placeholder="Especifica el color" />
+                </div>
+                <span asp-validation-for="ColorEvolturaArreglo" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
+                <label class="form-label">Tipo de caja</label>
+                <input type="hidden" asp-for="CajaTipoArreglo" />
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="CajaTipoArregloOpcion" id="cajaCorazon" value="corazon" />
+                        <label class="form-check-label" for="cajaCorazon">Caja Corazón</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="CajaTipoArregloOpcion" id="cajaCuadrado" value="cuadrado" />
+                        <label class="form-check-label" for="cajaCuadrado">Caja Cuadrado</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="CajaTipoArregloOpcion" id="cajaCirculo" value="circulo" />
+                        <label class="form-check-label" for="cajaCirculo">Caja Círculo</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="CajaTipoArregloOpcion" id="cajaNinguno" value="" />
+                        <label class="form-check-label" for="cajaNinguno">Ninguno</label>
+                    </div>
+                </div>
+                <span asp-validation-for="CajaTipoArreglo" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label class="form-label">Accesorio del arreglo</label>
+                <input class="form-control" asp-for="AccesorioArreglo" />
+                <span asp-validation-for="AccesorioArreglo" class="text-danger"></span>
+            </div>
+        </div>
+
+        <hr class="text-muted opacity-25">
+
+        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Cliente y Entrega</h6>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Nombre del cliente</label>
+                <input class="form-control" asp-for="ClienteNombre" />
+                <span asp-validation-for="ClienteNombre" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Teléfono del cliente</label>
+                <input class="form-control" asp-for="ClienteTelefono" />
+                <span asp-validation-for="ClienteTelefono" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Medio de la solicitud</label>
+                <select id="medioSolicitudSelect" class="form-select">
+                    <option value="" selected hidden>Selecciona un medio</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Marketplace">Marketplace</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Otro">Otro</option>
+                </select>
+                <input id="medioSolicitudOtro" class="form-control mt-2 d-none" type="text" placeholder="Especifica el medio" />
+                <input id="medioSolicitudValor" type="hidden" asp-for="MedioDeLaSolicitud" />
+                <span asp-validation-for="MedioDeLaSolicitud" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Tipo de entrega</label>
+                <select id="selectTipoEntrega" class="form-select" asp-for="TipoEntrega">
+                    <option value="" selected hidden>Selecciona un tipo</option>
+                    <option value="envio">Envío</option>
+                    <option value="recoger">Recoger</option>
+                </select>
+                <div id="receptorWarning" class="form-text text-danger d-none">
+                    Falta el nombre y/o teléfono del receptor para envíos.
+                </div>
+                <span asp-validation-for="TipoEntrega" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-lg-5 d-none" id="divDireccionEntrega">
+                <label class="form-label">Dirección de entrega</label>
+                <input class="form-control" asp-for="DireccionEntrega" />
+                <span asp-validation-for="DireccionEntrega" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-lg-3 d-none" id="divNumeroRuta">
+                <label class="form-label">Número de ruta</label>
+                <input class="form-control" asp-for="NumeroRuta" type="number" min="1" step="1" />
+                <span asp-validation-for="NumeroRuta" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6 d-none" id="divNombreReceptorEnvio">
+                <label class="form-label">Nombre del receptor</label>
+                <input id="inputNombreReceptorEnvio" class="form-control" asp-for="NombreReceptorEnvio" />
+                <span asp-validation-for="NombreReceptorEnvio" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-6 d-none" id="divTelefonoReceptorEnvio">
+                <label class="form-label">Teléfono del receptor</label>
+                <input id="inputTelefonoReceptorEnvio" class="form-control" asp-for="TelefonoReceptorEnvio" type="number" min="0" step="1" />
+                <span asp-validation-for="TelefonoReceptorEnvio" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <button type="button" id="btnCopiarDatosClienteAReceptor" class="btn btn-outline-secondary btn-sm mt-2">Copiar datos del cliente</button>
+        </div>
+
+        <hr class="text-muted opacity-25">
+
+        <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Pago y Anticipo</h6>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Precio del arreglo</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input class="form-control" asp-for="PrecioArreglo" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="PrecioArreglo" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Pago de envío</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input class="form-control" asp-for="PagoEnvio" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="PagoEnvio" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Tipo de anticipo</label>
+                <select id="selectTipoAnticipo" class="form-select" asp-for="AnticipoTipo">
+                    <option value="" selected hidden>Selecciona un tipo</option>
+                    <option value="porcentaje">Porcentaje</option>
+                    <option value="minimo">Mínimo</option>
+                    <option value="manual">Manual</option>
+                </select>
+                <span asp-validation-for="AnticipoTipo" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label id="labelAnticipoValor" class="form-label">Anticipo total</label>
+                <input id="inputAnticipoValor" class="form-control" asp-for="AnticipoPagoTotal" type="number" step="0.01" min="0" />
+                <span asp-validation-for="AnticipoPagoTotal" class="text-danger"></span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    (function () {
+        var select = document.getElementById('ArregloId');
+        var previewWrapper = document.getElementById('arregloPreviewWrapper');
+        var previewImg = document.getElementById('arregloPreviewImg');
+        var previewEmpty = document.getElementById('arregloPreviewEmpty');
+        var arregloFotos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ArreglosFotoMap ?? new System.Collections.Generic.Dictionary<int, string>()));
+        var arreglosFlores = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ArreglosFloresMap ?? new System.Collections.Generic.Dictionary<int, object>()));
+        var inventarioFlores = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.InventarioFloresMap ?? new System.Collections.Generic.Dictionary<int, object>()));
+        var modelFlores = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model?.Flores ?? new System.Collections.Generic.List<EnflorarteTopiProyecto.Models.ComandaFlorDto>()));
+        var esVistaPreviaJs = @Html.Raw(esVistaPrevia ? "true" : "false");
+        var inventarioWarning = document.getElementById('inventarioWarningComanda');
+
+        if (!select || !previewWrapper || !previewImg || !previewEmpty) {
+            return;
+        }
+
+        // Utilities to render and manage editable table of Flores for the comanda
+        function actualizarIndicesFloresComanda() {
+            $('#tbodyFloresComanda tr').each(function (index) {
+                $(this).find('input[name$=".FlorId"]').attr('name', 'Flores[' + index + '].FlorId');
+                $(this).find('input[name$=".Nombre"]').attr('name', 'Flores[' + index + '].Nombre');
+                $(this).find('input[name$=".Cantidad"]').attr('name', 'Flores[' + index + '].Cantidad');
+                $(this).find('select[name$=".ColorSeleccionado"]').attr('name', 'Flores[' + index + '].ColorSeleccionado');
+            });
+        }
+
+        function actualizarMensajeSinFloresComanda() {
+            if ($('#tbodyFloresComanda tr').length === 0) {
+                $('#mensajeSinFloresSeleccionadasComanda').removeClass('d-none');
+            } else {
+                $('#mensajeSinFloresSeleccionadasComanda').addClass('d-none');
+            }
+        }
+
+        function normalizarColorInventario(valor) {
+            return (valor || '').toString().trim().toLowerCase();
+        }
+
+        function obtenerInventarioFlor(florId) {
+            return inventarioFlores[florId] || inventarioFlores[String(florId)] || null;
+        }
+
+        function obtenerCantidadDisponible(florId, colorSeleccionado) {
+            var inventario = obtenerInventarioFlor(florId);
+            if (!inventario) return 0;
+
+            var colores = inventario.Colores || inventario.colores || {};
+            var total = inventario.Total || inventario.total || 0;
+            var colorNormalizado = normalizarColorInventario(colorSeleccionado);
+
+            if (!colorNormalizado || colorNormalizado === 'a elegir') {
+                return total;
+            }
+
+            for (var key in colores) {
+                if (Object.prototype.hasOwnProperty.call(colores, key)) {
+                    if (normalizarColorInventario(key) === colorNormalizado) {
+                        return colores[key];
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        function evaluarInventarioComanda() {
+            if (!inventarioWarning) return;
+            if (!inventarioFlores || Object.keys(inventarioFlores).length === 0) {
+                inventarioWarning.classList.add('d-none');
+                return;
+            }
+
+            var inventarioInsuficiente = false;
+            $('#tbodyFloresComanda tr').each(function () {
+                var florId = $(this).data('flor-id');
+                var cantidadSolicitada = parseInt($(this).find('input[name$=".Cantidad"]').val()) || 0;
+                if (!florId || cantidadSolicitada <= 0) return;
+
+                var colorSeleccionado = $(this).find('select[name$=".ColorSeleccionado"]').val() || '';
+                var disponible = obtenerCantidadDisponible(florId, colorSeleccionado);
+
+                if (cantidadSolicitada > disponible) {
+                    inventarioInsuficiente = true;
+                    return false;
+                }
+            });
+
+            inventarioWarning.classList.toggle('d-none', !inventarioInsuficiente);
+        }
+
+        function obtenerNombreFlorSeleccionadaComanda() {
+            var $option = $('#selectFlorCatalogoComanda option:selected');
+            if (!$option.val()) return '';
+            return ($option.data('nombre') || $option.text() || '').toString();
+        }
+
+        function obtenerOpcionesColorHtmlComanda(florId, colorSeleccionado) {
+            var $option = $('#selectFlorCatalogoComanda option[value="' + florId + '"]');
+            var rawColores = ($option.data('colores') || 'a elegir').toString();
+            var colores = rawColores.split('|').filter(function (c) { return c && c.trim().length > 0; });
+
+            if (colores.length === 0) colores = ['a elegir'];
+            if (!colorSeleccionado) colorSeleccionado = 'a elegir';
+            if (colores.findIndex(function (c) { return c.toLowerCase() === colorSeleccionado.toLowerCase(); }) < 0) colores.unshift('a elegir');
+
+            var html = '';
+            colores.forEach(function (color) {
+                var selected = color.toLowerCase() === colorSeleccionado.toLowerCase() ? ' selected' : '';
+                html += '<option value="' + color + '"' + selected + '>' + color + '</option>';
+            });
+            return html;
+        }
+
+        function agregarFlorSeleccionadaATablaComanda() {
+            if (esVistaPreviaJs) return;
+
+            var florId = ($('#selectFlorCatalogoComanda').val() || '').toString();
+            if (!florId) return;
+
+            var nombre = obtenerNombreFlorSeleccionadaComanda();
+            var $tbody = $('#tbodyFloresComanda');
+            var $filaExistente = $tbody.find('tr[data-flor-id="' + florId + '"]');
+
+            if ($filaExistente.length > 0) {
+                var $inputCantidad = $filaExistente.find('input[name$=".Cantidad"]');
+                var cantidadActual = parseInt($inputCantidad.val()) || 0;
+                $inputCantidad.val(cantidadActual + 1);
+                return;
+            }
+
+            var nuevoIndex = $tbody.find('tr').length;
+            var celdaAccion = '';
+            if (!esVistaPreviaJs) {
+                celdaAccion = '  <td class="text-end"><button type="button" class="btn btn-accion-redondo btn-eliminar-redondo btn-eliminar-flor" title="Quitar flor" aria-label="Quitar flor">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></td>';
+            }
+
+            var fila = '' +
+                '<tr data-flor-id="' + florId + '">' +
+                '  <td>' + nombre +
+                '    <input type="hidden" name="Flores[' + nuevoIndex + '].FlorId" value="' + florId + '" />' +
+                '    <input type="hidden" name="Flores[' + nuevoIndex + '].Nombre" value="' + nombre + '" />' +
+                '  </td>' +
+                '  <td><input name="Flores[' + nuevoIndex + '].Cantidad" type="number" min="0" value="1" class="form-control form-control-sm" /></td>' +
+                '  <td><select name="Flores[' + nuevoIndex + '].ColorSeleccionado" class="form-select form-select-sm">' + obtenerOpcionesColorHtmlComanda(florId, 'a elegir') + '</select></td>' +
+                celdaAccion +
+                '</tr>';
+
+            $tbody.append(fila);
+            actualizarIndicesFloresComanda();
+            actualizarMensajeSinFloresComanda();
+            evaluarInventarioComanda();
+        }
+
+        function renderComandaRowsFromArray(flores) {
+            var $tbody = $('#tbodyFloresComanda');
+            $tbody.empty();
+            if (!flores || flores.length === 0) return;
+
+            for (var i = 0; i < flores.length; i++) {
+                var f = flores[i] || {};
+                var florId = f.FlorId || f.florId || '';
+                var nombre = f.Nombre || f.nombre || '';
+                var cantidad = f.Cantidad || f.cantidad || 0;
+                var color = f.ColorSeleccionado || f.colorSeleccionado || '';
+                var colorNormalizado = (color || '').toString().trim().toLowerCase();
+                var colorDisplay = (!colorNormalizado || colorNormalizado === 'a elegir') ? '' : color;
+                var celdaAccion = '';
+                if (!esVistaPreviaJs) {
+                    celdaAccion = '  <td class="text-end"><button type="button" class="btn btn-accion-redondo btn-eliminar-redondo btn-eliminar-flor" title="Quitar flor" aria-label="Quitar flor">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></td>';
+                }
+
+                var celdaColor = '';
+                if (esVistaPreviaJs) {
+                    celdaColor = '  <td class="text-end">' + (colorDisplay || '') + '</td>';
+                } else {
+                    var colorParaSelect = colorDisplay || 'a elegir';
+                    celdaColor = '  <td><select name="Flores[' + i + '].ColorSeleccionado" class="form-select form-select-sm">' + obtenerOpcionesColorHtmlComanda(florId, colorParaSelect) + '</select></td>';
+                }
+
+                var row = '' +
+                    '<tr data-flor-id="' + florId + '">' +
+                    '  <td>' + nombre +
+                    '    <input type="hidden" name="Flores[' + i + '].FlorId" value="' + florId + '" />' +
+                    '    <input type="hidden" name="Flores[' + i + '].Nombre" value="' + nombre + '" />' +
+                    '  </td>' +
+                    '  <td><input name="Flores[' + i + '].Cantidad" type="number" min="0" value="' + cantidad + '" class="form-control form-control-sm" /></td>' +
+                    celdaColor +
+                    celdaAccion +
+                    '</tr>';
+
+                $tbody.append(row);
+            }
+
+            actualizarIndicesFloresComanda();
+            actualizarMensajeSinFloresComanda();
+            evaluarInventarioComanda();
+        }
+
+        function copiarFloresDesdeArregloSeleccionado(opciones) {
+            var config = opciones || {};
+            var idVal = (config.idVal || ($('#ArregloId').val() || '').toString());
+
+            if (!idVal) {
+                if (!config.omitirAlertas) {
+                    alert('Selecciona primero un arreglo.');
+                }
+                return false;
+            }
+
+            var editableFlores = config.editableFlores || arreglosFlores[idVal] || arreglosFlores[Number(idVal)] || [];
+            if (!editableFlores || editableFlores.length === 0) {
+                if (!config.omitirAlertas) {
+                    alert('El arreglo seleccionado no contiene flores.');
+                }
+                return false;
+            }
+
+            var $tbody = $('#tbodyFloresComanda');
+            if (!config.omitirConfirmacion && $tbody.find('tr').length > 0) {
+                if (!confirm('Esto reemplazará las flores actualmente en la comanda. Continuar?')) {
+                    return false;
+                }
+            }
+
+            renderComandaRowsFromArray(editableFlores);
+            $('#CopiarDesdeArreglo').val('true');
+            evaluarInventarioComanda();
+            return true;
+        }
+
+        function updatePreview(options) {
+            var config = options || {};
+            var id = select.value;
+
+            if (!id) {
+                previewWrapper.classList.add('d-none');
+                previewImg.classList.add('d-none');
+                previewEmpty.classList.add('d-none');
+                previewImg.removeAttribute('src');
+                return;
+            }
+
+            previewWrapper.classList.remove('d-none');
+            var foto = arregloFotos[id];
+
+            if (foto) {
+                previewImg.src = foto;
+                previewImg.classList.remove('d-none');
+                previewEmpty.classList.add('d-none');
+            } else {
+                previewImg.removeAttribute('src');
+                previewImg.classList.add('d-none');
+                previewEmpty.classList.remove('d-none');
+            }
+
+            // Actualizar lista de flores
+            try {
+                var floresWrapper = document.getElementById('arregloFloresWrapper');
+                var floresList = document.getElementById('arregloFloresList');
+                var flores = arreglosFlores[id] || arreglosFlores[Number(id)] || [];
+
+                if (!flores || flores.length === 0) {
+                    floresWrapper.classList.add('d-none');
+                    floresList.innerHTML = '';
+                } else {
+                    floresWrapper.classList.remove('d-none');
+                    floresList.innerHTML = '';
+                    flores.forEach(function (f) {
+                        var li = document.createElement('li');
+                        li.textContent = (f.Nombre || 'Flor') + ' x ' + (f.Cantidad || f.cantidad || 0) + ' (' + (f.ColorSeleccionado || f.colorSeleccionado || 'a elegir') + ')';
+                        floresList.appendChild(li);
+                    });
+                }
+            } catch (e) { /* noop */ }
+
+            // Mostrar u ocultar el editor de composición.
+            var editableFlores = [];
+            try {
+                var editorWrapper = document.getElementById('arregloFloresEditorWrapper');
+                editableFlores = arreglosFlores[id] || arreglosFlores[Number(id)] || [];
+
+                if (!editableFlores || editableFlores.length === 0) {
+                    editorWrapper.classList.add('d-none');
+                } else {
+                    editorWrapper.classList.remove('d-none');
+                }
+            } catch (e) { /* noop */ }
+
+            if (config.autoCopiarFlores) {
+                copiarFloresDesdeArregloSeleccionado({
+                    idVal: id,
+                    editableFlores: editableFlores,
+                    omitirAlertas: true
+                });
+            }
+        }
+
+        // Si el modelo trae flores (editar), renderizarlas en el editor (tabla)
+        try {
+            var mf = modelFlores || [];
+            if (mf && mf.length > 0) {
+                renderComandaRowsFromArray(mf);
+                $('#arregloFloresEditorWrapper').removeClass('d-none');
+            }
+        } catch (e) { /* noop */ }
+
+        select.addEventListener('change', function () {
+            updatePreview({ autoCopiarFlores: true });
+        });
+        updatePreview({ autoCopiarFlores: false });
+
+            // Bind handlers for comanda flower editor (uses jQuery)
+        try {
+            $('#btnAgregarFlorComanda').on('click', function () { agregarFlorSeleccionadaATablaComanda(); });
+
+            $('#selectFlorCatalogoComanda').on('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    agregarFlorSeleccionadaATablaComanda();
+                }
+            });
+
+            $(document).on('click', '#tbodyFloresComanda .btn-eliminar-flor', function () {
+                var $fila = $(this).closest('tr');
+                var nombreFlor = ($fila.find('input[name$=".Nombre"]').val() || '').toString();
+                var confirmar = confirm('Eliminar "' + nombreFlor + '" de la comanda?');
+                if (!confirmar) return;
+                $fila.remove();
+                actualizarIndicesFloresComanda();
+                actualizarMensajeSinFloresComanda();
+                evaluarInventarioComanda();
+            });
+
+            $('#btnCopiarDesdeArregloComanda').on('click', function () {
+                copiarFloresDesdeArregloSeleccionado();
+            });
+
+            $(document).on('input', '#tbodyFloresComanda input[name$=".Cantidad"]', function () {
+                evaluarInventarioComanda();
+            });
+
+            $(document).on('change', '#tbodyFloresComanda select[name$=".ColorSeleccionado"]', function () {
+                evaluarInventarioComanda();
+            });
+        } catch (e) { /* noop */ }
+
+        evaluarInventarioComanda();
+    })();
+</script>
+
+<script>
+    (function () {
+        var select = document.getElementById('medioSolicitudSelect');
+        var otroInput = document.getElementById('medioSolicitudOtro');
+        var hidden = document.getElementById('medioSolicitudValor');
+
+        if (!select || !otroInput || !hidden) {
+            return;
+        }
+
+        var presets = {
+            facebook: 'Facebook',
+            marketplace: 'Marketplace',
+            whatsapp: 'WhatsApp',
+            instagram: 'Instagram'
+        };
+
+        function setFromValue(rawValue) {
+            var value = (rawValue || '').trim();
+            var normalized = value.toLowerCase();
+
+            if (value && presets[normalized]) {
+                select.value = presets[normalized];
+                otroInput.classList.add('d-none');
+                otroInput.value = '';
+                hidden.value = presets[normalized];
+                return;
+            }
+
+            if (value) {
+                select.value = 'Otro';
+                otroInput.classList.remove('d-none');
+                otroInput.value = value;
+                hidden.value = value;
+                return;
+            }
+
+            select.value = '';
+            otroInput.classList.add('d-none');
+            otroInput.value = '';
+            hidden.value = '';
+        }
+
+        function onSelectChange() {
+            if (select.value === 'Otro') {
+                otroInput.classList.remove('d-none');
+                otroInput.focus();
+                hidden.value = otroInput.value.trim();
+                return;
+            }
+
+            otroInput.classList.add('d-none');
+            otroInput.value = '';
+            hidden.value = select.value;
+        }
+
+        function onOtroInputChange() {
+            if (select.value === 'Otro') {
+                hidden.value = otroInput.value.trim();
+            }
+        }
+
+        setFromValue(hidden.value);
+        select.addEventListener('change', onSelectChange);
+        otroInput.addEventListener('input', onOtroInputChange);
+    })();
+</script>
+
+<script>
+    (function () {
+        var tipoEntregaSelect = document.getElementById('selectTipoEntrega');
+        var divNombre = document.getElementById('divNombreReceptorEnvio');
+        var divTelefono = document.getElementById('divTelefonoReceptorEnvio');
+        var divDireccion = document.getElementById('divDireccionEntrega');
+        var divNumeroRuta = document.getElementById('divNumeroRuta');
+        var inputNombre = document.getElementById('inputNombreReceptorEnvio');
+        var inputTelefono = document.getElementById('inputTelefonoReceptorEnvio');
+        var receptorWarning = document.getElementById('receptorWarning');
+
+        if (!tipoEntregaSelect || !divNombre || !divTelefono) {
+            return;
+        }
+
+        function updateReceptorWarning(isEnvio) {
+            if (!receptorWarning || !isEnvio) {
+                if (receptorWarning) {
+                    receptorWarning.classList.add('d-none');
+                }
+                return;
+            }
+
+            var nombreOk = inputNombre && inputNombre.value.trim().length > 0;
+            var telefonoOk = inputTelefono && inputTelefono.value.trim().length > 0;
+            receptorWarning.classList.toggle('d-none', nombreOk && telefonoOk);
+        }
+
+        function toggleReceptorFields() {
+            var isEnvio = tipoEntregaSelect.value === 'envio';
+            divNombre.classList.toggle('d-none', !isEnvio);
+            divTelefono.classList.toggle('d-none', !isEnvio);
+            if (divDireccion) {
+                divDireccion.classList.toggle('d-none', !isEnvio);
+            }
+            if (divNumeroRuta) {
+                divNumeroRuta.classList.toggle('d-none', !isEnvio);
+            }
+
+            if (inputNombre) {
+                inputNombre.required = isEnvio;
+            }
+
+            if (inputTelefono) {
+                inputTelefono.required = isEnvio;
+            }
+
+            if (!isEnvio) {
+                if (inputNombre) {
+                    inputNombre.value = '';
+                }
+                if (inputTelefono) {
+                    inputTelefono.value = '';
+                }
+            }
+
+            updateReceptorWarning(isEnvio);
+        }
+
+        // Sincronizar controles de TipoArreglo, Envoltura, Color y Caja con inputs hidden
+        var tipoArregloHidden = document.querySelector('input[name="TipoArreglo"]');
+        var tipoArregloCheckbox = document.getElementById('tipoArregloBouquet');
+        var cajaTipoHidden = document.querySelector('input[name="CajaTipoArreglo"]');
+        var cajaTipoRadios = document.querySelectorAll('input[name="CajaTipoArregloOpcion"]');
+        function toggleCajaPorBouquet(isBouquet) {
+            if (!cajaTipoRadios.length) return;
+            cajaTipoRadios.forEach(function (radio) {
+                radio.disabled = isBouquet;
+                if (isBouquet) {
+                    radio.checked = false;
+                }
+            });
+            if (isBouquet && cajaTipoHidden) {
+                cajaTipoHidden.value = '';
+            }
+        }
+
+        if (tipoArregloCheckbox && tipoArregloHidden) {
+            // Inicializar según valor actual
+            if (tipoArregloHidden.value === 'bouquet') {
+                tipoArregloCheckbox.checked = true;
+            }
+            toggleCajaPorBouquet(tipoArregloCheckbox.checked);
+            tipoArregloCheckbox.addEventListener('change', function() {
+                tipoArregloHidden.value = this.checked ? 'bouquet' : '';
+                toggleCajaPorBouquet(this.checked);
+            });
+        }
+
+        var envolturaHidden = document.querySelector('input[name="EvolturaArreglo"]');
+        var envolturaRadios = document.querySelectorAll('input[name="EvolturaArregloOpcion"]');
+        if (envolturaRadios.length && envolturaHidden) {
+            envolturaRadios.forEach(function(radio) {
+                if (radio.value === envolturaHidden.value) {
+                    radio.checked = true;
+                }
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        envolturaHidden.value = this.value;
+                    }
+                });
+            });
+        }
+
+        var colorEvolturaHidden = document.querySelector('input[name="ColorEvolturaArreglo"]');
+        var colorEvolturaRadios = document.querySelectorAll('input[name="ColorEvolturaArregloOpcion"]');
+        var colorEvolturaManualWrapper = document.getElementById('colorEvolturaManualWrapper');
+        var colorEvolturaManual = document.getElementById('colorEvolturaManual');
+        if (colorEvolturaRadios.length && colorEvolturaHidden) {
+            colorEvolturaRadios.forEach(function(radio) {
+                if (radio.value === colorEvolturaHidden.value) {
+                    radio.checked = true;
+                }
+                if (radio.value === 'otro' && radio.checked) {
+                    colorEvolturaManualWrapper.classList.remove('d-none');
+                }
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        if (this.value === 'otro') {
+                            colorEvolturaManualWrapper.classList.remove('d-none');
+                            colorEvolturaManual.required = true;
+                        } else {
+                            colorEvolturaManualWrapper.classList.add('d-none');
+                            colorEvolturaManual.required = false;
+                            colorEvolturaManual.value = '';
+                            colorEvolturaHidden.value = this.value;
+                        }
+                    }
+                });
+            });
+            if (colorEvolturaManual) {
+                colorEvolturaManual.addEventListener('input', function() {
+                    colorEvolturaHidden.value = this.value;
+                });
+            }
+        }
+
+        if (cajaTipoRadios.length && cajaTipoHidden) {
+            cajaTipoRadios.forEach(function(radio) {
+                if (radio.value === cajaTipoHidden.value) {
+                    radio.checked = true;
+                }
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        cajaTipoHidden.value = this.value;
+                    }
+                });
+            });
+        }
+
+        tipoEntregaSelect.addEventListener('change', toggleReceptorFields);
+        if (inputNombre) {
+            inputNombre.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        if (inputTelefono) {
+            inputTelefono.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        toggleReceptorFields();
+    })();
+</script>
+
+<script>
+    (function () {
+        var tipoEntregaSelect = document.getElementById('selectTipoEntrega');
+        var divNombre = document.getElementById('divNombreReceptorEnvio');
+        var divTelefono = document.getElementById('divTelefonoReceptorEnvio');
+        var divDireccion = document.getElementById('divDireccionEntrega');
+        var divNumeroRuta = document.getElementById('divNumeroRuta');
+        var inputNombre = document.getElementById('inputNombreReceptorEnvio');
+        var inputTelefono = document.getElementById('inputTelefonoReceptorEnvio');
+        var receptorWarning = document.getElementById('receptorWarning');
+
+        // NUEVO: referencias para copiar datos del cliente
+        var btnCopiar = document.getElementById('btnCopiarDatosClienteAReceptor');
+        var inputClienteNombre = document.getElementById('ClienteNombre');
+        var inputClienteTelefono = document.getElementById('ClienteTelefono');
+
+        if (!tipoEntregaSelect || !divNombre || !divTelefono) {
+            return;
+        }
+
+        function updateReceptorWarning(isEnvio) {
+            if (!receptorWarning || !isEnvio) {
+                if (receptorWarning) {
+                    receptorWarning.classList.add('d-none');
+                }
+                return;
+            }
+
+            var nombreOk = inputNombre && inputNombre.value.trim().length > 0;
+            var telefonoOk = inputTelefono && inputTelefono.value.trim().length > 0;
+            receptorWarning.classList.toggle('d-none', nombreOk && telefonoOk);
+        }
+
+        function toggleReceptorFields() {
+            var isEnvio = tipoEntregaSelect.value === 'envio';
+            divNombre.classList.toggle('d-none', !isEnvio);
+            divTelefono.classList.toggle('d-none', !isEnvio);
+            if (divDireccion) {
+                divDireccion.classList.toggle('d-none', !isEnvio);
+            }
+            if (divNumeroRuta) {
+                divNumeroRuta.classList.toggle('d-none', !isEnvio);
+            }
+
+            if (inputNombre) {
+                inputNombre.required = isEnvio;
+            }
+
+            if (inputTelefono) {
+                inputTelefono.required = isEnvio;
+            }
+
+            if (!isEnvio) {
+                if (inputNombre) {
+                    inputNombre.value = '';
+                }
+                if (inputTelefono) {
+                    inputTelefono.value = '';
+                }
+            }
+
+            updateReceptorWarning(isEnvio);
+        }
+
+        // NUEVO: copia datos del cliente al receptor
+        function copiarDatosClienteAReceptor() {
+            var nombreCliente = inputClienteNombre ? inputClienteNombre.value.trim() : '';
+            var telefonoCliente = inputClienteTelefono ? inputClienteTelefono.value.trim() : '';
+
+            if (nombreCliente && inputNombre) {
+                inputNombre.value = nombreCliente;
+            }
+            if (telefonoCliente && inputTelefono) {
+                inputTelefono.value = telefonoCliente;
+            }
+
+            updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+        }
+
+        if (btnCopiar) {
+            btnCopiar.addEventListener('click', function () {
+                copiarDatosClienteAReceptor();
+            });
+        }
+
+        tipoEntregaSelect.addEventListener('change', toggleReceptorFields);
+        if (inputNombre) {
+            inputNombre.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        if (inputTelefono) {
+            inputTelefono.addEventListener('input', function () {
+                updateReceptorWarning(tipoEntregaSelect.value === 'envio');
+            });
+        }
+        toggleReceptorFields();
+    })();
+</script>

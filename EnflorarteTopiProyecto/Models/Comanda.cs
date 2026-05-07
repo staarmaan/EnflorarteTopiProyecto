@@ -50,6 +50,7 @@ GO
 
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EnflorarteTopiProyecto.Models
 {
@@ -70,7 +71,7 @@ namespace EnflorarteTopiProyecto.Models
         entregado // Las comandas que ya fueron entregadas o recogidas tendran este estado. Osea que ya estan echas en su totalidad.
     }
 
-    public enum AnticipoTipo
+    public enum AnticipoTipos
     {
         porcentaje, // Por ejemplo, si se cobro un 50% de anticipo en la temporada alta.
         minimo, // Por ejemplo, si se cobro un monto minimo de anticipo de $200 en temporada baja.
@@ -80,45 +81,98 @@ namespace EnflorarteTopiProyecto.Models
 
     public class Comanda
     {
-        public int ComandaId { get; set; }
+        public int Id { get; set; }
 
         // Datos de usuarios.
         public int UsuarioId { get; set; } // Usuario que creo la comanda.
+        [ForeignKey(nameof(UsuarioId))]
+        public Usuario? UsuarioCreador { get; set; } // navegación al usuario que creó la comanda
+       
         /*
         Creo que, en teoria, cualquier usuario podria ser repartidor. 
         Se le podria advertir al usuario asignando el repartiro de que esta eligiendo a uno que no lo es, pero si se le podria permitir.
         Por ejemplo, la supervisora podria asignarse a si misma como repartidora en una comanda aunque no tenga ese rol.
         */
         public int? RepartidorId { get; set; }
+        [ForeignKey(nameof(RepartidorId))]
+        public Usuario? RepartidorAsignado { get; set; } // navegación al usuario asignado como repartidor
+
 
         // Datos de estados.
-        public EstadoComanda Estado { get; set; }
-        public bool Liquidado { get; set; }
+        public EstadoComanda Estado { get; set; } = EstadoComanda.solicitado; // Por defecto, las comandas estan en solicitud.
+        public bool Liquidado { get; set; } = false; // Por defecto, las comandas no estan liquidadas.
+        public bool Archivado {get;set;} = false; //si es true, ya no se mostrara en la consulta (a menos que se use un filtro).
 
         // Datos del cliente y entrega.
-        public string ClienteNombre { get; set; }
+        public string ClienteNombre { get; set; } = string.Empty;
         public string ClienteTelefono { get; set; } // No se si deberia ser obligatorio u opcional.
+        public string? LinkDireccion { get; set; } // link de la dirección del cliente.
+        public string? DomicilioReferencias { get; set; } // Detalles visuales de la ubicacion del  cliente.
+        public int? NumeroRuta { get; set; }
+        public int NumeroPedido { get; set; }
+        public string? MedioDeLaSolicitud {get;set;} // El medio por el que el cliente solicitó el pedido, ej: Facebook, marketplace, whatsapp, Instagram, etc.
+    //num pedido
+    //papel checbox
+
+
+
+
+        public TipoEntrega TipoEntrega { get; set; } // Puede ser envio, recoger u otro.
         public string? DireccionEntrega { get; set; } // No seria obligatorio si el tipo de entrega es "recoger".
         public DateTime FechaEntrega { get; set; }
-        public TimeSpan? HoraEntrega { get; set; } // No estoy seguro de si deberia ser opcional u obligatorio.
-        public TipoEntrega TipoEntrega { get; set; }
+        public TimeSpan HoraEntrega { get; set; } // No estoy seguro de si deberia ser opcional u obligatorio.
+
+        // Si el tipo de entrega es a domiciolio (osea envio), estos campos se deben de llenar.
+        // Por eso tienen al final "Envio".
+        public string? NombreReceptorEnvio {get;set;}
+        public int? TelefonoReceptorEnvio {get;set;}
+
+
 
         // Datos del arreglo.
-        public string NombreArreglo { get; set; }
+        /* 
+        Ahora que existe la calse de arreglo, se debe guardar la clave foranea de este, PERO, estos campos tienen que permanecer porque:
+        1. Si un arreglo cambia de precion, se vera afectado en las comandas con el precio antiguo, lo cual seria grave.
+        2. El mensaje es personalizado por comanda, pues cada cliente va a quere su propio mensaje.
+        3. Cada cliente va a quere cierta cantidad tambien.
+        */
+        
+        //Estos dos campos ya no son requeridos porque la clase de Arreglo ya los tiene. Los podria eliminar, pero los dejare comentados por si acaso.
+        //public string NombreArreglo { get; set; } = string.Empty;
+        //public string? FotoArregloRuta { get; set; }
+        
+        public int ArregloId {get; set;}
+        
+        [ForeignKey(nameof(ArregloId))]
+        public Arreglo? Arreglo {get; set;}
+
+        // Snapshot del arreglo en la comanda (inmutable históricamente)
+        public string NombreArreglo { get; set; } = string.Empty;
+        public string? FotoArregloRuta { get; set; }
+
+        // Copia de las flores usadas en esta comanda
+        public ICollection<ComandaFlor> Flores { get; set; } = new List<ComandaFlor>();
+
         [Precision(7, 2)] // 7 digitos en total y dos decimales. Entonces, el valor maximo permitido seria 99,999.99
-        [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El precio del arreglo debe ser entre 0 y 99,999.99.")]
+        [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El precio del arreglo debe ser entre 0 y 99,999.99.")]
         public decimal PrecioArreglo { get; set; }
-        [Precision(7, 2)] // x2
-        [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El pago del envío debe ser entre 0 y 99,999.99.")]
+        
+        [Precision(7, 2)] // lo mismo que en NombreArreglo.
+        [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El pago del envío debe ser entre 0 y 99,999.99.")]
         public decimal PagoEnvio { get; set; }
 
-        /*
-        No se guarda la foto como tal en la bd, sino la ruta donde se encuentra almacenada. Si se guardara la foto en la bd, esta podria crecer mucho en tamaño y hacer las consultas muy lentas.
-        Entonces, cuando se cargue una foto, se guarda una copia para que pueda ser cargada despues.
-        Como por ahora la app es solo local, la ruta puede ser una ruta relativa o absoluta en el sistema de archivos local.
-        Pero si se quisiera hacer una version web, habria que cambiar la logica para que las fotos se guarden en un servidor o servicio de almacenamiento en la nube, donde se puedan cargar las imagenes en cualquier dispositivo.
-         */
-        public string? FotoArregloRuta { get; set; }
+        [Range(1, 100, ErrorMessage = "La máxima cantiad de arreglos debe estar entre 1 y 100.")]
+        public int CantidadArreglo { get; set; } = 1;
+
+        public string? MensajeArreglo { get; set; } //especificacion o mensaje
+        public string? EvolturaArreglo { get; set; } // ej: papel, malla, jarron, tarjeta, yute.
+        public string? ColorEvolturaArreglo { get; set; } //ej: negro, lila, rosa, blanco.
+
+        public string? AccesorioArreglo {get;set;} //ej: corona,globo,peluche, etc.
+        public string? TipoArreglo {get;set;} //ej: buquet o caja. Esto no esta bien la verdad. Deberia ser un enum en vez de un simple string opcional.
+        public string? CajaTipoArreglo {get;set;} //ej: circulo, corazon, cuadrado
+
+
 
 
         // Datos de anticipo.
@@ -129,9 +183,10 @@ namespace EnflorarteTopiProyecto.Models
         En vez de eso, puedes conseguir el porcentaje de anticipo si el tipo fue de porcentaje, a partir del AnticipoTotal y el PrecioArreglo.
         Si se eligio el minimo u manual, entonces el AnticipoTotal ya seria el minimo :v
          */
-        public AnticipoTipo? AnticipoTipo { get; set; }
-        [Precision(7, 2)] // x3
-        [Range(typeof(decimal), "0", "99999.99", ErrorMessage = "El pago de anticipo debe ser entre 0 y 99,999.99.")]
+
+        public AnticipoTipos? AnticipoTipo { get; set; } = AnticipoTipos.manual; // Por defecto, el tipo de anticipo es manual.
+        [Precision(7, 2)] // x3             ʕ·͡ᴥ·ʔ
+        [Range(typeof(decimal), "0", "99999.99", ParseLimitsInInvariantCulture = true, ErrorMessage = "El pago de anticipo debe ser entre 0 y 99,999.99.")]
         public decimal AnticipoPagoTotal { get; set; }
     }
 }

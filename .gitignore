@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Config sensible
+appsettings.Development.json
+
 # User-specific files
 *.rsuser
 *.suo
@@ -361,3 +364,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/EnflorarteTopiProyecto/wwwroot/uploads
+/EnflorarteTopiProyecto/Migrations/20251210012005_Comandas.cs
+/EnflorarteTopiProyecto/Migrations/20251210012005_Comandas.Designer.cs
+/EnflorarteTopiProyecto/Migrations/20251210012126_Usuario.cs
+/EnflorarteTopiProyecto/Migrations/20251210012126_Usuario.Designer.cs

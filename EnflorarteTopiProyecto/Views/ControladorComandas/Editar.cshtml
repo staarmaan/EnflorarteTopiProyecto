@@ -1,0 +1,18 @@
+﻿@model ComandaDto
+@{
+    Layout = null;
+}
+
+<div class="p-2">
+    <form asp-action="Editar" asp-controller="ControladorComandas" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <partial name="~/Views/Shared/_FormularioComandaV2.cshtml" model="Model" view-data='new ViewDataDictionary(ViewData) { { "EsEdicion", true } }' />
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary px-4">Guardar Cambios</button>
+        </div>
+    </form>
+</div>

@@ -6,14 +6,18 @@ namespace EnflorarteTopiProyecto.Models
     {
         /* 
         Esta clase es un DTO (Data Transfer Object) para la entidad Usuario.
-        Nos permite validar y transferir datos relacionados con los usuarios.
+        Nos permite validar y transferir datos relacionados con ellos.
         Esta clase se utiliza en los archivos cshtml que estan en la carpeta Views/ControladorUsuarios
+        En otras palabras, sirve para desplegar datos de una clase de la BD en la vista, ya que no se pueden usar instancias de las clases directamente.
         */
 
         /*
         Usamos DataAnnotations para validar los datos de entrada. 
         Display permite que se muestren los datos con otro nombre diferente al declarado en el codigo.
         */
+
+        public int Id { get; set; } // Solo utilizado para la edicion de usuarios.
+
 
         [Display(Name = "nombre completo")]
         [Required(ErrorMessage = "El {0} es obligatorio.")]
@@ -28,18 +32,19 @@ namespace EnflorarteTopiProyecto.Models
 
 
         [Display(Name = "contraseña")]
-        [Required(ErrorMessage = "La {0} es obligatoria.")]
         [StringLength(50, MinimumLength = 6, ErrorMessage = "La {0} debe tener entre {2} y {1} carácteres.")]
         public string Contrasena { get; set; } = string.Empty;
-        
+
         [Display(Name = "confirmar contraseña")]
-        [Required(ErrorMessage = "Es obligatorio confirmar la contraseña.")]
         [Compare("Contrasena", ErrorMessage = "Las contraseñas no coinciden.")]
         public string ConfirmarContrasena { get; set; } = string.Empty;
-        
+
+        [Display(Name = "cambiar contraseña")]
+        public bool CambiarContrasena { get; set; } = false;
+
+        [Display(Name = "contraseña del supervisor")]
+        public string ContrasenaSupervisor { get; set; } = string.Empty;
 
         public bool Activo { get; set; } = true; // Aqui no hay Required porque por defecto el usuario se crea como activo.
-
-        public int Id { get; set; }
     }
 }
