@@ -3,17 +3,17 @@ using System;
 using EnflorarteTopiProyecto.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EnflorarteTopiProyecto.Migrations.Postgres
+namespace EnflorarteTopiProyecto.Migrations.SqlServer
 {
-    [DbContext(typeof(ApplicationDbContextPostgres))]
-    [Migration("20260424052731_boolDeArchivamiento")]
-    partial class boolDeArchivamiento
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20260507102447_pruebaADIOSpostgres")]
+    partial class pruebaADIOSpostgres
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,33 +21,33 @@ namespace EnflorarteTopiProyecto.Migrations.Postgres
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("EnflorarteTopiProyecto.Models.Arreglo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("arreglo_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("descripcion");
 
                     b.Property<string>("FotoRuta")
                         .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
+                        .HasColumnType("nvarchar(300)")
                         .HasColumnName("foto_ruta");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("nombre");
 
                     b.HasKey("Id");
@@ -58,21 +58,21 @@ namespace EnflorarteTopiProyecto.Migrations.Postgres
             modelBuilder.Entity("EnflorarteTopiProyecto.Models.ArregloFlor", b =>
                 {
                     b.Property<int>("ArregloId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("arreglo_id");
 
                     b.Property<int>("FlorId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("flor_id");
 
                     b.Property<int>("Cantidad")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("cantidad");
 
                     b.Property<string>("ColorSeleccionado")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("color_seleccionado");
 
                     b.HasKey("ArregloId", "FlorId");
@@ -86,69 +86,82 @@ namespace EnflorarteTopiProyecto.Migrations.Postgres
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("comanda_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AccesorioArreglo")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("AnticipoPagoTotal")
                         .HasPrecision(7, 2)
-                        .HasColumnType("numeric(7,2)")
+                        .HasColumnType("decimal(7,2)")
                         .HasColumnName("anticipo_total");
 
                     b.Property<string>("AnticipoTipo")
                         .HasMaxLength(50)
                         .IsUnicode(true)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("anticipo_tipo");
 
                     b.Property<bool>("Archivado")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<int>("ArregloId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("arreglo_id");
+
+                    b.Property<string>("CajaTipoArreglo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("CantidadArreglo")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(1)
                         .HasColumnName("cantidad_arreglo");
 
                     b.Property<string>("ClienteNombre")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("cliente_nombre");
 
                     b.Property<string>("ClienteTelefono")
+                        .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("cliente_telefono");
+
+                    b.Property<string>("ColorEvolturaArreglo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DireccionEntrega")
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("direccion_entrega");
 
                     b.Property<string>("DomicilioReferencias")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("domicilio_referencias");
 
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasMaxLength(20)
                         .IsUnicode(true)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("estado");
+
+                    b.Property<string>("EvolturaArreglo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("FechaEntrega")
                         .HasColumnType("date")
                         .HasColumnName("fecha_entrega");
+
+                    b.Property<string>("FotoArregloRuta")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<TimeSpan>("HoraEntrega")
                         .HasColumnType("time")
@@ -156,54 +169,64 @@ namespace EnflorarteTopiProyecto.Migrations.Postgres
 
                     b.Property<string>("LinkDireccion")
                         .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("nvarchar(1000)")
                         .HasColumnName("link_direccion");
 
                     b.Property<bool>("Liquidado")
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasColumnName("liquidado");
 
                     b.Property<string>("MedioDeLaSolicitud")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MensajeArreglo")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("mensaje_arreglo");
 
+                    b.Property<string>("NombreArreglo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NombreReceptorEnvio")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NumeroPedido")
+                        .HasColumnType("int");
 
                     b.Property<int?>("NumeroRuta")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("numero_ruta");
 
                     b.Property<decimal>("PagoEnvio")
                         .HasPrecision(7, 2)
-                        .HasColumnType("numeric(7,2)")
+                        .HasColumnType("decimal(7,2)")
                         .HasColumnName("pago_envio");
 
                     b.Property<decimal>("PrecioArreglo")
                         .HasPrecision(7, 2)
-                        .HasColumnType("numeric(7,2)")
+                        .HasColumnType("decimal(7,2)")
                         .HasColumnName("precio_arreglo");
 
                     b.Property<int?>("RepartidorId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("repartidor_id");
 
                     b.Property<int?>("TelefonoReceptorEnvio")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
+
+                    b.Property<string>("TipoArreglo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TipoEntrega")
                         .IsRequired()
                         .HasMaxLength(10)
                         .IsUnicode(true)
-                        .HasColumnType("character varying(10)")
+                        .HasColumnType("nvarchar(10)")
                         .HasColumnName("tipo_entrega");
 
                     b.Property<int>("UsuarioId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("usuario_id");
 
                     b.HasKey("Id");
@@ -228,29 +251,56 @@ namespace EnflorarteTopiProyecto.Migrations.Postgres
                         });
                 });
 
+            modelBuilder.Entity("EnflorarteTopiProyecto.Models.ComandaFlor", b =>
+                {
+                    b.Property<int>("ComandaId")
+                        .HasColumnType("int")
+                        .HasColumnName("comanda_id");
+
+                    b.Property<int>("FlorId")
+                        .HasColumnType("int")
+                        .HasColumnName("flor_id");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int")
+                        .HasColumnName("cantidad");
+
+                    b.Property<string>("ColorSeleccionado")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("color_seleccionado");
+
+                    b.HasKey("ComandaId", "FlorId");
+
+                    b.HasIndex("FlorId");
+
+                    b.ToTable("comanda_flor", (string)null);
+                });
+
             modelBuilder.Entity("EnflorarteTopiProyecto.Models.Flor", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("flor_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("descripcion");
 
                     b.Property<string>("FotoRuta")
                         .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
+                        .HasColumnType("nvarchar(300)")
                         .HasColumnName("foto_ruta");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("nombre");
 
                     b.HasKey("Id");
@@ -262,23 +312,23 @@ namespace EnflorarteTopiProyecto.Migrations.Postgres
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("flor_inventario_color_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cantidad")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("cantidad");
 
                     b.Property<string>("Color")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("color");
 
                     b.Property<int>("FlorId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("flor_id");
 
                     b.HasKey("Id");
@@ -293,32 +343,32 @@ namespace EnflorarteTopiProyecto.Migrations.Postgres
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("usuario_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Activo")
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasColumnName("activo");
 
                     b.Property<string>("Contrasena")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("contrasena");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("nombre");
 
                     b.Property<string>("Rol")
                         .IsRequired()
                         .HasMaxLength(20)
                         .IsUnicode(true)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("rol");
 
                     b.HasKey("Id");
@@ -371,6 +421,25 @@ namespace EnflorarteTopiProyecto.Migrations.Postgres
                     b.Navigation("UsuarioCreador");
                 });
 
+            modelBuilder.Entity("EnflorarteTopiProyecto.Models.ComandaFlor", b =>
+                {
+                    b.HasOne("EnflorarteTopiProyecto.Models.Comanda", "Comanda")
+                        .WithMany("Flores")
+                        .HasForeignKey("ComandaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EnflorarteTopiProyecto.Models.Flor", "Flor")
+                        .WithMany()
+                        .HasForeignKey("FlorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Comanda");
+
+                    b.Navigation("Flor");
+                });
+
             modelBuilder.Entity("EnflorarteTopiProyecto.Models.FlorInventarioColor", b =>
                 {
                     b.HasOne("EnflorarteTopiProyecto.Models.Flor", "Flor")
@@ -383,6 +452,11 @@ namespace EnflorarteTopiProyecto.Migrations.Postgres
                 });
 
             modelBuilder.Entity("EnflorarteTopiProyecto.Models.Arreglo", b =>
+                {
+                    b.Navigation("Flores");
+                });
+
+            modelBuilder.Entity("EnflorarteTopiProyecto.Models.Comanda", b =>
                 {
                     b.Navigation("Flores");
                 });

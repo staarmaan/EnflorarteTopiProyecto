@@ -125,6 +125,7 @@ namespace EnflorarteTopiProyecto.Migrations.SqlServer
                         .HasColumnName("cliente_nombre");
 
                     b.Property<string>("ClienteTelefono")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)")
                         .HasColumnName("cliente_telefono");
@@ -187,7 +188,7 @@ namespace EnflorarteTopiProyecto.Migrations.SqlServer
                     b.Property<string>("NombreReceptorEnvio")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("NumeroPedido")
+                    b.Property<int>("NumeroPedido")
                         .HasColumnType("int");
 
                     b.Property<int?>("NumeroRuta")

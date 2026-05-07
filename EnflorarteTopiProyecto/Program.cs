@@ -5,11 +5,9 @@ using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 
-using OpcionesBd;
-
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-var dbType = builder.Configuration.GetSection("DatabaseType").Value ?? "sql";
-var dbTypeNormalized = dbType.Trim().ToLowerInvariant();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("DefaultConnection not found in configuration");
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
@@ -19,7 +17,7 @@ builder.Services.AddControllersWithViews(options =>
 });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    OpcionesBD.UsarBD(options, dbType, builder);
+    options.UseSqlServer(connectionString);
 });
 //builder.Services.AddScoped<IPasswordService, PasswordService>();
 
@@ -57,34 +55,31 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    if (dbTypeNormalized == "sql")
+    var connectionStringForDb = db.Database.GetConnectionString();
+
+    if (!string.IsNullOrWhiteSpace(connectionStringForDb))
     {
-        var connectionString = db.Database.GetConnectionString();
+        var builderSql = new SqlConnectionStringBuilder(connectionStringForDb);
+        var dbName = builderSql.InitialCatalog;
 
-        if (!string.IsNullOrWhiteSpace(connectionString))
+        if (!string.IsNullOrWhiteSpace(dbName))
         {
-            var builderSql = new SqlConnectionStringBuilder(connectionString);
-            var dbName = builderSql.InitialCatalog;
+            builderSql.InitialCatalog = "master";
 
-            if (!string.IsNullOrWhiteSpace(dbName))
-            {
-                builderSql.InitialCatalog = "master";
+            using var connection = new SqlConnection(builderSql.ConnectionString);
+            connection.Open();
 
-                using var connection = new SqlConnection(builderSql.ConnectionString);
-                connection.Open();
-
-                using var createDbCmd = connection.CreateCommand();
-                createDbCmd.CommandText = $@"
-                IF DB_ID(N'{dbName.Replace("'", "''")}') IS NULL
-                BEGIN
-                    CREATE DATABASE [{dbName.Replace("]", "]]" )}];
-                END";
-                createDbCmd.ExecuteNonQuery();
-            }
+            using var createDbCmd = connection.CreateCommand();
+            createDbCmd.CommandText = $@"
+            IF DB_ID(N'{dbName.Replace("'", "''")}') IS NULL
+            BEGIN
+                CREATE DATABASE [{dbName.Replace("]", "]]" )}];
+            END";
+            createDbCmd.ExecuteNonQuery();
         }
-
-        db.Database.Migrate();
     }
+
+    db.Database.Migrate();
 }
 
 // Configure the HTTP request pipeline.

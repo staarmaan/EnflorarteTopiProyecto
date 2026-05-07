@@ -5,8 +5,7 @@
       "Microsoft.AspNetCore": "Warning"
     }
   },
-  "DatabaseType": "postgres",
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=enflorarte_topi_proyecto;Username=postgres;Password=YOUR_PASSWORD_HERE"
+    "DefaultConnection": "Server=localhost,1433;Database=EnflorarteTopiProyectoDb;User Id=sa;Password=YOUR_PASSWORD_HERE;TrustServerCertificate=True;"
   }
 }
