@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using EnflorarteTopiProyecto.Models;
+using EnflorarteTopiProyecto.Utils;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -80,6 +82,19 @@ using (var scope = app.Services.CreateScope())
     }
 
     db.Database.Migrate();
+
+    if (!db.Usuarios.Any())
+    {
+        Console.WriteLine("No hay usuaruis. aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        db.Usuarios.Add(new Usuario
+        {
+            Nombre = "Admin",
+            Rol = RolUsuario.supervisor,
+            Contrasena = HasheadorContrasenas.HashearContrasena("123456"),
+            Activo = true
+        });
+        db.SaveChanges();
+    }
 }
 
 // Configure the HTTP request pipeline.
